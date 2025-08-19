@@ -3,7 +3,6 @@ pragma solidity ^0.8.27;
 
 import {IBroadcaster} from "./interfaces/IBroadcaster.sol";
 
-
 contract Broadcaster is IBroadcaster {
     function broadcastMessage(bytes32 message) external {
         // calculate the storage slot for the message
