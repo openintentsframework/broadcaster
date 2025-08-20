@@ -3,7 +3,7 @@ pragma solidity ^0.8.27;
 
 import {Ownable} from "openzeppelin/access/Ownable.sol";
 import {StorageSlot} from "openzeppelin/utils/StorageSlot.sol";
-import {BlockHashProverPointer} from "../../contracts/BlockHashProverPointer.sol";
+import {BlockHashProverPointer, BLOCK_HASH_PROVER_POINTER_SLOT} from "../../contracts/BlockHashProverPointer.sol";
 
 contract BlockHashProverPointerMock is BlockHashProverPointer, Ownable {
     constructor(address _initialOwner) Ownable(_initialOwner) {}
