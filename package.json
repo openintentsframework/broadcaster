@@ -10,6 +10,7 @@
   },
   "type": "module",
   "dependencies": {
+    "@arbitrum/nitro-contracts": "^3.1.1",
     "@eth-optimism/contracts": "^0.6.0"
   }
 }
