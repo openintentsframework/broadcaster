@@ -8,5 +8,9 @@
     "typescript": "~5.8.0",
     "viem": "^2.34.0"
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "@arbitrum/nitro-contracts": "^3.1.1",
+    "@eth-optimism/contracts": "^0.6.0"
+  }
 }
