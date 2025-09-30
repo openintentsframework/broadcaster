@@ -3,7 +3,7 @@ pragma solidity ^0.8.28;
 
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
 import {IBlockHashProver} from "../../interfaces/IBlockHashProver.sol";
-import {IBuffer} from "block-hash-pusher/contracts/interfaces/IBuffer.sol";
+import {IBuffer} from "../../interfaces/external/IBuffer.sol";
 import {SlotDerivation} from "openzeppelin/utils/SlotDerivation.sol";
 
 /// @notice Arbitrum implementation of a child to parent IBlockHashProver.
