@@ -20,3 +20,12 @@ node_modules/
 artifacts/
 ignition/
 
+dist/
+
+wagmi/
+
+/typechain
+/typechain-types
+
+ignition/deployments/
+
