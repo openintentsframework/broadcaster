@@ -3,7 +3,7 @@ pragma solidity ^0.8.27;
 
 import {IBroadcaster} from "./interfaces/IBroadcaster.sol";
 
-import {StorageSlot} from "openzeppelin/utils/StorageSlot.sol";
+import {StorageSlot} from "@openzeppelin/contracts/utils/StorageSlot.sol";
 
 contract Broadcaster is IBroadcaster {
     error MessageAlreadyBroadcasted();
