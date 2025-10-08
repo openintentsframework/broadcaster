@@ -19,6 +19,8 @@ contract ParentToChildProver is IBlockHashProver {
     ///      See https://github.com/OffchainLabs/nitro-contracts/blob/9d0e90ef588f94a9d2ffa4dc22713d91a76f57d4/src/bridge/AbsOutbox.sol#L32
     uint256 public immutable rootsSlot;
 
+    error TargetBlockHashNotFound();
+
     constructor(address _outbox, uint256 _rootsSlot) {
         outbox = _outbox;
         rootsSlot = _rootsSlot;
@@ -54,6 +56,10 @@ contract ParentToChildProver is IBlockHashProver {
         bytes32 sendRoot = abi.decode(input, (bytes32));
         // get the target block hash from the outbox
         targetBlockHash = IOutbox(outbox).roots(sendRoot);
+
+        if(targetBlockHash == bytes32(0)) {
+            revert TargetBlockHashNotFound();
+        }
     }
 
     /// @notice Verify a storage slot given a target chain block hash and a proof.
