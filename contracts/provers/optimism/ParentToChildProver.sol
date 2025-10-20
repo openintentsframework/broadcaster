@@ -3,9 +3,9 @@ pragma solidity ^0.8.28;
 
 import {Lib_SecureMerkleTrie} from "@eth-optimism/contracts/libraries/trie/Lib_SecureMerkleTrie.sol";
 import {Lib_RLPReader} from "@eth-optimism/contracts/libraries/rlp/Lib_RLPReader.sol";
-import {ProverUtils} from "./ProverUtils.sol";
-import {IBlockHashProver} from "broadcast-erc/contracts/standard/interfaces/IBlockHashProver.sol";
-import {Bytes} from "@openzeppelin/contracts/utils/Bytes.sol";
+import {ProverUtils} from "../../libraries/ProverUtils.sol";
+import {IBlockHashProver} from "../../interfaces/IBlockHashProver.sol";
+import {Bytes} from "openzeppelin/utils/Bytes.sol";
 
 interface IAnchorStateRegistry {
     function isGameClaimValid(address _game) external view returns (bool);
