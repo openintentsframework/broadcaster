@@ -4,7 +4,9 @@ pragma solidity ^0.8.28;
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
 import {IBlockHashProver} from "../../interfaces/IBlockHashProver.sol";
 import {IBuffer} from "block-hash-pusher/contracts/interfaces/IBuffer.sol";
-import {SlotDerivation} from "openzeppelin/utils/SlotDerivation.sol";
+import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
+
+import {console} from "forge-std/console.sol";
 
 /// @notice Arbitrum implementation of a child to parent IBlockHashProver.
 /// @dev    verifyTargetBlockHash and getTargetBlockHash get block hashes from the block hash buffer at 0x0000000048C4Ed10cF14A02B9E0AbDDA5227b071.
@@ -33,6 +35,8 @@ contract ChildToParentProver is IBlockHashProver {
         // calculate the slot based on the provided block number
         // see: https://github.com/OffchainLabs/block-hash-pusher/blob/a1e26f2e42e6306d1e7f03c5d20fa6aa64ff7a12/contracts/Buffer.sol#L32
         uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(blockHashMappingSlot), targetBlockNumber));
+
+        console.log("slot", slot);
 
         // verify proofs and get the block hash
         targetBlockHash = ProverUtils.getSlotFromBlockHeader(

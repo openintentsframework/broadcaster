@@ -4,7 +4,9 @@ pragma solidity ^0.8.28;
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
 import {IBlockHashProver} from "../../interfaces/IBlockHashProver.sol";
 import {IOutbox} from "@arbitrum/nitro-contracts/src/bridge/IOutbox.sol";
-import {SlotDerivation} from "openzeppelin/utils/SlotDerivation.sol";
+import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
+
+import {console} from "forge-std/console.sol";
 
 /// @notice Arbitrum implementation of a child to parent IBlockHashProver.
 /// @dev    verifyTargetBlockHash and getTargetBlockHash get block hashes from the child chain's Outbox contract.
@@ -37,6 +39,8 @@ contract ParentToChildProver is IBlockHashProver {
         // calculate the slot based on the provided send root
         // see: https://github.com/OffchainLabs/nitro-contracts/blob/9d0e90ef588f94a9d2ffa4dc22713d91a76f57d4/src/bridge/AbsOutbox.sol#L32
         uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(rootsSlot), sendRoot));
+
+        console.log("slot", slot);
 
         // verify proofs and get the block hash
         targetBlockHash =
