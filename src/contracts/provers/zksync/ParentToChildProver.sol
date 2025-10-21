@@ -3,9 +3,9 @@ pragma solidity ^0.8.28;
 
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
 import {IBlockHashProver} from "../../interfaces/IBlockHashProver.sol";
-import {SlotDerivation} from "openzeppelin/utils/SlotDerivation.sol";
+//import {SlotDerivation} from "openzeppelin/utils/SlotDerivation.sol";
 
-import {SpartseMerkleTree, TreeEntry} from "./helpers/SparseMerkleTree.sol";
+import {SparseMerkleTree, TreeEntry} from "./helpers/SparseMerkleTree.sol";
 
 /// @notice Interface for the zkSync's contract
 interface IZkSyncDiamond {
@@ -20,6 +20,8 @@ contract ParentToChildProver is IBlockHashProver {
 
     IZkSyncDiamond immutable public zksyncDiamondAddress;
     SparseMerkleTree public smt;
+
+    error InvalidBatchHash();
 
 
     /// @notice Metadata of the batch provided by the offchain resolver
@@ -60,7 +62,9 @@ contract ParentToChildProver is IBlockHashProver {
         view
         returns (bytes32 targetBlockHash)
     {
-        
+        (StorageProof calldata proof) = abi.decode(input, StorageProof);
+
+
 
        
     }
@@ -68,6 +72,9 @@ contract ParentToChildProver is IBlockHashProver {
     /// @notice Get a target chain block hash given a target chain sendRoot
     /// @param  input ABI encoded (bytes32 sendRoot)
     function getTargetBlockHash(bytes calldata input) external view returns (bytes32 targetBlockHash) {
+        uint256 batchNumber = abi.decode(input, (uint256));
+
+        targetBlockHash = zksyncDiamondAddress.storedBatchHash(batchNumber);
        
     }
 
@@ -79,7 +86,42 @@ contract ParentToChildProver is IBlockHashProver {
         pure
         returns (address account, uint256 slot, bytes32 value)
     {
-       
+       (StorageProof calldata_proof) = abi.decode(input, StorageProof);
+
+       bytes32 l2BatchHash = smt.getRootHash(
+            _proof.path, 
+            TreeEntry({
+                key: _proof.key,
+                value: _proof.value,
+                leafIndex: _proof.index
+            }), 
+            _proof.account
+        );
+
+        // Build stored batch info and compute its hash
+        // batchHash of the StoredBatchInfo is computed from the proof
+        StoredBatchInfo memory batch = StoredBatchInfo({
+            batchNumber: _proof.metadata.batchNumber,
+            batchHash: l2BatchHash,
+            indexRepeatedStorageChanges: _proof.metadata.indexRepeatedStorageChanges,
+            numberOfLayer1Txs: _proof.metadata.numberOfLayer1Txs,
+            priorityOperationsHash: _proof.metadata.priorityOperationsHash,
+            l2LogsTreeRoot: _proof.metadata.l2LogsTreeRoot,
+            timestamp: _proof.metadata.timestamp,
+            commitment: _proof.metadata.commitment
+        });
+        bytes32 computedL1BatchHash = _hashStoredBatchInfo(batch);
+        
+
+        if(computedL1BatchHash != targetBlockHash) {
+            revert InvalidBatchHash();
+        }
+
+        account = _proof.account;
+        slot = _proof.key;
+        value = _proof.value;
+
+
     }
 
     /// @inheritdoc IBlockHashProver

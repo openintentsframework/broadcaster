@@ -651,7 +651,7 @@ contract BroadcasterTest is Test {
         testAccounts[1] = address(childToParentProver.blockHashBuffer());
         testAccounts[2] = address(childToParentProver);
         testAccounts[3] = address(0x1234567890123456789012345678901234567890);
-        testAccounts[4] = address(0xabcdefabcdefabcdefabcdefabcdefabcdefabcd);
+        testAccounts[4] = address(0xABcdEFABcdEFabcdEfAbCdefabcdeFABcDEFabCD);
         
         bytes memory accountProof = _getAccountProof();
         bytes memory storageProof = _getStorageProof();
