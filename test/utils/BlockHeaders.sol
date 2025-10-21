@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
 
-
 contract BlockHeaders {
-
     struct L1BlockHeader {
         bytes32 parentHash;
         bytes32 sha3Uncles;
@@ -11,15 +9,15 @@ contract BlockHeaders {
         bytes32 stateRoot;
         bytes32 transactionsRoot;
         bytes32 receiptsRoot;
-        bytes   logsBloom;
+        bytes logsBloom;
         uint256 difficulty;
         uint256 number;
-        uint64  gasLimit;
-        uint64  gasUsed;
-        uint64  timestamp;
-        bytes   extraData;
+        uint64 gasLimit;
+        uint64 gasUsed;
+        uint64 timestamp;
+        bytes extraData;
         bytes32 mixHash;
-        bytes8  nonce;
+        bytes8 nonce;
         uint256 baseFeePerGas;
         bytes32 withdrawalsRoot;
         uint64 blobGasUsed;
@@ -35,15 +33,15 @@ contract BlockHeaders {
         bytes32 stateRoot;
         bytes32 transactionsRoot;
         bytes32 receiptsRoot;
-        bytes   logsBloom;
+        bytes logsBloom;
         uint256 difficulty;
         uint256 number;
-        uint64  gasLimit;
-        uint64  gasUsed;
-        uint64  timestamp;
-        bytes   extraData;
+        uint64 gasLimit;
+        uint64 gasUsed;
+        uint64 timestamp;
+        bytes extraData;
         bytes32 mixHash;
-        bytes8  nonce;
+        bytes8 nonce;
         uint256 baseFeePerGas;
         bytes32 withdrawalsRoot;
         uint64 blobGasUsed;

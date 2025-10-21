@@ -23,6 +23,17 @@ contract ParentToChildProver is IBlockHashProver {
 
     error InvalidBatchHash();
 
+    struct StoredBatchInfo {
+        uint64 batchNumber;
+        bytes32 batchHash;
+        uint64 indexRepeatedStorageChanges;
+        uint256 numberOfLayer1Txs;
+        bytes32 priorityOperationsHash;
+        bytes32 l2LogsTreeRoot;
+        uint256 timestamp;
+        bytes32 commitment;
+    }
+
 
     /// @notice Metadata of the batch provided by the offchain resolver
     /// @dev batchHash is omitted because it will be calculated from the proof
@@ -62,11 +73,7 @@ contract ParentToChildProver is IBlockHashProver {
         view
         returns (bytes32 targetBlockHash)
     {
-        (StorageProof calldata proof) = abi.decode(input, StorageProof);
-
-
-
-       
+        (StorageProof memory proof) = abi.decode(input, (StorageProof));
     }
 
     /// @notice Get a target chain block hash given a target chain sendRoot
@@ -83,10 +90,10 @@ contract ParentToChildProver is IBlockHashProver {
     /// @param  input ABI encoded (bytes blockHeader, address account, uint256 slot, bytes accountProof, bytes storageProof)
     function verifyStorageSlot(bytes32 targetBlockHash, bytes calldata input)
         external
-        pure
+        view
         returns (address account, uint256 slot, bytes32 value)
     {
-       (StorageProof calldata_proof) = abi.decode(input, StorageProof);
+       (StorageProof memory _proof) = abi.decode(input, (StorageProof));
 
        bytes32 l2BatchHash = smt.getRootHash(
             _proof.path, 
@@ -122,6 +129,10 @@ contract ParentToChildProver is IBlockHashProver {
         value = _proof.value;
 
 
+    }
+
+    function _hashStoredBatchInfo(StoredBatchInfo memory _storedBatchInfo) internal pure returns (bytes32) {
+        return keccak256(abi.encode(_storedBatchInfo));
     }
 
     /// @inheritdoc IBlockHashProver
