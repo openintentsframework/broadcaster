@@ -17,6 +17,9 @@ import {
 import { reset } from '@nomicfoundation/hardhat-toolbox-viem/network-helpers.js'
 import { BaseProverHelper } from '../src/ts/BaseProverHelper.ts'
 import { iBufferAbi } from '../wagmi/abi.ts'
+import dotenv from 'dotenv'
+import fs from 'fs'
+dotenv.config()
 
 export class BroadcasterProverHelper 
     extends BaseProverHelper
@@ -149,8 +152,10 @@ async function initialSetup(
   targetUrl: string,
   //forkBlockNumber: bigint
 ) {
-  await reset(homeUrl)
-  const homeClient = await hre.viem.getPublicClient()
+  //await reset(homeUrl)
+  const homeClient = createPublicClient({
+    transport: http(homeUrl),
+  })
   //patchHardhatClient(homeClient, homeUrl)
   const targetClient = createPublicClient({
     transport: http(targetUrl),
@@ -212,19 +217,38 @@ async function main() {
     targetClient
   )
 
-  const { input, targetBlockHash } =
+  const { input: input1, targetBlockHash } =
     await broadcasterProverHelper.buildInputForGetTargetBlockHash()
 
-    console.log("input", input)
-    console.log("targetBlockHash", targetBlockHash)
+    // the payload is basically the first string concatenated with the second string, but removing the 0x prefix from the second string
+    const payloadGetTargetBlockHash = targetBlockHash + input1.slice(2)
 
-    // targetBlockHash is a bytes32 hash (0x...)  and input is a bytes (0x...), I want to get them together in a single file, where the first 32 bytes are the targetBlockHash and the rest are the input
+    // write the payload to a file
+    fs.writeFileSync('test/payloads/arbitrum/broadcaster_get.hex', payloadGetTargetBlockHash)
 
-    const payloadGetTargetBlockHash = encodePacked([{ type: 'bytes32' }, { type: 'bytes' }], [targetBlockHash, input])
+    const {input: input2, slotValue} = await broadcasterProverHelper.buildInputForVerifyStorageSlot(
+      targetBlockHash,
+      '0x40f58bd4616a6e76021f1481154db829953bf01b',
+      34911475602450811603768521319529596250529393651395612722173680283820326314854n
+    )
 
-    
+    const payloadVerifyStorageSlot = targetBlockHash + input2.slice(2)
 
-    console.log("payloadGetTargetBlockHash", payloadGetTargetBlockHash.toString())
+    // write the payload to a file
+    fs.writeFileSync('test/payloads/arbitrum/broadcaster_verify_slot.hex', payloadVerifyStorageSlot)
+
+    const homeBlockHash = (
+      await homeClient.getBlock()
+    ).hash
+
+    const {input: input3, targetBlockHash: targetBlockHash2} = await broadcasterProverHelper.buildInputForVerifyTargetBlockHash(homeBlockHash, 
+                    "0x0000000000000000000000000000000000000000000000000000000074657374", "0x9a56ffd72f4b526c523c733f1f74197a51c495e1")
+
+    const payloadVerifyTargetBlockHash = homeBlockHash + targetBlockHash2.slice(2) + input3.slice(2)
+
+    // write the payload to a file
+    fs.writeFileSync('test/payloads/arbitrum/broadcaster_verify_target_block_hash.hex', payloadVerifyTargetBlockHash)
+
 
 
 
