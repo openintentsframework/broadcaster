@@ -8,7 +8,7 @@ import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 
 // import {console} from "forge-std/console.sol";
 
-/// @notice Arbitrum implementation of a child to parent IBlockHashProver.
+/// @notice Arbitrum implementation of a parent to child IBlockHashProver.
 /// @dev    verifyTargetBlockHash and getTargetBlockHash get block hashes from the child chain's Outbox contract.
 ///         verifyStorageSlot is implemented to work against any Arbitrum child chain with a standard Ethereum block header and state trie.
 contract ParentToChildProver is IBlockHashProver {
