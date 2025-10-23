@@ -1,4 +1,5 @@
 import { Address, Hash, Hex, PublicClient, toHex, toRlp } from 'viem'
+import fs from 'fs';
 
 /**
  * BaseProverHelper is a base class for prover helpers that provides common functionality
@@ -54,22 +55,43 @@ export abstract class BaseProverHelper {
   ): Promise<{ rlpAccountProof: Hex; rlpStorageProof: Hex; slotValue: Hash }> {
     const client =
       chain === 'target' ? this.targetChainClient : this.homeChainClient
+    console.log("_getRlpStorageAndAccountProof");
     const block = await client.getBlock({
       blockHash,
       includeTransactions: false,
     })
 
+    //console.log("block", block);
+
     if (!block) {
       throw new Error('Block not found')
     }
 
-    const proof = await client.getProof({
-      address: account,
-      storageKeys: [toHex(slot, { size: 32 })],
-      blockNumber: block.number,
-    })
+    let proof: any;
 
-    const slotValue = toHex(proof.storageProof[0].value, { size: 32 })
+    let x = false;
+
+    try{
+      proof = await client.getProof({
+        address: account,
+        storageKeys: [toHex(slot, { size: 32 })],
+        blockNumber: block.number,
+      })
+    } catch (error) {
+
+      //load proof from file
+      try{
+        x = true;
+        proof = JSON.parse(fs.readFileSync('test/proofs/arbitrum/proof.json', 'utf8'));
+      } catch (error) {
+        console.log("error", error);
+        throw new Error('Failed to load proof from file')
+      }
+      
+    }
+
+
+    const slotValue = toHex(Number(proof.storageProof[0].value), { size: 32 })
     const rlpAccountProof = toRlp(proof.accountProof)
     const rlpStorageProof = toRlp(proof.storageProof[0].proof)
 

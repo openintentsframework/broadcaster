@@ -37,4 +37,9 @@ export interface IProverHelper {
     account: Address,
     slot: bigint
   ): Promise<{ input: Hex; slotValue: Hash }>
+
+  buildInputForGetTargetBlockHashByBlockNumber(blockNumber: bigint): Promise<{
+    input: Hex
+    targetBlockHash: Hash
+  }>
 }

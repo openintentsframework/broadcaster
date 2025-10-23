@@ -4,8 +4,6 @@ pragma solidity ^0.8.28;
 import {Lib_SecureMerkleTrie} from "@eth-optimism/contracts/libraries/trie/Lib_SecureMerkleTrie.sol";
 import {Lib_RLPReader} from "@eth-optimism/contracts/libraries/rlp/Lib_RLPReader.sol";
 
-import {console} from "forge-std/console.sol";
-
 /// @notice Base contract for IBlockHashProver contracts. Contains helpers for verifying block headers and MPT proofs.
 library ProverUtils {
     using Lib_RLPReader for Lib_RLPReader.RLPItem;
@@ -72,8 +70,8 @@ library ProverUtils {
         // extract the state root from the block header
         bytes32 stateRoot = extractStateRootFromBlockHeader(rlpBlockHeader);
 
-        console.log("stateRoot");
-        console.logBytes32(stateRoot);
+        // console.log("stateRoot");
+        // console.logBytes32(stateRoot);
 
         // verify the account and storage proofs
         value = getStorageSlotFromStateRoot(stateRoot, rlpAccountProof, rlpStorageProof, account, slot);
@@ -90,11 +88,11 @@ library ProverUtils {
         pure
         returns (bool accountExists, bytes memory accountData)
     {
-        console.log("stateRoot check");
-        // verify the proof
+        // console.log("stateRoot check");
+        // // verify the proof
 
-        console.log("account");
-        console.logAddress(account);
+        // console.log("account");
+        // console.logAddress(account);
 
         (accountExists, accountData) = Lib_SecureMerkleTrie.get(abi.encodePacked(account), rlpAccountProof, stateRoot);
     }
@@ -120,13 +118,13 @@ library ProverUtils {
         (bool accountExists, bytes memory accountValue) =
             getAccountDataFromStateRoot(stateRoot, rlpAccountProof, account);
 
-        console.log("accountExists");
-        console.logBool(accountExists);
+        // console.log("accountExists");
+        // console.logBool(accountExists);
 
         require(accountExists, "Account does not exist");
 
-        console.log("accountValue");
-        console.logBytes(accountValue);
+        // console.log("accountValue");
+        // console.logBytes(accountValue);
 
         (bool slotExists, bytes memory slotValue) =
             Lib_SecureMerkleTrie.get(abi.encode(slot), rlpStorageProof, extractStorageRootFromAccountData(accountValue));

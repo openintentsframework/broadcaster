@@ -50,6 +50,18 @@ export class ChildToParentProverHelper
     }
   }
 
+  async buildInputForGetTargetBlockHashByBlockNumber(blockNumber: bigint): Promise<{
+    input: Hex
+    targetBlockHash: Hash
+  }> {
+    //// TODO
+
+    return {
+      input: encodeAbiParameters([{ type: 'uint256' }], [blockNumber]),
+      targetBlockHash: '0x' as `0x${string}`,
+    }
+  }
+
   /**
    * @see IProverHelper.buildInputForGetTargetBlockHash
    */
@@ -108,6 +120,8 @@ export class ChildToParentProverHelper
       'target',
       targetBlockHash
     )
+
+    console.log("rlpBlockHeader", rlpBlockHeader);
     const { rlpAccountProof, rlpStorageProof, slotValue } =
       await this._getRlpStorageAndAccountProof(
         'target',
@@ -115,6 +129,8 @@ export class ChildToParentProverHelper
         account,
         slot
       )
+    
+      console.log("BBB");
 
     const input = encodeAbiParameters(
       [

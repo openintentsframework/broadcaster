@@ -47,6 +47,26 @@ export class ParentToChildProverHelper
     }
   }
 
+  async buildInputForGetTargetBlockHashByBlockNumber(blockNumber: bigint): Promise<{
+    input: Hex
+    targetBlockHash: Hash
+  }> {
+    console.log("blockNumber", blockNumber);
+
+    // const targetBlock = await this.targetChainClient.getBlock({ blockNumber });
+    // console.log("targetBlock", targetBlock);
+    // // @ts-ignore
+    // console.log("sendRoot", targetBlock.sendRoot);
+
+    const { targetBlockHash, sendRoot } =  await this._findLatestAvailableTargetChainBlock(blockNumber);
+
+    return {
+      // @ts-ignore
+      input: encodeAbiParameters([{ type: 'bytes32' }], [sendRoot]),
+      targetBlockHash: targetBlockHash,
+    }
+  }
+
   /**
    * @see IProverHelper.buildInputForVerifyTargetBlockHash
    */
@@ -87,6 +107,8 @@ export class ParentToChildProverHelper
       [rlpBlockHeader, sendRoot, rlpAccountProof, rlpStorageProof]
     )
 
+    
+
     return {
       input,
       targetBlockHash,
@@ -112,6 +134,8 @@ export class ParentToChildProverHelper
         account,
         slot
       )
+    
+    console.log("get proof BBB");
 
     const input = encodeAbiParameters(
       [

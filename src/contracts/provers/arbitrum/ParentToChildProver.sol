@@ -6,7 +6,7 @@ import {IBlockHashProver} from "../../interfaces/IBlockHashProver.sol";
 import {IOutbox} from "@arbitrum/nitro-contracts/src/bridge/IOutbox.sol";
 import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 
-import {console} from "forge-std/console.sol";
+// import {console} from "forge-std/console.sol";
 
 /// @notice Arbitrum implementation of a child to parent IBlockHashProver.
 /// @dev    verifyTargetBlockHash and getTargetBlockHash get block hashes from the child chain's Outbox contract.
@@ -34,6 +34,8 @@ contract ParentToChildProver is IBlockHashProver {
         view
         returns (bytes32 targetBlockHash)
     {
+        // console.log("homeBlockHash");
+        // console.logBytes32(homeBlockHash);
         // decode the input
         (bytes memory rlpBlockHeader, bytes32 sendRoot, bytes memory accountProof, bytes memory storageProof) =
             abi.decode(input, (bytes, bytes32, bytes, bytes));
@@ -41,8 +43,6 @@ contract ParentToChildProver is IBlockHashProver {
         // calculate the slot based on the provided send root
         // see: https://github.com/OffchainLabs/nitro-contracts/blob/9d0e90ef588f94a9d2ffa4dc22713d91a76f57d4/src/bridge/AbsOutbox.sol#L32
         uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(rootsSlot), sendRoot));
-
-        console.log("slot", slot);
 
         // verify proofs and get the block hash
         targetBlockHash =
