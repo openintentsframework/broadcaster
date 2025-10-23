@@ -28,8 +28,8 @@ contract BroadcasterTest is Test {
     uint256 childChainId;
 
     function setUp() public {
-        parentForkId = vm.createFork(vm.envString("PARENT_RPC_URL"));
-        childForkId = vm.createFork(vm.envString("CHILD_RPC_URL"));
+        parentForkId = vm.createFork(vm.envString("ETHEREUM_RPC_URL"));
+        childForkId = vm.createFork(vm.envString("ARBITRUM_RPC_URL"));
 
         vm.selectFork(childForkId);
         childChainId = block.chainid;
