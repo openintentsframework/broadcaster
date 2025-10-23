@@ -59,9 +59,48 @@ contract BroadcasterTest is Test {
         assertEq(result, targetBlockHash);
     }
 
+    function test_getTargetBlockHash_broadcaster() public {
+        vm.selectFork(childForkId);
+        bytes memory payload = _loadPayload("test/payloads/arbitrum/broadcaster_get.hex");
+
+        assertEq(payload.length, 64);
+
+        bytes32 input;
+        bytes32 targetBlockHash;
+
+        assembly {
+            input := mload(add(payload, 0x20))
+            targetBlockHash := mload(add(payload, 0x40))
+        }
+
+        bytes32 result = childToParentProver.getTargetBlockHash(abi.encode(input));
+
+        assertEq(result, targetBlockHash);
+    }
+
     function test_reverts_getTargetBlockHash_on_target_chain() public {
         vm.selectFork(parentForkId);
         bytes memory payload = _loadPayload("test/payloads/arbitrum/calldata_get.hex");
+
+        ChildToParentProver newChildToParentProver = new ChildToParentProver(childChainId);
+
+        assertEq(payload.length, 64);
+
+        bytes32 input;
+        bytes32 targetBlockHash;
+
+        assembly {
+            input := mload(add(payload, 0x20))
+            targetBlockHash := mload(add(payload, 0x40))
+        }
+
+        vm.expectRevert(ChildToParentProver.CallNotOnHomeChain.selector);
+        newChildToParentProver.getTargetBlockHash(abi.encode(input));
+    }
+
+    function test_reverts_getTargetBlockHash_on_target_chain_broadcaster() public {
+        vm.selectFork(parentForkId);
+        bytes memory payload = _loadPayload("test/payloads/arbitrum/broadcaster_get.hex");
 
         ChildToParentProver newChildToParentProver = new ChildToParentProver(childChainId);
 
@@ -92,6 +131,30 @@ contract BroadcasterTest is Test {
         vm.selectFork(parentForkId);
 
         bytes memory payload = _loadPayload("test/payloads/arbitrum/calldata_verify_target.hex");
+
+        ChildToParentProver childToParentProverCopy = new ChildToParentProver(childChainId);
+
+        assertGt(payload.length, 64);
+
+        bytes32 homeBlockHash;
+        bytes32 targetBlockHash;
+
+        bytes memory input = Bytes.slice(payload, 64);
+
+        assembly {
+            homeBlockHash := mload(add(payload, 0x20))
+            targetBlockHash := mload(add(payload, 0x40))
+        }
+
+        bytes32 result = childToParentProverCopy.verifyTargetBlockHash(homeBlockHash, input);
+
+        assertEq(result, targetBlockHash);
+    }
+
+    function test_verifyTargetBlockHash_broadcaster() public {
+        vm.selectFork(parentForkId);
+
+        bytes memory payload = _loadPayload("test/payloads/arbitrum/broadcaster_verify_target.hex");
 
         ChildToParentProver childToParentProverCopy = new ChildToParentProver(childChainId);
 
@@ -162,5 +225,34 @@ contract BroadcasterTest is Test {
         assertEq(account, knownAccount);
         assertEq(slot, knownSlot);
         assertEq(value, storageSlotValue);
+    }
+
+    function test_verifyStorageSlot_broadcaster() public {
+        vm.selectFork(parentForkId);
+
+        address knownAccount = 0x40F58Bd4616a6E76021F1481154DB829953BF01B;
+        uint256 knownSlot = 0x4d2f31e8578316b1eee225feb6442c49f42083864fa317ea81928e275ad2e366;
+
+        bytes memory payload = _loadPayload("test/payloads/arbitrum/broadcaster_verify_slot.hex");
+
+        ChildToParentProver childToParentProverCopy = new ChildToParentProver(childChainId);
+
+        assertGt(payload.length, 64);
+
+        bytes32 targetBlockHash;
+        bytes32 storageSlotValue;
+        bytes memory input = Bytes.slice(payload, 64);
+
+        assembly {
+            targetBlockHash := mload(add(payload, 0x20))
+            storageSlotValue := mload(add(payload, 0x40))
+        }
+
+        (address account, uint256 slot, bytes32 value) =
+            childToParentProverCopy.verifyStorageSlot(targetBlockHash, input);
+
+        assertEq(account, knownAccount, "account mismatch");
+        assertEq(slot, knownSlot, "slot mismatch");
+        assertEq(value, storageSlotValue, "value mismatch");
     }
 }

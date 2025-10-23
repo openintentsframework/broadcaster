@@ -45,6 +45,7 @@ export class BroadcasterProverHelper
         homeBlockHash: Hash,
         message: Hash,
         publisher: Address,
+        broadcasterAddress: Address,
       ): Promise<{ input: Hex; targetBlockHash: Hash }> {
         const homeBlockNumber = (
           await this.homeChainClient.getBlock({ blockHash: homeBlockHash })
@@ -60,13 +61,15 @@ export class BroadcasterProverHelper
             )
           )
         )
+
+        console.log("slot", slot);
     
         const rlpBlockHeader = await this._getRlpBlockHeader('home', homeBlockHash)
         const { rlpAccountProof, rlpStorageProof } =
           await this._getRlpStorageAndAccountProof(
             'home',
             homeBlockHash,
-            this.bufferAddress,
+            broadcasterAddress,
             slot
           )
     
@@ -102,8 +105,6 @@ export class BroadcasterProverHelper
             account,
             slot
           )
-        
-          console.log("BBB");
     
         const input = encodeAbiParameters(
           [
@@ -220,8 +221,13 @@ async function main() {
   const { input: input1, targetBlockHash } =
     await broadcasterProverHelper.buildInputForGetTargetBlockHash()
 
+    console.log("input1", input1);
+    console.log("targetBlockHash", targetBlockHash);
+
+    console.log("------------------------------------------------------------");
+
     // the payload is basically the first string concatenated with the second string, but removing the 0x prefix from the second string
-    const payloadGetTargetBlockHash = targetBlockHash + input1.slice(2)
+    const payloadGetTargetBlockHash = input1 + targetBlockHash.slice(2);
 
     // write the payload to a file
     fs.writeFileSync('test/payloads/arbitrum/broadcaster_get.hex', payloadGetTargetBlockHash)
@@ -231,6 +237,13 @@ async function main() {
       '0x40f58bd4616a6e76021f1481154db829953bf01b',
       34911475602450811603768521319529596250529393651395612722173680283820326314854n
     )
+
+    
+    console.log("targetBlockHash", targetBlockHash);
+    console.log("input2", input2);
+
+    console.log("------------------------------------------------------------");
+
 
     const payloadVerifyStorageSlot = targetBlockHash + input2.slice(2)
 
@@ -242,12 +255,18 @@ async function main() {
     ).hash
 
     const {input: input3, targetBlockHash: targetBlockHash2} = await broadcasterProverHelper.buildInputForVerifyTargetBlockHash(homeBlockHash, 
-                    "0x0000000000000000000000000000000000000000000000000000000074657374", "0x9a56ffd72f4b526c523c733f1f74197a51c495e1")
+                    "0x0000000000000000000000000000000000000000000000000000000074657374", "0x9a56ffd72f4b526c523c733f1f74197a51c495e1", "0x40f58bd4616a6e76021f1481154db829953bf01b")
 
-    const payloadVerifyTargetBlockHash = homeBlockHash + targetBlockHash2.slice(2) + input3.slice(2)
+    const payloadVerifyTargetBlockHash = homeBlockHash + targetBlockHash2.slice(2) + input3.slice(2);
 
     // write the payload to a file
-    fs.writeFileSync('test/payloads/arbitrum/broadcaster_verify_target_block_hash.hex', payloadVerifyTargetBlockHash)
+    fs.writeFileSync('test/payloads/arbitrum/broadcaster_verify_target.hex', payloadVerifyTargetBlockHash)
+
+    console.log("homeBlockHash", homeBlockHash);
+    console.log("targetBlockHash2", targetBlockHash2);
+    console.log("input3", input3);
+
+    console.log("------------------------------------------------------------");
 
 
 
