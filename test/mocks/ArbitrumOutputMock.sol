@@ -104,11 +104,7 @@ contract ArbitrumOutputMock is IOutbox {
         return false;
     }
 
-    function calculateMerkleRoot(bytes32[] calldata proof, uint256 path, bytes32 item)
-        external
-        pure
-        returns (bytes32)
-    {
+    function calculateMerkleRoot(bytes32[] calldata proof, uint256 path, bytes32 item) external pure returns (bytes32) {
         return bytes32(0);
     }
 

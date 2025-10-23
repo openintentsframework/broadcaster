@@ -176,7 +176,6 @@ describe('Basic Prover Tests', () => {
       //expect(targetBlockHash).to.equal(ctx.expectedTargetBlockHash)
 
       // Deploy prover contract on target chain
-
       await reset(getEnv('CHILD_RPC_URL'))
 
       const proverContractCopy = await hre.viem.deployContract(

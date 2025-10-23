@@ -26,7 +26,6 @@ contract BroadcasterTest is Test {
     ParentToChildProver public parentToChildProver; // Home is Parent, Target is Child
     ChildToParentProver public childToParentProver; // Home is Child, Target is Parent
 
-
     // L1BlockHeader public blockHeader;
     // L2BlockHeader public l2BlockHeader;
 
@@ -202,14 +201,10 @@ contract BroadcasterTest is Test {
         //     vm.parseBytes(vm.readFile("test/proofs/arbitrum/proof.hex")), (bytes)
         // );
 
-        bytes memory input = abi.decode(
-            vm.parseBytes(vm.readFile("test/proofs/arbitrum/proof.hex")), (bytes)
-        );
+        bytes memory input = abi.decode(vm.parseBytes(vm.readFile("test/proofs/arbitrum/proof.hex")), (bytes));
         bytes32 targetBlockHash = 0xaa887625436b930d1093072388c1c5bd2bac84299bd99a9493d0cd5c5c08d7a5;
 
         newParentToChildProver.verifyTargetBlockHash(targetBlockHash, input);
-
-
 
         // Verify the target block hash matches expected
         //assertEq(targetBlockHash, l2BlockHeader.hash);

@@ -54,25 +54,25 @@
 //         // For a leaf node, we need: [path, value]
 //         bytes memory leafPath = createLeafPath(key);
 //         bytes memory leafValue = Lib_RLPWriter.writeBytes(value);
-        
+
 //         // Create the leaf node: [path, value]
 //         bytes[] memory leafNode = new bytes[](2);
 //         leafNode[0] = leafPath;
 //         leafNode[1] = leafValue;
-        
+
 //         // RLP encode the leaf node
 //         bytes memory encodedLeaf = Lib_RLPWriter.writeList(leafNode);
-        
+
 //         // Create the proof array with the leaf node
 //         bytes[] memory proofArray = new bytes[](1);
 //         proofArray[0] = encodedLeaf;
-        
+
 //         // RLP encode the entire proof
 //         _proof = Lib_RLPWriter.writeList(proofArray);
-        
+
 //         // Calculate the root hash (simplified - in reality this would be more complex)
 //         _root = keccak256(encodedLeaf);
-        
+
 //         _key = key;
 //     }
 
@@ -90,21 +90,21 @@
 //     {
 //         // For a non-existent key, we create a proof that shows the path
 //         // but ends with an empty value or a different leaf
-        
+
 //         // Create a leaf node for a different key to show the path exists
 //         bytes memory differentKey = abi.encodePacked(key, bytes1(0x01));
 //         bytes memory leafPath = createLeafPath(differentKey);
 //         bytes memory leafValue = Lib_RLPWriter.writeBytes(abi.encodePacked("different_value"));
-        
+
 //         bytes[] memory leafNode = new bytes[](2);
 //         leafNode[0] = leafPath;
 //         leafNode[1] = leafValue;
-        
+
 //         bytes memory encodedLeaf = Lib_RLPWriter.writeList(leafNode);
-        
+
 //         bytes[] memory proofArray = new bytes[](1);
 //         proofArray[0] = encodedLeaf;
-        
+
 //         _proof = Lib_RLPWriter.writeList(proofArray);
 //         _root = keccak256(encodedLeaf);
 //         _key = key;
@@ -118,7 +118,7 @@
 //     function createLeafPath(bytes memory key) internal pure returns (bytes memory path) {
 //         // Convert key to nibbles
 //         bytes memory nibbles = toNibbles(key);
-        
+
 //         // Determine if we need odd or even prefix
 //         uint8 prefix;
 //         if (nibbles.length % 2 == 0) {
@@ -133,7 +133,7 @@
 //             }
 //             nibbles = paddedNibbles;
 //         }
-        
+
 //         // Combine prefix with nibbles
 //         path = new bytes(nibbles.length + 1);
 //         path[0] = bytes1(prefix);
@@ -207,7 +207,7 @@
 //         bool shouldExist
 //     ) public pure returns (bool success, bool exists, bytes memory returnedValue) {
 //         (bytes memory _key, bytes memory _proof, bytes32 _root) = generateMockInputs(key, value, shouldExist);
-        
+
 //         // Note: This will likely fail for non-existent keys as our mock proof
 //         // is simplified and may not be a valid Merkle trie proof
 //         try Lib_SecureMerkleTrie.get(_key, _proof, _root) returns (bool _exists, bytes memory _value) {
@@ -236,22 +236,22 @@
 //     {
 //         // Create a simple branch node with 17 elements (16 branches + 1 value)
 //         bytes[] memory branchNode = new bytes[](17);
-        
+
 //         // Initialize all branches to empty
 //         for (uint256 i = 0; i < 16; i++) {
 //             branchNode[i] = Lib_RLPWriter.writeBytes("");
 //         }
-        
+
 //         // Set the value at the end
 //         branchNode[16] = Lib_RLPWriter.writeBytes(value);
-        
+
 //         // RLP encode the branch node
 //         bytes memory encodedBranch = Lib_RLPWriter.writeList(branchNode);
-        
+
 //         // Create proof with the branch node
 //         bytes[] memory proofArray = new bytes[](1);
 //         proofArray[0] = encodedBranch;
-        
+
 //         _proof = Lib_RLPWriter.writeList(proofArray);
 //         _root = keccak256(encodedBranch);
 //         _key = key;

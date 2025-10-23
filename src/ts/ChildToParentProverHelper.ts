@@ -120,8 +120,6 @@ export class ChildToParentProverHelper
       'target',
       targetBlockHash
     )
-
-    console.log("rlpBlockHeader", rlpBlockHeader);
     const { rlpAccountProof, rlpStorageProof, slotValue } =
       await this._getRlpStorageAndAccountProof(
         'target',

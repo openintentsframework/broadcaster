@@ -102,8 +102,9 @@ describe('Basic Prover Tests', () => {
       targetClient = clients.targetClient
 
       const childBlockNumber: bigint = await homeClient.getBlockNumber();
+      const childChainId = await homeClient.getChainId();
 
-      ctx = await getTestContext([], childBlockNumber);
+      ctx = await getTestContext([childChainId], childBlockNumber);
     })
 
     it('getTargetBlockHash should return the correct block hash', async () => {
@@ -113,6 +114,8 @@ describe('Basic Prover Tests', () => {
       expect(await ctx.proverContract.read.getTargetBlockHash([input])).to.equal(
         targetBlockHash
       )
+
+      console.log("getTargetBlockHash", input, targetBlockHash)
   
       gasEstimates[ctx.proverType].getTargetBlockHash =
         await homeClient.estimateContractGas({
@@ -120,29 +123,6 @@ describe('Basic Prover Tests', () => {
           abi: ctx.proverContract.abi,
           functionName: 'getTargetBlockHash',
           args: [input],
-        })
-    })
-  
-    it('verifyTargetBlockHash should return the correct block hash', async () => {
-      const homeBlockHash = (
-        await homeClient.getBlock({ blockNumber: ctx.forkBlockNumber })
-      ).hash
-      const { input, targetBlockHash } =
-        await ctx.proverHelper.buildInputForVerifyTargetBlockHash(homeBlockHash)
-      //expect(targetBlockHash).to.equal(ctx.expectedTargetBlockHash)
-      expect(
-        await ctx.proverContract.read.verifyTargetBlockHash([
-          homeBlockHash,
-          input,
-        ])
-      ).to.equal(targetBlockHash)
-  
-      gasEstimates[ctx.proverType].verifyTargetBlockHash =
-        await homeClient.estimateContractGas({
-          address: ctx.proverContract.address,
-          abi: ctx.proverContract.abi,
-          functionName: 'verifyTargetBlockHash',
-          args: [homeBlockHash, input],
         })
     })
   
@@ -162,6 +142,9 @@ describe('Basic Prover Tests', () => {
           ctx.expectedTargetBlockHash,
           input,
         ])
+      
+      console.log("verifyStorageSlot",ctx.expectedTargetBlockHash, input, account, slot, value)
+
       expect(account).to.equal(
         ctx.knownStorageSlotAccount,
         "verifyStorageSlot didn't return the expected account"
@@ -181,6 +164,38 @@ describe('Basic Prover Tests', () => {
           abi: ctx.proverContract.abi,
           functionName: 'verifyStorageSlot',
           args: [ctx.expectedTargetBlockHash, input],
+        })
+    })
+
+    it('verifyTargetBlockHash should return the correct block hash', async () => {
+      const homeBlockHash = (
+        await homeClient.getBlock({ blockNumber: ctx.forkBlockNumber })
+      ).hash
+      const { input, targetBlockHash } =
+        await ctx.proverHelper.buildInputForVerifyTargetBlockHash(homeBlockHash)
+
+      // Deploy prover contract on target chain
+      await reset(getEnv('PARENT_RPC_URL'))
+      const targetChainId = await targetClient.getChainId();
+      const proverContractCopy = await hre.viem.deployContract(
+        'ChildToParentProver',
+        [targetChainId]
+      )
+        expect(
+        await proverContractCopy.read.verifyTargetBlockHash([
+          homeBlockHash,
+          input,
+        ])
+      ).to.equal(targetBlockHash)
+
+      console.log("verifyTargetBlockHash", homeBlockHash, targetBlockHash, input)
+  
+      gasEstimates[ctx.proverType].verifyTargetBlockHash =
+        await homeClient.estimateContractGas({
+          address: ctx.proverContract.address,
+          abi: ctx.proverContract.abi,
+          functionName: 'verifyTargetBlockHash',
+          args: [homeBlockHash, input],
         })
     })
   })
