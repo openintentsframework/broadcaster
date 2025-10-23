@@ -160,8 +160,8 @@ contract BroadcasterTest is Test {
         //     hash: 0xac41e096f5182caa7160c317370f367d6a91c9ae6807db0fda2b03435c29941e
         // });
 
-        parentForkId = vm.createFork(vm.envString("PARENT_RPC_URL")); // Sepolia
-        childForkId = vm.createFork(vm.envString("CHILD_RPC_URL")); // Arbitrum Sepolia
+        parentForkId = vm.createFork(vm.envString("ETHEREUM_RPC_URL")); // Sepolia
+        childForkId = vm.createFork(vm.envString("ARBITRUM_RPC_URL")); // Arbitrum Sepolia
         vm.selectFork(parentForkId);
         // broadcaster = new Broadcaster();
         // parentToChildProver = new ParentToChildProver(address(outbox), rootSlot);
