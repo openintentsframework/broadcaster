@@ -4,7 +4,8 @@ pragma solidity ^0.8.28;
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
 import {IBlockHashProver} from "../../interfaces/IBlockHashProver.sol";
 import {IBuffer} from "block-hash-pusher/contracts/interfaces/IBuffer.sol";
-import {SlotDerivation} from "openzeppelin/utils/SlotDerivation.sol";
+import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
+
 
 /// @notice Arbitrum implementation of a child to parent IBlockHashProver.
 /// @dev    verifyTargetBlockHash and getTargetBlockHash get block hashes from the block hash buffer at 0x0000000048C4Ed10cF14A02B9E0AbDDA5227b071.
@@ -18,14 +19,29 @@ contract ChildToParentProver is IBlockHashProver {
     ///      See https://github.com/OffchainLabs/block-hash-pusher/blob/a1e26f2e42e6306d1e7f03c5d20fa6aa64ff7a12/contracts/Buffer.sol#L32
     uint256 public constant blockHashMappingSlot = 51;
 
+    uint256 public immutable homeChainId;
+
+    error CallNotOnHomeChain();
+    error CallOnHomeChain();
+
+
+    constructor(uint256 _homeChainId){
+        homeChainId = _homeChainId;
+
+    }
+    
+
     /// @notice Get a parent chain block hash from the buffer at `blockHashBuffer` using a storage proof
     /// @param  homeBlockHash The block hash of the home chain.
     /// @param  input ABI encoded (bytes blockHeader, uint256 targetBlockNumber, bytes accountProof, bytes storageProof)
     function verifyTargetBlockHash(bytes32 homeBlockHash, bytes calldata input)
         external
-        pure
+        view
         returns (bytes32 targetBlockHash)
     {
+        if(block.chainid == homeChainId) {
+            revert CallOnHomeChain();
+        }
         // decode the input
         (bytes memory rlpBlockHeader, uint256 targetBlockNumber, bytes memory accountProof, bytes memory storageProof) =
             abi.decode(input, (bytes, uint256, bytes, bytes));
@@ -43,7 +59,11 @@ contract ChildToParentProver is IBlockHashProver {
     /// @notice Get a parent chain block hash from the buffer at `blockHashBuffer`.
     /// @param  input ABI encoded (uint256 targetBlockNumber)
     function getTargetBlockHash(bytes calldata input) external view returns (bytes32 targetBlockHash) {
-        // decode the input
+
+        if(block.chainid != homeChainId) {
+            revert CallNotOnHomeChain();
+        }
+        //decode the input
         uint256 targetBlockNumber = abi.decode(input, (uint256));
 
         // get the block hash from the buffer

@@ -70,6 +70,7 @@ library ProverUtils {
         // extract the state root from the block header
         bytes32 stateRoot = extractStateRootFromBlockHeader(rlpBlockHeader);
 
+
         // verify the account and storage proofs
         value = getStorageSlotFromStateRoot(stateRoot, rlpAccountProof, rlpStorageProof, account, slot);
     }
@@ -85,7 +86,8 @@ library ProverUtils {
         pure
         returns (bool accountExists, bytes memory accountData)
     {
-        // verify the proof
+
+
         (accountExists, accountData) = Lib_SecureMerkleTrie.get(abi.encodePacked(account), rlpAccountProof, stateRoot);
     }
 
