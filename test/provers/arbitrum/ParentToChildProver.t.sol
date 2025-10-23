@@ -35,15 +35,15 @@ contract ParentToChildProverTest is Test {
 
     function _getStorageProof() internal pure returns (bytes memory) {
         // Nodes sourced from test/proofs/arbitrum/proof.json (storageProof[0].proof)
-        bytes[] memory storageProofList = new bytes[](6);
+        bytes[] memory storageProofList = new bytes[](5);
         storageProofList[0] = RLP.encode(hex"f90211a09c6780cbe0f580f859a71727bedebabb03dab6b7fd55f0c8294a71117acc4a45a005c529527edcacc5d0c190b3a413901e79baca01a20841656686e35739f7d5e5a00ff19791dec43fda459888346cc5166a3e265f83d4ce2656dcebacd5264805e8a04fef765f1e1e9726b5587c37e6e0e850f19fcc84eaf645ff4c11773681b6edc2a0cae6db60237b91ebcf880314d03c29fe94bdceffe4936ef468e03def93287986a0c470f067337054938e697f24a607a4230f55f88920651838478a1ccb0c284176a00989281377b93b1689eea9a8999c617f8c7a65dfbf0a6baa745fc861af01f999a026aaafb3c3763dffacf3d4cc6e3d0a6aad854506aa451b58ea4fc9f968f9dbeba0219203179b7f94decf2f64fd4f14af18148abb1850559c9be90b52613a2f9938a0b093dc98c7f81257050c68e405dbe63d2cb753c95d581b2ed67198972017661aa02c0a4b68deab4ba882ee822d871b4ddebc4db373d04f0d54a66570b381dde0e7a0cd443ff7a3a239b4c02ca42e99bde3a3dda785428dee66c68341750758521e6ca0abe94d3e9840c70021289ca6fb1ffd209896c952caac0b5a459cf70828884f26a03af6b9e2442f9ddcf80a2d561db6f06e1e94f59786314d8fb52987ed5d4091d0a0f1e52422a5d91888932aeb9aebac0d89e81cf9c8698d9c815e8ac29ae5dcbb74a01bb4f2157d9a73d0f4ac0acadcf584ae6cccafb17ce5179c670799d28adbac2680");
         storageProofList[1] = RLP.encode(hex"f90211a069f8a83e1842a6db86148c1d344c191226cd218d4b6d04dd82b037ae251f1671a08aed5d976c0e25481e71af2f19fa1d76e2f870ac4d573eb4c72318c415d6918fa0b1363789c8ee457f58abba2200f4b6452c85bfe38b58e8ab4da3ec4a310c97e8a0727fb4782fba49e7590f9e9aa68b792910ebdf42ea2ead4608bcb2c71a286d97a0f5372e4b21a8a361b9e6cfd7b65d74e56498396fc590e8b943ad9e4d28bee6aaa0dfba61816f72665fc5d43145bceaa6071ee095284135388f80ba83414201fd9aa0585a18db4fea112d27ddb8b43ba5e28c1faf02fdf4b796d30c1d7b34be52fee8a0677173f0cc79f91a5a100fc8635697d1ec38d073ab249b901619f72f7633d20ba0524f1bd6ca920ee4c5aec35c9d191a14754e131b511d3944758823075a9e9c38a009275f52809bfca74681a9778cef24fdadbd2001f0bf4bd135b3095d4b9693d6a04c4176ca72940b04cce7dcf7d0baa33c5e8d917af5efe27fc9cf645e110b4cb8a0d51ed4d4a31159c947ce1383e30b91abb46458db048c669f0e913fb8912ba980a0d9b7d405b728e401d9900bdbdfd751a609df04c92de87b808d8a770a4a143482a0b6ce2f19dbfd1678a94a87f1fac5f2d21e6b0a61aa27d5b3ba586d1ad9c250d9a0c0c031c0b8a8cab6c4c5bd1765799fbfbace4ab2195f177efbed15c4e1388786a03646b9f30f03e6be0bd5b6a7bc6fd8b60777d7831d0227ad901833510552ce1680");
         storageProofList[2] = RLP.encode(hex"f90211a0a5f06455febe8c356e98fc5309277c1f4f2355d042876bd38e07f0f0ecd26daea0cb860129dc3e58f8cc239b7c4edd6c56b4764a55b9d78207a6774814c13b1fa9a037e81f558d66f5233f8b27004486478b5eb0ab921722791caf7973a4ce420cb4a00d1853ece2c92897b6bc56301c8e0a11cd5d59d3e00bc2cfa9f98534bf2dfdc4a05ccedfe3d01cd9ed37a2b031ee6a396fbfebeba10e57c83b344d344eed257e17a0147b4d890e173d62f5643ec323eca72373dc2a0fdda38266f1f66535222b0ce2a0490e04de051b2ef10a04bb71c434e4d5f600c0a4cdf1f8d90c42a5896f78a92aa0aa0cb8c84de27ecb3b7026fc87f3157bbd33b45da2801e5105697db6257b1a0fa0f1ed31682157af8745b405cf952aa499f20a842e5fab3872dbfe01abc8978117a0d0173ee394e5e4e8621617ab94367633681096a10ec3c03c149f7748b1260f3aa0b9f8a0bebf69ab90d9a2c893388439f868a9b488dedd3f6182e98595effe7853a075a26f9c0423ba960c7cf229f20150eaa089a8a54fafec946c8155d91ec9bff4a01bc9a103b3c7d3a6bbab77183311fc01d92c6c96e2102152d41bd3fc1bd53d1aa078e328ac047eadb954f611cab36f9a09fa3fc823c3cc393774c946609c94adafa0f064265c070fbc9182eb91066a38b9ff69c0ebd3714bc7e78990100f6dd58d39a0e12854940b8199066b896e4dfd5a670dcc424743e2ea054f2f23674a88d118c780");
         storageProofList[3] = RLP.encode(hex"f89180808080a0656215bf0f0a36bfa1130af59b00e814ba22615f7746f666514c1bd148ea4eb7a0a54ad96702e47d86ac1b57fc1e13d2328811e8ba8e992b305ed7842d5c36808180a0b084a9857fbcee87deed7cfc0aa5e747d3f11a6299a131f277635e264f9ac250808080808080a0d4b43a077c183cf24f339e4a1a86c0a8dab8a79d42e6d87ebe47b77f7166ff4f8080");
         storageProofList[4] = RLP.encode(hex"f8429f20b31b279044164a5a47720d0e63ebade9d7ba091aa697d3d49f4543de2071a1a0cb53c786e7e875d7e3b1d3a770adbe02877ee5daab2ebfa55b935798b3ee9d24");
-        storageProofList[5] = RLP.encode(hex"f8429f207816ec57943ac573dfff1824385a0b74ccbb7ae56734a7e79bb580fdfb7ba1a0cb53c786e7e875d7e3b1d3a770adbe02877ee5daab2ebfa55b935798b3ee9d24");
         return RLP.encode(storageProofList);
     }
+
 
     function setUp() public {
         parentForkId = vm.createFork(vm.envString("PARENT_RPC_URL"));
@@ -90,5 +90,35 @@ contract ParentToChildProverTest is Test {
         bytes32 expectedTargetBlockHash = 0xcb53c786e7e875d7e3b1d3a770adbe02877ee5daab2ebfa55b935798b3ee9d24;
         bytes32 result = prover.verifyTargetBlockHash(homeBlockHash, input);
         assertEq(result, expectedTargetBlockHash, "verifyTargetBlockHash should return correct Arbitrum block hash");
+    }
+
+    function test_verifyStorageSlot() public {
+        vm.selectFork(parentForkId);
+        ParentToChildProver prover = new ParentToChildProver(address(outbox), rootSlot);
+
+        // Using the same proof.json data - verifying Outbox storage via verifyStorageSlot
+        bytes32 stateRoot = keccak256(hex"f90211a038da4434d7e69e9362104d7dcee2dfa3e3f43890c30495bd68fe3b1afeb44c94a035e967816cdd3ab9f4d89fc90f4279f79f899bf7555a6169678cef6e3f21c379a07eac65661cf00768336a028dadb369acb6a6dc91fa7b2b0d26e25c00a80aecc4a0b11eb2675b61076e3f1bdfe54929b6c498593be84812bb194694050a7f6f58caa0ce38b5eca1839d8e853baccc352d8e8fb86c07ac96f9363d586b110f41558276a05fbc768e0579e4c706933b736faa843d7e324a27266be4295845a374bf41c88ca02314105294449ceccdc3ffcf9f3767b52d4ef06cd11099981234e72af3fa123da092b468327654efdc8461c0b74f6e198f56fcf4b6399d06b6f5698dca7c28a50aa0ad4c3365934666e9e00f577663c242453edbb83fdb9e1911e231fcf4e20d60dca0380a16e60942d31a45e95756de43fe83bc28aab001bc4a5fd01d5cbe943d9fbaa0ba2ec8b15cec0ddc7fef2a4be9103cd46f3881410c8eeda76b0b28b21c9e4deea05742813b414ecaf3f564ba73d6dc71996cf935ba54e62320c907ffd137704dcfa0f3c377a58e925ad1174b38912b136c3223f62ac807a87a4642a99ba27e6977f5a015b45b439e578b5473f46f2c3ce41c40bf72f2914157dc16d3ba47631453a725a09f7c7017c732732a92409c7156a4098c0000705d9b5c697c67273a1fb7cf8638a07c12148b1ea5df4b16295221805053bc9e0f9dd17eb18850a91c85ea7c88dac880");
+
+        RLP.Encoder memory enc = RLP.encoder()
+            .push(bytes32(0))
+            .push(bytes32(0))
+            .push(bytes32(0))
+            .push(stateRoot);
+
+        bytes memory rlpBlockHeader = enc.encode();
+        bytes32 targetBlockHash = keccak256(rlpBlockHeader);
+
+        // Outbox contract and storage slot from proof.json
+        address outboxAddress = 0x65f07C7D521164a4d5DaC6eB8Fac8DA067A3B78F;
+        uint256 storageSlot = 0xa5f93069861dd74d056c955efa9466cb8d321ebc28de4ed2489f5e80563267fa;
+        bytes memory rlpAccountProof = _getAccountProof();
+        bytes memory rlpStorageProof = _getStorageProof();
+        bytes memory input = abi.encode(rlpBlockHeader, outboxAddress, storageSlot, rlpAccountProof, rlpStorageProof);
+
+        (address account, uint256 slot, bytes32 value) = prover.verifyStorageSlot(targetBlockHash, input);
+
+        assertEq(account, outboxAddress, "Account should match Outbox address");
+        assertEq(slot, storageSlot, "Slot should match roots mapping slot");
+        assertEq(value, 0xcb53c786e7e875d7e3b1d3a770adbe02877ee5daab2ebfa55b935798b3ee9d24, "Value should match target block hash");
     }
 }
