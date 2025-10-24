@@ -69,8 +69,6 @@ export abstract class BaseProverHelper {
 
     let proof: any;
 
-    let x = false;
-
     try{
       proof = await client.getProof({
         address: account,
@@ -78,20 +76,17 @@ export abstract class BaseProverHelper {
         blockNumber: block.number,
       })
     } catch (error) {
-
-      //load proof from file
-      try{
-        x = true;
-        proof = JSON.parse(fs.readFileSync('test/proofs/arbitrum/proof.json', 'utf8'));
-      } catch (error) {
-        console.log("error", error);
-        throw new Error('Failed to load proof from file')
-      }
-      
+      console.error("eth_getProof failed:", error);
+      throw new Error(`Failed to get proof for account ${account} at slot ${slot}: ${error}`)
     }
 
 
-    const slotValue = toHex(Number(proof.storageProof[0].value), { size: 32 })
+    // Convert slot value to proper bytes32 hex format
+    const rawValue = proof.storageProof[0].value
+    const slotValue = typeof rawValue === 'string' && rawValue.startsWith('0x')
+      ? (rawValue as Hash)
+      : toHex(BigInt(rawValue), { size: 32 })
+    
     const rlpAccountProof = toRlp(proof.accountProof)
     const rlpStorageProof = toRlp(proof.storageProof[0].proof)
 
