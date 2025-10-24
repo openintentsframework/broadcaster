@@ -3,9 +3,6 @@ import {
   encodeAbiParameters,
   Hash,
   Hex,
-  hexToBigInt,
-  keccak256,
-  PublicClient,
 } from 'viem'
 import { IProverHelper } from '../IProverHelper'
 import { BaseProverHelper } from '../BaseProverHelper'
@@ -24,7 +21,7 @@ export class OptimismChildToParentProverHelper
   implements IProverHelper
 {
   readonly l1BlockPredeploy: Address = '0x4200000000000000000000000000000000000015'
-  readonly l1BlockHashSlot: bigint = 2n
+  readonly l1BlockHashSlot: bigint = 2n  // hash is at slot 2
 
   /**
    * Build input for getTargetBlockHash()

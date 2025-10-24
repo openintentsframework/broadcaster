@@ -79,10 +79,10 @@ contract OptimismChildToParentProverTest is Test {
     }
 
     /// @notice Test verifyTargetBlockHash() - uses Merkle proofs
-    /// @dev SKIPPED: Currently has memory allocation issues with large Optimism proof data.
-    ///      The Merkle proof verification logic IS tested in Arbitrum tests.
-    ///      Root cause: Optimism proofs are larger than Arbitrum proofs (~4.6KB vs ~2.8KB).
-    ///      TODO: Investigate if Optimism uses different trie encoding or if optimization is needed.
+    /// @dev Currently skipped due to memory allocation issues during proof decoding
+    ///      The underlying Merkle proof verification logic IS tested in Arbitrum tests.
+    ///      Root cause: Likely an ABI decoding issue with the specific proof structure from Optimism.
+    ///      The ProverUtils.getSlotFromBlockHeader() function is identical for both chains.
     function skip_test_verifyTargetBlockHash() public {
         vm.selectFork(parentForkId); // Run verification on Ethereum
 
@@ -129,9 +129,9 @@ contract OptimismChildToParentProverTest is Test {
     }
 
     /// @notice Test verifyStorageSlot() - verifies Ethereum storage from Optimism
-    /// @dev SKIPPED: Currently has memory allocation issues with large proof data.
-    ///      The storage slot verification logic IS tested and working in Arbitrum tests.
-    ///      Same root cause as skip_test_verifyTargetBlockHash() - large proof sizes.
+    /// @dev Currently skipped due to memory allocation issues during proof decoding
+    ///      The underlying storage proof verification logic IS tested in Arbitrum tests.
+    ///      Root cause: Same ABI decoding issue as skip_test_verifyTargetBlockHash.
     ///      The ProverUtils.getSlotFromBlockHeader() function is identical for both chains.
     function skip_test_verifyStorageSlot() public {
         vm.selectFork(parentForkId); // Run on Ethereum
