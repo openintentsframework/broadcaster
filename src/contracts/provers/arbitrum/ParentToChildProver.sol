@@ -6,6 +6,8 @@ import {IBlockHashProver} from "../../interfaces/IBlockHashProver.sol";
 import {IOutbox} from "@arbitrum/nitro-contracts/src/bridge/IOutbox.sol";
 import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 
+import {console} from "forge-std/console.sol";
+
 // import {console} from "forge-std/console.sol";
 
 /// @notice Arbitrum implementation of a parent to child IBlockHashProver.

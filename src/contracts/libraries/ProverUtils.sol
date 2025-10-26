@@ -4,6 +4,8 @@ pragma solidity ^0.8.28;
 import {Lib_SecureMerkleTrie} from "@eth-optimism/contracts/libraries/trie/Lib_SecureMerkleTrie.sol";
 import {Lib_RLPReader} from "@eth-optimism/contracts/libraries/rlp/Lib_RLPReader.sol";
 
+import {console} from "forge-std/console.sol";
+
 /// @notice Base contract for IBlockHashProver contracts. Contains helpers for verifying block headers and MPT proofs.
 library ProverUtils {
     using Lib_RLPReader for Lib_RLPReader.RLPItem;
@@ -87,7 +89,6 @@ library ProverUtils {
         returns (bool accountExists, bytes memory accountData)
     {
 
-
         (accountExists, accountData) = Lib_SecureMerkleTrie.get(abi.encodePacked(account), rlpAccountProof, stateRoot);
     }
 
@@ -111,11 +112,13 @@ library ProverUtils {
         // verify the proof
         (bool accountExists, bytes memory accountValue) =
             getAccountDataFromStateRoot(stateRoot, rlpAccountProof, account);
+    
 
         require(accountExists, "Account does not exist");
 
         (bool slotExists, bytes memory slotValue) =
             Lib_SecureMerkleTrie.get(abi.encode(slot), rlpStorageProof, extractStorageRootFromAccountData(accountValue));
+    
 
         // decode the slot value
         if (slotExists) value = Lib_RLPReader.readBytes32(slotValue);
