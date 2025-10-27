@@ -17,7 +17,7 @@ import fs from 'fs'
 import path from 'path'
 
 const OPTIMISM_SEPOLIA_RPC = process.env.OPTIMISM_SEPOLIA_RPC_URL || 'https://sepolia.optimism.io'
-const SEPOLIA_RPC = process.env.PARENT_RPC_URL || 'https://ethereum-sepolia-rpc.publicnode.com'
+const SEPOLIA_RPC = process.env.ETHEREUM_RPC_URL || 'https://ethereum-sepolia-rpc.publicnode.com'
 
 async function main() {
   console.log('🔄 Generating Optimism ChildToParentProver test payloads...\n')
