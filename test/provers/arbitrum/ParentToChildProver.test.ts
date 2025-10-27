@@ -98,8 +98,8 @@ describe('Basic Prover Tests', () => {
 
     before(async () => {
       const clients = await initialSetup(
-        getEnv('PARENT_RPC_URL'),
-        getEnv('CHILD_RPC_URL')
+        getEnv('ETHEREUM_RPC_URL'),
+        getEnv('ARBITRUM_RPC_URL')
       )
 
       homeClient = clients.homeClient
@@ -176,7 +176,7 @@ describe('Basic Prover Tests', () => {
       //expect(targetBlockHash).to.equal(ctx.expectedTargetBlockHash)
 
       // Deploy prover contract on target chain
-      await reset(getEnv('CHILD_RPC_URL'))
+      await reset(getEnv('ARBITRUM_RPC_URL'))
 
       const proverContractCopy = await hre.viem.deployContract(
         'ParentToChildProver',
@@ -215,7 +215,7 @@ async function initialSetup(
 ) {
   await reset(homeUrl)
   const homeClient = await hre.viem.getPublicClient()
-  patchHardhatClient(homeClient, homeUrl)
+  //patchHardhatClient(homeClient, homeUrl)
   const targetClient = createPublicClient({
     transport: http(targetUrl),
   })
