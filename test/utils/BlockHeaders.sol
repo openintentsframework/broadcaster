@@ -30,7 +30,7 @@ library BlockHeaders {
         bytes32 requestsHash;
     }
 
-    struct L2BlockHeader {
+    struct ArbitrumBlockHeader {
         bytes32 parentHash;
         bytes32 sha3Uncles;
         address miner;
@@ -52,9 +52,11 @@ library BlockHeaders {
         uint64 excessBlobGas;
         bytes32 parentBeaconBlockRoot;
         bytes32 requestsHash;
+        uint256 totalDifficulty;
         uint256 l1BlockNumber;
         uint256 sendCount;
         bytes32 sendRoot;
+        uint256 arbOsVersion;
     }
 
     function encode(L1BlockHeader memory h) internal pure returns (bytes memory out) {
@@ -63,6 +65,15 @@ library BlockHeaders {
             .push(h.gasLimit).push(h.gasUsed).push(h.timestamp).push(h.extraData).push(h.mixHash)
             .push(abi.encodePacked(h.nonce)).push(h.baseFeePerGas).push(h.withdrawalsRoot).push(h.blobGasUsed)
             .push(h.excessBlobGas).push(h.parentBeaconBlockRoot).push(h.requestsHash);
+
+        out = enc.encode(); // wraps items as an RLP list
+    }
+
+    function encode(ArbitrumBlockHeader memory h) internal pure returns (bytes memory out) {
+        RLP.Encoder memory enc = RLP.encoder().push(h.parentHash).push(h.sha3Uncles).push(h.miner).push(h.stateRoot)
+            .push(h.transactionsRoot).push(h.receiptsRoot).push(h.logsBloom).push(h.difficulty).push(h.number)
+            .push(h.gasLimit).push(h.gasUsed).push(h.timestamp).push(h.extraData).push(h.mixHash)
+            .push(abi.encodePacked(h.nonce)).push(h.baseFeePerGas).push(h.totalDifficulty);
 
         out = enc.encode(); // wraps items as an RLP list
     }
