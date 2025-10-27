@@ -2,11 +2,13 @@
 pragma solidity ^0.8.28;
 
 import {Lib_SecureMerkleTrie} from "@eth-optimism/contracts/libraries/trie/Lib_SecureMerkleTrie.sol";
-import {Lib_RLPReader} from "@eth-optimism/contracts/libraries/rlp/Lib_RLPReader.sol";
+import {RLP} from "@openzeppelin/contracts/utils/RLP.sol";
+import {Memory} from "@openzeppelin/contracts/utils/Memory.sol";
 
 /// @notice Base contract for IBlockHashProver contracts. Contains helpers for verifying block headers and MPT proofs.
 library ProverUtils {
-    using Lib_RLPReader for Lib_RLPReader.RLPItem;
+    using Memory for bytes;
+    using RLP for Memory.Slice;
 
     /// @dev The index of the state root in the RLP encoded block header.
     ///      For reference on the block structure, see:
@@ -27,7 +29,7 @@ library ProverUtils {
     /// @return stateRoot The state root of the block.
     function extractStateRootFromBlockHeader(bytes memory rlpBlockHeader) internal pure returns (bytes32 stateRoot) {
         // extract the state root from the block header
-        stateRoot = Lib_RLPReader.toRLPItem(rlpBlockHeader).readList()[STATE_ROOT_INDEX].readBytes32();
+        stateRoot = RLP.readList(rlpBlockHeader.asSlice())[STATE_ROOT_INDEX].readBytes32();
     }
 
     /// @dev Extracts the code hash from the RLP encoded account data.
@@ -35,7 +37,7 @@ library ProverUtils {
     /// @param accountData The RLP encoded account data.
     /// @return codeHash The code hash of the account.
     function extractCodeHashFromAccountData(bytes memory accountData) internal pure returns (bytes32 codeHash) {
-        return Lib_RLPReader.toRLPItem(accountData).readList()[CODE_HASH_INDEX].readBytes32();
+        codeHash = RLP.readList(accountData.asSlice())[CODE_HASH_INDEX].readBytes32();
     }
 
     /// @dev Extracts the storage root from the RLP encoded account data.
@@ -43,7 +45,7 @@ library ProverUtils {
     /// @param accountData The RLP encoded account data.
     /// @return storageRoot The storage root of the account.
     function extractStorageRootFromAccountData(bytes memory accountData) internal pure returns (bytes32 storageRoot) {
-        return Lib_RLPReader.toRLPItem(accountData).readList()[STORAGE_ROOT_INDEX].readBytes32();
+        storageRoot = RLP.readList(accountData.asSlice())[STORAGE_ROOT_INDEX].readBytes32();
     }
 
     /// @dev Given a block hash, RLP encoded block header, account address, storage slot, and the corresponding proofs,
@@ -70,7 +72,6 @@ library ProverUtils {
         // extract the state root from the block header
         bytes32 stateRoot = extractStateRootFromBlockHeader(rlpBlockHeader);
 
-
         // verify the account and storage proofs
         value = getStorageSlotFromStateRoot(stateRoot, rlpAccountProof, rlpStorageProof, account, slot);
     }
@@ -86,7 +87,6 @@ library ProverUtils {
         pure
         returns (bool accountExists, bytes memory accountData)
     {
-
 
         (accountExists, accountData) = Lib_SecureMerkleTrie.get(abi.encodePacked(account), rlpAccountProof, stateRoot);
     }
@@ -111,13 +111,15 @@ library ProverUtils {
         // verify the proof
         (bool accountExists, bytes memory accountValue) =
             getAccountDataFromStateRoot(stateRoot, rlpAccountProof, account);
+    
 
         require(accountExists, "Account does not exist");
 
         (bool slotExists, bytes memory slotValue) =
             Lib_SecureMerkleTrie.get(abi.encode(slot), rlpStorageProof, extractStorageRootFromAccountData(accountValue));
+    
 
         // decode the slot value
-        if (slotExists) value = Lib_RLPReader.readBytes32(slotValue);
+        if (slotExists) value = slotValue.asSlice().readBytes32();
     }
 }
