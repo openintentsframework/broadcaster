@@ -21,7 +21,7 @@ contract OptimismChildToParentProverTest is Test {
 
     function setUp() public {
         // Create forks
-        parentForkId = vm.createFork(vm.envString("PARENT_RPC_URL"));      // Ethereum Sepolia
+        parentForkId = vm.createFork(vm.envString("ETHEREUM_RPC_URL"));      // Ethereum Sepolia
         childForkId = vm.createFork(vm.envString("OPTIMISM_RPC_URL"));     // Optimism Sepolia
 
         // Deploy prover on Optimism (home chain)
