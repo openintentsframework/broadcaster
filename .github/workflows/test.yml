@@ -1,55 +1,32 @@
-name: CI
+name: checks
 
 on:
   push:
-  pull_request:
-  workflow_dispatch:
+    branches:
+      - master
+      - next-v*
+      - release-v*
+  pull_request: {}
+  workflow_dispatch: {}
 
-env:
-  FOUNDRY_PROFILE: ci
 
 jobs:
-  check:
-    strategy:
-      fail-fast: true
-
-    name: Foundry project
+  tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20.x
-      - uses: actions/cache@v4
-        id: cache
-        with:
-          path: '**/node_modules'
-          key: npm-v3-${{ hashFiles('**/package-lock.json') }}
-      - name: Install dependencies
-        run: npm install
-        shell: bash
-        if: steps.cache.outputs.cache-hit != 'true'
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+      - name: Set up environment
+        uses: ./.github/actions/setup
+      - name: Run tests and generate gas report
+        run: npm run test
+  
+  tests-foundry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
         with:
           submodules: recursive
-
-      - name: Install Foundry
-        uses: foundry-rs/foundry-toolchain@v1
-
-      - name: Show Forge version
-        run: |
-          forge --version
-
-      - name: Run Forge fmt
-        run: |
-          forge fmt --check
-        id: fmt
-
-      - name: Run Forge build
-        run: |
-          forge build --sizes
-        id: build
-
-      - name: Run Forge tests
-        run: |
-          forge test -vvv
-        id: test
+      - name: Set up environment
+        uses: ./.github/actions/setup
+      - name: Run tests
+        run: forge test -vv

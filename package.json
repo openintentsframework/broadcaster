@@ -27,7 +27,6 @@
     "@types/mocha": ">=9.1.0",
     "@types/node": ">=18.0.0",
     "@wagmi/cli": "^2.5.1",
-    "block-hash-pusher": "Offchainlabs/block-hash-pusher",
     "chai": "^4.2.0",
     "dotenv": "^16.5.0",
     "hardhat": "^2.24.0",
@@ -43,6 +42,5 @@
     "test": "yarn build && hardhat test"
   },
   "dependencies": {
-    "ethers": "^6.15.0"
   }
 }
