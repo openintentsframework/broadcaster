@@ -133,9 +133,8 @@ contract ReceiverTest is Test {
         assertEq(stateRoot, blockHeader.stateRoot);
         bytes[] memory storageProofList = new bytes[](1);
 
-        storageProofList[0] = RLP.encode(
-            hex"e8a120e9c5cc9c750ef3a170b3a02cf938ffded668959e8c4d274ee43f58103248e67e858468fa57d8"
-        );
+        storageProofList[0] =
+            RLP.encode(hex"e8a120e9c5cc9c750ef3a170b3a02cf938ffded668959e8c4d274ee43f58103248e67e858468fa57d8");
 
         bytes memory storageProof = RLP.encode(storageProofList);
 
@@ -152,7 +151,24 @@ contract ReceiverTest is Test {
         IReceiver.RemoteReadArgs memory remoteReadArgs =
             IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
 
-        receiver.verifyBroadcastMessage(remoteReadArgs, message, publisher);
+        (bytes32 broadcasterId, uint256 timestamp) = receiver.verifyBroadcastMessage(remoteReadArgs, message, publisher);
+
+        assertEq(
+            broadcasterId,
+            keccak256(
+                abi.encode(
+                    keccak256(
+                        abi.encode(
+                            bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
+                            address(blockHashProverPointer)
+                        )
+                    ),
+                    knownAccount
+                )
+            ),
+            "wrong broadcasterId"
+        );
+        assertEq(timestamp, uint256(expectedValue), "wrong timestamp");
     }
 
     function test_verifyBroadcastMessage_from_Arbitrum_into_Ethereum() public {
@@ -270,7 +286,24 @@ contract ReceiverTest is Test {
         IReceiver.RemoteReadArgs memory remoteReadArgs =
             IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
 
-        receiver.verifyBroadcastMessage(remoteReadArgs, message, publisher);
+        (bytes32 broadcasterId, uint256 timestamp) = receiver.verifyBroadcastMessage(remoteReadArgs, message, publisher);
+
+        assertEq(
+            broadcasterId,
+            keccak256(
+                abi.encode(
+                    keccak256(
+                        abi.encode(
+                            bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
+                            address(blockHashProverPointer)
+                        )
+                    ),
+                    knownAccount
+                )
+            ),
+            "wrong broadcasterId"
+        );
+        assertEq(timestamp, uint256(expectedValue), "wrong timestamp");
     }
 }
 
