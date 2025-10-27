@@ -43,6 +43,5 @@
     "test": "yarn build && hardhat test"
   },
   "dependencies": {
-    "ethers": "^6.15.0"
   }
 }
