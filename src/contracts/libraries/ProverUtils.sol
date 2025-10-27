@@ -10,7 +10,6 @@ library ProverUtils {
     using Memory for bytes;
     using RLP for Memory.Slice;
 
-
     /// @dev The index of the state root in the RLP encoded block header.
     ///      For reference on the block structure, see:
     ///      https://github.com/ethereum/go-ethereum/blob/35dd84ce2999ecf5ca8ace50a4d1a6abc231c370/core/types/block.go#L75-L109
