@@ -1,0 +1,11 @@
+{
+  "lib/block-hash-pusher": {
+    "rev": "085872efb820563b9c50d85732457147523fbe67"
+  },
+  "lib/forge-std": {
+    "rev": "8bbcf6e3f8f62f419e5429a0bd89331c85c37824"
+  },
+  "lib/openzeppelin-contracts": {
+    "rev": "5eb047a0c10386b6634db56327a1f74e8a0432c2"
+  }
+}
