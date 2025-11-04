@@ -72,6 +72,7 @@ async function main() {
         rlpBlockHeader: rlpBlockHeader,
         rlpAccountProof: rlpAccountProof,
         rlpStorageProof: rlpStorageProof,
+        ...('sendRoot' in blockHeader && { sendRoot: (blockHeader as any).sendRoot }),
     }
 
     if(output){
