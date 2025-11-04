@@ -14,8 +14,24 @@ import {IBuffer} from "block-hash-pusher/contracts/interfaces/IBuffer.sol";
 
 import {ChildToParentProver as ArbChildToParentProver} from "../src/contracts/provers/arbitrum/ChildToParentProver.sol";
 import {ParentToChildProver as ArbParentToChildProver} from "../src/contracts/provers/arbitrum/ParentToChildProver.sol";
+import {ChildToParentProver as OPChildToParentProver} from "../src/contracts/provers/optimism/ChildToParentProver.sol";
 import {BlockHashProverPointer} from "../src/contracts/BlockHashProverPointer.sol";
 import {RLP} from "@openzeppelin/contracts/utils/RLP.sol";
+
+interface IL1Block {
+    function hash() external view returns (bytes32);
+    function DEPOSITOR_ACCOUNT() external view returns (address);
+    function setL1BlockValues(
+        uint64 _number,
+        uint64 _timestamp,
+        uint256 _basefee,
+        bytes32 _hash,
+        uint64 _sequenceNumber,
+        bytes32 _batcherHash,
+        uint256 _l1FeeOverhead,
+        uint256 _l1FeeScalar
+    ) external;
+}
 
 contract ReceiverTest is Test {
     using stdJson for string;
@@ -24,6 +40,7 @@ contract ReceiverTest is Test {
 
     uint256 public ethereumForkId;
     uint256 public arbitrumForkId;
+    uint256 public optimismForkId;
 
     IOutbox public outbox;
 
@@ -32,6 +49,7 @@ contract ReceiverTest is Test {
     function setUp() public {
         ethereumForkId = vm.createFork(vm.envString("ETHEREUM_RPC_URL"));
         arbitrumForkId = vm.createFork(vm.envString("ARBITRUM_RPC_URL"));
+        optimismForkId = vm.createFork(vm.envString("OPTIMISM_RPC_URL"));
 
         vm.selectFork(arbitrumForkId);
         outbox = IOutbox(0x65f07C7D521164a4d5DaC6eB8Fac8DA067A3B78F);
@@ -149,7 +167,6 @@ contract ReceiverTest is Test {
 
         bytes memory input = abi.encode(rlpBlockHeader, account, expectedSlot, rlpAccountProof, rlpStorageProof);
 
-
         address rollup = 0x042B2E6C5E99d4c521bd49beeD5E99651D9B0Cf4;
 
         vm.prank(rollup);
@@ -160,6 +177,79 @@ contract ReceiverTest is Test {
 
         bytes[] memory bhpInputs = new bytes[](1);
         bhpInputs[0] = abi.encode(sendRoot);
+
+        bytes memory storageProofToLastProver = input;
+
+        IReceiver.RemoteReadArgs memory remoteReadArgs =
+            IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
+
+        (bytes32 broadcasterId, uint256 timestamp) = receiver.verifyBroadcastMessage(remoteReadArgs, message, publisher);
+
+        assertEq(
+            broadcasterId,
+            keccak256(
+                abi.encode(
+                    keccak256(
+                        abi.encode(
+                            bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
+                            address(blockHashProverPointer)
+                        )
+                    ),
+                    account
+                )
+            ),
+            "wrong broadcasterId"
+        );
+        assertEq(timestamp, uint256(value), "wrong timestamp");
+    }
+
+    function test_verifyBroadcastMessage_from_Ethereum_into_Optimism() public {
+        vm.selectFork(optimismForkId);
+        receiver = new Receiver();
+
+        OPChildToParentProver childToParentProver = new OPChildToParentProver(block.chainid);
+
+        BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
+
+        vm.prank(owner);
+        blockHashProverPointer.setImplementationAddress(address(childToParentProver));
+
+        bytes32 message = 0x0000000000000000000000000000000000000000000000000000000074657374; // "test"
+        address publisher = 0x9a56fFd72F4B526c523C733F1F74197A51c495E1;
+
+        uint256 expectedSlot = uint256(keccak256(abi.encode(message, publisher)));
+
+        string memory path = "test/payloads/ethereum/broadcast_proof_block_9496454.json";
+
+        string memory json = vm.readFile(path);
+        uint256 blockNumber = json.readUint(".blockNumber");
+        bytes32 blockHash = json.readBytes32(".blockHash");
+        address account = json.readAddress(".account");
+        uint256 slot = json.readUint(".slot");
+        bytes32 value = bytes32(json.readUint(".slotValue"));
+        bytes memory rlpBlockHeader = json.readBytes(".rlpBlockHeader");
+        bytes memory rlpAccountProof = json.readBytes(".rlpAccountProof");
+        bytes memory rlpStorageProof = json.readBytes(".rlpStorageProof");
+
+        assertEq(expectedSlot, slot, "slot mismatch");
+
+        bytes32 expectedBlockHash = keccak256(rlpBlockHeader);
+
+        assertEq(blockHash, expectedBlockHash);
+        bytes memory input = abi.encode(rlpBlockHeader, account, slot, rlpAccountProof, rlpStorageProof);
+
+        IL1Block l1Block = IL1Block(childToParentProver.l1BlockPredeploy());
+
+        vm.prank(l1Block.DEPOSITOR_ACCOUNT());
+        l1Block.setL1BlockValues(
+            uint64(blockNumber), uint64(block.timestamp), block.basefee, blockHash, 0, bytes32(0), 0, 0
+        );
+
+        address[] memory route = new address[](1);
+        route[0] = address(blockHashProverPointer);
+
+        bytes[] memory bhpInputs = new bytes[](1);
+        bhpInputs[0] = bytes("");
 
         bytes memory storageProofToLastProver = input;
 
