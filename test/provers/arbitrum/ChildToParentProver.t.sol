@@ -272,7 +272,8 @@ contract BroadcasterTest is Test {
 
         bytes memory input = abi.encode(rlpBlockHeader, account, expectedSlot, rlpAccountProof, rlpStorageProof);
 
-        (address actualAccount, uint256 actualSlot, bytes32 actualValue) = childToParentProver.verifyStorageSlot(blockHash, input);
+        (address actualAccount, uint256 actualSlot, bytes32 actualValue) =
+            childToParentProver.verifyStorageSlot(blockHash, input);
 
         assertEq(actualAccount, account, "account mismatch");
         assertEq(actualSlot, slot, "slot mismatch");
@@ -316,11 +317,10 @@ contract BroadcasterTest is Test {
 
         bytes memory input = abi.encode(rlpBlockHeader, account, expectedSlot, rlpAccountProof, rlpStorageProof);
 
-        
-
         ChildToParentProver childToParentProverCopy = new ChildToParentProver(childChainId);
 
-        (address actualAccount, uint256 actualSlot, bytes32 actualValue) = childToParentProverCopy.verifyStorageSlot(blockHash, input);
+        (address actualAccount, uint256 actualSlot, bytes32 actualValue) =
+            childToParentProverCopy.verifyStorageSlot(blockHash, input);
 
         assertEq(actualAccount, account, "account mismatch");
         assertEq(actualSlot, slot, "slot mismatch");

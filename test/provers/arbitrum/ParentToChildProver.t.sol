@@ -180,7 +180,8 @@ contract ParentToChildProverTest is Test {
 
         ParentToChildProver parentToChildProver = new ParentToChildProver(address(outbox), 3);
 
-        (address actualAccount, uint256 actualSlot, bytes32 actualValue) = parentToChildProver.verifyStorageSlot(blockHash, input);
+        (address actualAccount, uint256 actualSlot, bytes32 actualValue) =
+            parentToChildProver.verifyStorageSlot(blockHash, input);
 
         assertEq(actualAccount, account, "account mismatch");
         assertEq(actualSlot, slot, "slot mismatch");
