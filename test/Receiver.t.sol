@@ -275,5 +275,79 @@ contract ReceiverTest is Test {
         );
         assertEq(timestamp, uint256(value), "wrong timestamp");
     }
+
+    function test_updateBlockHashProverCopy_from_Arbitrum_into_OP() public {
+        vm.selectFork(optimismForkId);
+
+        receiver = new Receiver();
+
+        OPChildToParentProver childToParentProver = new OPChildToParentProver(block.chainid);
+
+        BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
+
+        vm.prank(owner);
+        blockHashProverPointer.setImplementationAddress(address(childToParentProver));
+
+        uint256 expectedSlot = uint256(keccak256("eip7888.pointer.slot")) - 1;
+
+        string memory path = "test/payloads/ethereum/arb_pointer_proof_block_9561476.json";
+
+        string memory json = vm.readFile(path);
+        uint256 blockNumber = json.readUint(".blockNumber");
+        bytes32 blockHash = json.readBytes32(".blockHash");
+        address account = json.readAddress(".account");
+        uint256 slot = json.readUint(".slot");
+        bytes32 value = bytes32(json.readUint(".slotValue"));
+        bytes memory rlpBlockHeader = json.readBytes(".rlpBlockHeader");
+        bytes memory rlpAccountProof = json.readBytes(".rlpAccountProof");
+        bytes memory rlpStorageProof = json.readBytes(".rlpStorageProof");
+
+        assertEq(expectedSlot, slot, "slot mismatch");
+
+        bytes32 expectedBlockHash = keccak256(rlpBlockHeader);
+
+        assertEq(blockHash, expectedBlockHash);
+        bytes memory input = abi.encode(rlpBlockHeader, account, slot, rlpAccountProof, rlpStorageProof);
+
+        IL1Block l1Block = IL1Block(childToParentProver.l1BlockPredeploy());
+
+        vm.prank(l1Block.DEPOSITOR_ACCOUNT());
+        l1Block.setL1BlockValues(
+            uint64(blockNumber), uint64(block.timestamp), block.basefee, blockHash, 0, bytes32(0), 0, 0
+        );
+
+        address[] memory route = new address[](1);
+        route[0] = address(blockHashProverPointer);
+
+        bytes[] memory bhpInputs = new bytes[](1);
+        bhpInputs[0] = bytes("");
+
+        bytes memory storageProofToLastProver = input;
+
+        IReceiver.RemoteReadArgs memory remoteReadArgs =
+            IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
+        
+        ArbParentToChildProver arbParentToChildProverCopy = new ArbParentToChildProver(address(outbox), 3);
+
+        bytes32 bhpPointerId = receiver.updateBlockHashProverCopy(remoteReadArgs, arbParentToChildProverCopy);
+
+        assertEq(
+            bhpPointerId,
+            keccak256(
+                abi.encode(
+                    keccak256(
+                        abi.encode(
+                            bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
+                            address(blockHashProverPointer)
+                        )
+                    ),
+                    account
+                )
+            ),
+            "wrong broadcasterId"
+        );
+        assertEq(address(arbParentToChildProverCopy).codehash, value, "wrong storage slot value");
+        
+    }
 }
 

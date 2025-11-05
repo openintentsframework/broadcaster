@@ -58,7 +58,7 @@ contract Receiver is IReceiver {
 
         IBlockHashProver oldProverCopy = _blockHashProverCopies[bhpPointerId];
 
-        if (oldProverCopy.version() >= bhpCopy.version()) {
+        if (address(oldProverCopy) != address(0) && oldProverCopy.version() >= bhpCopy.version()) {
             revert NewerProverVersion();
         }
 
