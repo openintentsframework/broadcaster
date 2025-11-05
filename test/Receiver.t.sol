@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
 
-import {Test} from "forge-std/Test.sol";
+import {console, Test} from "forge-std/Test.sol";
 import {stdJson} from "forge-std/StdJson.sol";
 import {Receiver} from "../src/contracts/Receiver.sol";
 import {IReceiver} from "../src/contracts/interfaces/IReceiver.sol";
@@ -326,7 +326,7 @@ contract ReceiverTest is Test {
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
             IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
-        
+
         ArbParentToChildProver arbParentToChildProverCopy = new ArbParentToChildProver(address(outbox), 3);
 
         bytes32 bhpPointerId = receiver.updateBlockHashProverCopy(remoteReadArgs, arbParentToChildProverCopy);
@@ -347,7 +347,163 @@ contract ReceiverTest is Test {
             "wrong broadcasterId"
         );
         assertEq(address(arbParentToChildProverCopy).codehash, value, "wrong storage slot value");
-        
+    }
+
+    function test_verifyBroadcastMessage_from_Arbitrum_into_OP() public {
+        vm.selectFork(optimismForkId);
+
+        receiver = new Receiver();
+
+        OPChildToParentProver childToParentProver = new OPChildToParentProver(block.chainid);
+
+        BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
+
+        ArbParentToChildProver arbParentToChildProverCopy = new ArbParentToChildProver(address(outbox), 3);
+
+        address arbParentToChildProverPointerAddress;
+
+        vm.prank(owner);
+        blockHashProverPointer.setImplementationAddress(address(childToParentProver));
+        // Update the Arbitrum Prover (ParentToChildProver) copy on OP chain
+        {
+            uint256 expectedSlot = uint256(keccak256("eip7888.pointer.slot")) - 1;
+
+            string memory path = "test/payloads/ethereum/arb_pointer_proof_block_9561476.json";
+
+            string memory json = vm.readFile(path);
+            uint256 blockNumber = json.readUint(".blockNumber");
+            bytes32 blockHash = json.readBytes32(".blockHash");
+            address account = json.readAddress(".account");
+            uint256 slot = json.readUint(".slot");
+            bytes32 value = bytes32(json.readUint(".slotValue"));
+            bytes memory rlpBlockHeader = json.readBytes(".rlpBlockHeader");
+            bytes memory rlpAccountProof = json.readBytes(".rlpAccountProof");
+            bytes memory rlpStorageProof = json.readBytes(".rlpStorageProof");
+
+            arbParentToChildProverPointerAddress = account;
+
+            assertEq(expectedSlot, slot, "slot mismatch");
+
+            bytes32 expectedBlockHash = keccak256(rlpBlockHeader);
+
+            assertEq(blockHash, expectedBlockHash);
+            bytes memory inputForOPChildToParentProver =
+                abi.encode(rlpBlockHeader, account, slot, rlpAccountProof, rlpStorageProof);
+
+            IL1Block l1Block = IL1Block(childToParentProver.l1BlockPredeploy());
+
+            vm.prank(l1Block.DEPOSITOR_ACCOUNT());
+            l1Block.setL1BlockValues(
+                uint64(blockNumber), uint64(block.timestamp), block.basefee, blockHash, 0, bytes32(0), 0, 0
+            );
+
+            address[] memory route = new address[](1);
+            route[0] = address(blockHashProverPointer);
+
+            bytes[] memory bhpInputs = new bytes[](1);
+            bhpInputs[0] = bytes("");
+
+            bytes memory storageProofToLastProver = inputForOPChildToParentProver;
+
+            IReceiver.RemoteReadArgs memory remoteReadArgs =
+                IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
+
+            bytes32 bhpPointerId = receiver.updateBlockHashProverCopy(remoteReadArgs, arbParentToChildProverCopy);
+
+            assertEq(
+                bhpPointerId,
+                keccak256(
+                    abi.encode(
+                        keccak256(
+                            abi.encode(
+                                bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
+                                address(blockHashProverPointer)
+                            )
+                        ),
+                        account
+                    )
+                ),
+                "wrong broadcasterId"
+            );
+            assertEq(address(arbParentToChildProverCopy).codehash, value, "wrong storage slot value");
+        }
+
+        // Construct the route to verify a message broadcasted on Arbitrum chain in OP
+        // We need to construct three inputs: one for OPChildToParentProver getTargetBlockHash,
+        // one for ArbParentToChildProver verifyTargetBlockHash, and one for ArbParentToChildProver verifyStorageSlot
+        // the input to verifyStorageSlot is the proof of the broadcasted message itself.
+        // the input for verifyTargetBlockHash is the storage proof of the slot on the outbox contract.
+
+        string memory pathEthereum = "test/payloads/ethereum/output_storage_proof_block_9567705.json";
+
+        string memory jsonEthereum = vm.readFile(pathEthereum);
+        uint256 blockNumberEthereum = jsonEthereum.readUint(".blockNumber");
+        bytes32 blockHashEthereum = jsonEthereum.readBytes32(".blockHash");
+        bytes memory rlpBlockHeaderEthereum = jsonEthereum.readBytes(".rlpBlockHeader");
+        bytes memory rlpAccountProofEthereum = jsonEthereum.readBytes(".rlpAccountProof");
+        bytes memory rlpStorageProofEthereum = jsonEthereum.readBytes(".rlpStorageProof");
+
+        string memory pathArb = "test/payloads/arbitrum/broadcast_proof_block_207673361.json";
+
+        string memory jsonArbitrum = vm.readFile(pathArb);
+        address accountArbitrum = jsonArbitrum.readAddress(".account");
+        uint256 slotArbitrum = jsonArbitrum.readUint(".slot");
+        bytes32 valueArbitrum = bytes32(jsonArbitrum.readUint(".slotValue"));
+        bytes32 sendRootArbitrum = jsonArbitrum.readBytes32(".sendRoot");
+        bytes memory rlpBlockHeaderArbitrum = jsonArbitrum.readBytes(".rlpBlockHeader");
+        bytes memory rlpAccountProofArbitrum = jsonArbitrum.readBytes(".rlpAccountProof");
+        bytes memory rlpStorageProofArbitrum = jsonArbitrum.readBytes(".rlpStorageProof");
+
+        IL1Block l1Block = IL1Block(childToParentProver.l1BlockPredeploy());
+
+        vm.prank(l1Block.DEPOSITOR_ACCOUNT());
+        l1Block.setL1BlockValues(
+            uint64(blockNumberEthereum), uint64(block.timestamp), block.basefee, blockHashEthereum, 0, bytes32(0), 0, 0
+        );
+
+        address[] memory route = new address[](2);
+        route[0] = address(blockHashProverPointer);
+        route[1] = arbParentToChildProverPointerAddress;
+
+        bytes memory input0 = bytes("");
+        bytes memory input1 =
+            abi.encode(rlpBlockHeaderEthereum, sendRootArbitrum, rlpAccountProofEthereum, rlpStorageProofEthereum);
+
+        bytes[] memory bhpInputs = new bytes[](2);
+        bhpInputs[0] = input0;
+        bhpInputs[1] = input1;
+
+        bytes memory storageProofToLastProver = abi.encode(
+            rlpBlockHeaderArbitrum, accountArbitrum, slotArbitrum, rlpAccountProofArbitrum, rlpStorageProofArbitrum
+        );
+
+        IReceiver.RemoteReadArgs memory remoteReadArgs =
+            IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
+
+        bytes32 message = 0x0000000000000000000000000000000000000000000000000000000074657374; // "test"
+        address publisher = 0x9a56fFd72F4B526c523C733F1F74197A51c495E1;
+
+        (bytes32 broadcasterId, uint256 timestamp) = receiver.verifyBroadcastMessage(remoteReadArgs, message, publisher);
+
+        bytes32 expectedBroadcasterId = keccak256(
+            abi.encode(
+                keccak256(
+                    abi.encode(
+                        keccak256(
+                            abi.encode(
+                                bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
+                                address(blockHashProverPointer)
+                            )
+                        ),
+                        arbParentToChildProverPointerAddress
+                    )
+                ),
+                accountArbitrum
+            )
+        );
+
+        assertEq(broadcasterId, expectedBroadcasterId, "wrong broadcasterId");
+        assertEq(timestamp, uint256(valueArbitrum), "wrong timestamp");
     }
 }
 
