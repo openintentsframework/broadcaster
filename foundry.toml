@@ -5,6 +5,6 @@ libs = ["lib"]
 
 via_ir = true
 
-fs_permissions = [{ access = 'read', path = './test/proofs/arbitrum'},{ access = 'read', path = './test/payloads/arbitrum'},{ access = 'read', path = './out'}]
+fs_permissions = [{ access = 'read', path = './test/proofs/arbitrum'},{ access = 'read', path = './test/payloads/arbitrum'},{ access = 'read', path = './test/payloads/ethereum'},{ access = 'read', path = './out'}]
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
