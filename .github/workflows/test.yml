@@ -13,20 +13,22 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - name: Set up environment
-        uses: ./.github/actions/setup
-      - name: Run tests and generate gas report
-        run: npm run test
-  
-  tests-foundry:
-    runs-on: ubuntu-latest
+
+    env:
+      ETHEREUM_RPC_URL:  ${{ secrets.ETHEREUM_RPC_URL }}
+      ARBITRUM_RPC_URL:  ${{ secrets.ARBITRUM_RPC_URL }}
+      OPTIMISM_RPC_URL:  ${{ secrets.OPTIMISM_RPC_URL }}
+      ZKSYNC_RPC_URL:  ${{ secrets.ZKSYNC_RPC_URL }}
+      LINEA_RPC_URL:  ${{ secrets.LINEA_RPC_URL }}
+      SCROLL_RPC_URL:  ${{ secrets.SCROLL_RPC_URL }}
+
     steps:
       - uses: actions/checkout@v5
         with:
           submodules: recursive
+        
       - name: Set up environment
         uses: ./.github/actions/setup
+
       - name: Run tests
         run: forge test -vv
