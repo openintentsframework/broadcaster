@@ -2,6 +2,7 @@
 pragma solidity ^0.8.27;
 
 import {console, Test} from "forge-std/Test.sol";
+import {stdJson} from "forge-std/StdJson.sol";
 import {Broadcaster} from "../../../src/contracts/Broadcaster.sol";
 import {IBroadcaster} from "../../../src/contracts/interfaces/IBroadcaster.sol";
 import {ParentToChildProver} from "../../../src/contracts/provers/arbitrum/ParentToChildProver.sol";
@@ -14,6 +15,7 @@ import {RLP} from "@openzeppelin/contracts/utils/RLP.sol";
 import {BlockHeaders} from "../../utils/BlockHeaders.sol";
 
 contract BroadcasterTest is Test {
+    using stdJson for string;
     using RLP for RLP.Encoder;
     using Bytes for bytes;
 
@@ -241,41 +243,21 @@ contract BroadcasterTest is Test {
 
         uint256 expectedSlot = uint256(keccak256(abi.encode(message, publisher)));
 
-        bytes32 expectedValue = 0x0000000000000000000000000000000000000000000000000000000068fa57d8;
+        string memory path = "test/payloads/ethereum/broadcast_proof_block_9496454.json";
 
-        address knownAccount = 0xAb23DF3fd78F45E54466d08926c3A886211aC5A1; // broadcaster
+        string memory json = vm.readFile(path);
+        uint256 blockNumber = json.readUint(".blockNumber");
+        bytes32 blockHash = json.readBytes32(".blockHash");
+        address account = json.readAddress(".account");
+        uint256 slot = json.readUint(".slot");
+        bytes32 value = bytes32(json.readUint(".slotValue"));
+        bytes memory rlpBlockHeader = json.readBytes(".rlpBlockHeader");
+        bytes memory rlpAccountProof = json.readBytes(".rlpAccountProof");
+        bytes memory rlpStorageProof = json.readBytes(".rlpStorageProof");
 
-        uint256 blockNumber = 9496454; // block number on parent chain
+        assertEq(expectedSlot, slot, "slot mismatch");
 
-        BlockHeaders.L1BlockHeader memory blockHeader = BlockHeaders.L1BlockHeader({
-            parentHash: 0xee9b4472f4d8c1b58f362c102d3af6e81e620d817f59c4566ee70acc403fa6f8,
-            sha3Uncles: 0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347,
-            miner: 0x3826539Cbd8d68DCF119e80B994557B4278CeC9f,
-            stateRoot: 0xb11937ee06682d2f6469a0a8c219dc024b590d015fcc8601d11dde4c4c30dd86,
-            transactionsRoot: 0x99f8df7e21515bb7252be5d7993374ed2cbdcf61803c14aa84d9f04bcbe71abf,
-            receiptsRoot: 0x8829245840598393135ccaf3006419980663d7a74036ad92ce543adb20a3c3d6,
-            logsBloom: hex"f00000c0122000110801852032900a04080c8108131281806101c107423a58c2e0200400a04030b20038043280300848810100008a80c813c8843821fc20031090080b00450021212002046a24000040042085616022c088a80204512402001502050059220081800104d020800008424200600001804000082186140205412004080600055008832080800046aa208c2154010000aca011a503840185000d8922ac008310201024042050010d00308a1340300010088881828b260020450d0018d801361000040c0020146a000240850613000088800c2010211c1a4e01240b2010300900900141c0421ad02482102a0402024c290448c00240370601644648",
-            difficulty: 0,
-            number: 9496454,
-            gasLimit: 60000000,
-            gasUsed: 11416508,
-            timestamp: 1761507384,
-            extraData: hex"626573752032352e31302d646576656c6f702d31373934643462",
-            mixHash: 0xa90c770588f500b303571ab09f2fef9335989b742fe07cb59c86d32967b470a3,
-            nonce: 0x0000000000000000,
-            baseFeePerGas: 10,
-            withdrawalsRoot: 0xd60747bd62c89c322e7c555bc4ce8b86ef47fe46777a4b7975dc64ee93c4a01f,
-            blobGasUsed: 1048576,
-            excessBlobGas: 0,
-            parentBeaconBlockRoot: 0x34ef4702de06ebc214120d2a09df376a65740a5ab27dca82fd5d4c89f38f7c9e,
-            requestsHash: 0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-        });
-
-        bytes memory rlpBlockHeader = BlockHeaders.encode(blockHeader);
-
-        bytes32 blockHash = keccak256(rlpBlockHeader);
-
-        bytes32 expectedBlockHash = 0x9696097155f4737f3fed52933f8c010a2592decfc88117da9c1442002c1f37ee;
+        bytes32 expectedBlockHash = keccak256(rlpBlockHeader);
 
         assertEq(blockHash, expectedBlockHash);
 
@@ -288,54 +270,14 @@ contract BroadcasterTest is Test {
         vm.prank(aliasedPusher);
         buffer.receiveHashes(blockNumber, blockHashes);
 
-        bytes[] memory accountProofList = new bytes[](8);
+        bytes memory input = abi.encode(rlpBlockHeader, account, expectedSlot, rlpAccountProof, rlpStorageProof);
 
-        accountProofList[0] = RLP.encode(
-            hex"f90211a0b0b95e67e8aa61300a71afe6157bf84b39233462ea64aa0ede48cf35feaabbcfa052a9ca3ff2ca72798469a010a004a29b0ae970ce27f5ef8d998b27a9b0625207a0f3436bfd2ec36d3296cd081062f0a2bab4a4549f97f889ba5a4f9cb36290c447a064e9aceea7480537d7844b2d848b3182feabf30112e385bcb47388dd627521bba00b8fec9858a453b4a8bf04263305f54054bc078221d60332f1aa3343cc194705a0bd67eb93fad2af1a55b444b683b6b2095575453ec3d1dee0f6a7c0e53f827caea0228eb016dd6ae3ad9f848803e74d96eec8ea49929e774b8a38b5fac469ed0e47a032bf38c9e8d75739465fa659cc1d4d61a156054c943654b5b1a6b5462b33fb1ba0a51d7804ccfe088ea82e7601ae5ed1bf9a5449efa8aae9376ac2711ed010e277a0d6ca8b774bcf95ed32f4f346f3e334f6393788e068fe5b9c4bf8587748f67bf0a095bd4aa36b965ac3b87f4f4da74c7733435d3cf79474b8f9246052096bbc3f03a0fe15d293a3e6cfcf766a915498b038a3fb28e6db194b42106831cde5cdad48d9a076d4a753e7b873269515c60291cbdf26f52a218735ca1399fde86dce36f8ade3a0338d465e52fb472f2d12788d03b22d0c9fcdd6224ef73c114d153a2e49cb322ea0484a5e7df4ff5319ca78d07211b89bcf0dc3ccbdeae8563d31aa644e9c2ef22ea0bb1e7d0bbda92fc18e40f54b90aa9b26c7ebd950e07ef2f45bcb744f0304f30480"
-        );
-        accountProofList[1] = RLP.encode(
-            hex"f90211a0d9595c35e1e689fb1561039e08d66b2fb23d11ab966c8f4c3778ea1e6e1a525ca00af85211e3bf3a227e81b849767c7cfcda320457b8d4ade04e0927b8690bfb27a0c8e3444abaa0adff441f3abdd6e68820285616319154a7d4dcea50a58ef670f9a0c44739ea6bcbe5fea9f3daa3dcc80b1598b956a69eb906089e8929c042ddef3ba0b0cd38f1002cf6d9d76aaf2ed94baba6b34209b38662151111d2e67ad874fbfaa0e791e8ca9fbd4af504f484fada447f440d245e647e4b25236535d57bf6a0247ea03cf7749165fa81377d5ae438df0023a76a1cdbaae582f026a1f4a33487f46cb8a075782af998e1c0d0ad3d45e5f7f60bdf094114a1d91ab7aff17c01a249c0d591a0269ca516d1f5bf9633f4c3f088decf98ff0aa6ecf8010bed9282417b9a40514ea0975958f99f7f882a43d145a7004d86cffea1d7bd47e4743ac8591e1370af7c87a0a52be157e3d3735ccd7b70810dd4f5b8dc2bf93c0f8cb1e5b6099de0b408300ea03160c5fb073619be4bbf4c5395ba8088471779297d1920c4f8e6367e51e35e49a02342b7acb077299a819d7d324adc4d141942714fc7a522c73649e239fe010508a08950b87a5b5c626d6914b3b9efe9f14c8b48655362a17c1bb4fc67e6e541d5c3a00515e77dace3066455f8b6fc2267d35e8b2e1bda947d4d0f249e2890c5e3d251a0d591d436c00345c54cd588e196ff0f91835f39cf538a039df94555c7e7294ca880"
-        );
-        accountProofList[2] = RLP.encode(
-            hex"f90211a01a4198c0f5ce8b5d394cb42a6b59b7d0c666bf61bc50bf048670cf0737855fdca0895cccc84959ac6392f0ec1e5e9dbac24c6d1e3fe684fcaa5e9ecdbf0696c144a0a2ed8b41e0a718bb7b800db1612497088bc7839ebe099a762daf9a446c19ac42a0495fde26bf761a71317e017e0351ad61fb09d5ded1cdfd14cc6ab0f9ba1e7cf8a091aade5c90cd00386f964e1f9e468a5fc30e26ba052b28edc95b16307825992ba05c3066c65c561d4b87c043d6ec8ff144c761fde69ad32b2679a976d17dc668cca09f6cc72b8c372908f42a942fbea0efa82e367a3d27eba7a7a8d1b461f24855e6a09408510fcb45f702e9c0b2f189704c8b50cdc86436574f347d5de02179511c1ca01a62e2d29a307572c6df2ea7162a5f2aadbb1028d521f3ec470d94d9d5a8a162a0bce9be38d51d2aa47e8cabfc2637dff161646e6e7f40922b160cbf292eeaf69da073ac4f5f3c162e11349a7e2fbf751859cd829a434e2cc1bd49187715463f494aa089c8aa06113765e7e68697ef16c5a26753a989903d5626edf41cdf21f6860552a01701293ca754ea65ae893d0705226f63d1795b775f671011d23f6e2f661b87f4a09ea77441ed691b51c643befa090c72e7408622e008f5f5df2c1d400811ecd589a01e1e427f5e2964520e4b9e818ee44d7f56678f91fc32f0759ee8b0c0b76f654da0d55d93e68fe5d21766bcf487fb898b2c61781a6763fdff779fc2241417d9db7280"
-        );
-        accountProofList[3] = RLP.encode(
-            hex"f90211a0c5d06e34ca79ed78c18adb7affe8742de2e58201fca0bf436c828d8232f6d0baa0fab5b29e06466da3c3792a890153738a3035f7d20274e6f8b60ecf72fa1e789fa078c4744aee74da56cfd2f1d2fa609a7118b05420253f779c53d96c7145e982b9a042f2ae0ae4e1cbe72b2f295bfe252c4ace3fb83a8e964557616ee9bd228566f3a0fcbd0da6912cc1cf44e4a1553a66aefe6f9642b74963f480058cf7a1cabf4b36a00d5c5c04878ec0c07b56b1374dbc37a6051e94ff55557ee68534666fb0f02895a0b0009ef22aee2091cad38c0fc04126008ebb3c1ec85e0ee015c45afda40d814ba076e3e653cc38062bed7b583bc89addd852efd3777a8c7b6c9767cb17b84fe996a016503e66b0b417bc130207b84b29b2b1a2471047b2d26b97d8318087d8b28a90a09677de7562ade630ae4c2f2aa639af5a71b801b88c54036536beb7ea3f4da20ba0a26fd6ee4ba73135e022a86543f110c8cff8fc196da70476728e29afa53abbd4a0b6b02ed8681c67bbcdbaa4250a9a8b2af9553990ebd9c415e61ba89922d38563a0416f8fa03b7c8e16437a8a0b1c6e73ce375f369cdb620ded8d95504b3ab67a06a0c1342004868ff43da6430fd9dd0d6a1d9ced88b454d5a48c79c41fe4565129eca0e45241b73f4d329f4fe909401f9aa76b7e46162e6fc3dd81be819d1c06acff51a0f71ec474fdd9230f7292c0c4002f2b5603325868486ccd93c14de53f65fb6e6480"
-        );
-        accountProofList[4] = RLP.encode(
-            hex"f90211a0e54f82daf54b26973f584016ca833654dee0a659464428fe1ce53097380bc2d0a097a696b4cd659cb0fe2f87d9a5f8fee87a032ff6ac95489fb985103bf232aca5a001b9af9e74ac1132eb2f9c20ac950178ea066a1bf67898b2bfa908b374881015a0592e35261c24a24435af64b11a177cbc346f4a0c91d4eb9b229ac373e8a9e5eea0a6d5d2e84b5e6a32f5aeaddb2635e7c78de78c8a45c2a609e628364ac88fd1e4a0a1ce8455d7a9a560bef917b5bab4be927586f070ba515c75a1b58d86883679a7a03b1e2c4c3adb9611b891605f206f6feba27c1e8f0dc971785d871f8aa5a6c71ca05af4aa3a2323e521a2ccf5d74bb29c343e89bdfd5a056ba00b117e751adfc4eba0df4cbfa36a4af781876cc0b172fbc3752933f0bed3f4dcb38642b4b5e3b95535a088bed8ddd0b03ad9d519643589e106daf8b0a6ee7510efb3ffc436b6d08c385aa0cfa4a71af2c4ee6856b64199be680df4f04987d28dc707b9b81b1ae2135342aca007f48265cb2cb83f63518a4f813f344836cc4ccf969eff0a0d8bf98bf4570d90a0f189aeb9c6a9c5517d6940b57a5bf3c61fa9a589a35bab963a15176731d3ab76a00e51492b77450e0544151e6b16c9a24e6b1d316a5cc992bd0f52bb846dae23bfa0dfe5989673399538a7dfece6561477b803a0f0cbf3064dbb5b7be8a39deac533a02ca0c5810e279a986c31d251c1d3413cb505a03bc85c172bdce8a6b35e276dfb80"
-        );
-        accountProofList[5] = RLP.encode(
-            hex"f90211a02614da908a4849f529b99e68ca69202ced4848b3bf6d1588d107535056e63eeca00477bfd2aecc7a0914f087efee823ae72a6b723d960a55e6c0c931917410b91ba000b6602e9ad6a574bda8edd73f36dc19bf59e8f07cbef550c6e62ad8d7837275a080181a744c9ce8bfb3ac8ea4f5fde39c5dd5123d768cd672ad8724e70d7d263fa06f4f223a69c0872022884fb78088456e2871fabb67946a5c3aa1c2fc97067f53a0789e4ffbb34e200bb32122488867a04c6af28be25d7ce3627219eeb27da1d1e6a083bcf68bd3418e85c3ffe8721a9e98aa51eb1f8eb96e0b8c8c94084636e8b9fda01d55714ed9e4b5394924f8e7514374cfe5757a4e512a66bc6b61ed6bd99ae3d4a0f253938718dbf4377cd93103862dbb45f1077405a2d3a57738d45a1fac21553da059b843bad4688ecb2ddee56c13a7c990ed84efe655eb0fee8d06cbd4f52886fba017e2ac27459cbf0133cc9f9c2623e029c71137764368f57e2de62070011b74dda0d77d24119a2950d6b4f90eebbd4d5342f592f3c8f9980debed42ebd0004d5ecda0c64c80f579948559cd119490389c1370348b031a1ab72ec84ae18a783dfd49aea04fcff07c044cbc30b26ca0fc41d2ec474506fab38bbbbb582519f09543e2ea13a0ffbb5ce620fc8e2b39ee70b18dab1fd31dabf7a1361232db072b5534d6c45ea3a047aec790619add4898883dd60be479887cd8bb312ffb92c7f253c5162a9d33a180"
-        );
-        accountProofList[6] = RLP.encode(
-            hex"f8b1a0c7491b416a7a20bfc78fe1f7a4518958524b539c331c25ebb60cb7d651e94c4b8080808080808080a07d39eba3b1cab99692c17e368f1506b4c9d1270b6bdbeed83253143a9f51efa38080a082a3f66f1fdba2188333439a63fea1632b0a504d1735fe45dcdbc750c980d74aa0e76eeb8f7a7ff529ca36d01f44bffa3e85b363a8d6a2b2c9d25c2114dac70689a043b641bafe98b738fff861b3875f87245830c1d29a7c0d411d1da3958fa0f3e18080"
-        );
-        accountProofList[7] = RLP.encode(
-            hex"f8669d35ea91a4f74675160ac2ae6e03f04be23fbf7e800eb88db12c6f5904c0b846f8440180a0c672639a72b537f19eaae20d66e47cd1d977ac18ed81e0bba3b200f671e5bcd1a03debe8ce6033a7570465c1bd57dfe3c0ca9dba458721039d4d47c10d5025252b"
-        );
+        (address actualAccount, uint256 actualSlot, bytes32 actualValue) =
+            childToParentProver.verifyStorageSlot(blockHash, input);
 
-        bytes memory accountProof = RLP.encode(accountProofList);
-
-        bytes32 stateRoot = keccak256(
-            hex"f90211a0b0b95e67e8aa61300a71afe6157bf84b39233462ea64aa0ede48cf35feaabbcfa052a9ca3ff2ca72798469a010a004a29b0ae970ce27f5ef8d998b27a9b0625207a0f3436bfd2ec36d3296cd081062f0a2bab4a4549f97f889ba5a4f9cb36290c447a064e9aceea7480537d7844b2d848b3182feabf30112e385bcb47388dd627521bba00b8fec9858a453b4a8bf04263305f54054bc078221d60332f1aa3343cc194705a0bd67eb93fad2af1a55b444b683b6b2095575453ec3d1dee0f6a7c0e53f827caea0228eb016dd6ae3ad9f848803e74d96eec8ea49929e774b8a38b5fac469ed0e47a032bf38c9e8d75739465fa659cc1d4d61a156054c943654b5b1a6b5462b33fb1ba0a51d7804ccfe088ea82e7601ae5ed1bf9a5449efa8aae9376ac2711ed010e277a0d6ca8b774bcf95ed32f4f346f3e334f6393788e068fe5b9c4bf8587748f67bf0a095bd4aa36b965ac3b87f4f4da74c7733435d3cf79474b8f9246052096bbc3f03a0fe15d293a3e6cfcf766a915498b038a3fb28e6db194b42106831cde5cdad48d9a076d4a753e7b873269515c60291cbdf26f52a218735ca1399fde86dce36f8ade3a0338d465e52fb472f2d12788d03b22d0c9fcdd6224ef73c114d153a2e49cb322ea0484a5e7df4ff5319ca78d07211b89bcf0dc3ccbdeae8563d31aa644e9c2ef22ea0bb1e7d0bbda92fc18e40f54b90aa9b26c7ebd950e07ef2f45bcb744f0304f30480"
-        );
-
-        assertEq(stateRoot, blockHeader.stateRoot);
-        bytes[] memory storageProofList = new bytes[](1);
-
-        storageProofList[0] =
-            RLP.encode(hex"e8a120e9c5cc9c750ef3a170b3a02cf938ffded668959e8c4d274ee43f58103248e67e858468fa57d8");
-
-        bytes memory storageProof = RLP.encode(storageProofList);
-
-        bytes memory input = abi.encode(rlpBlockHeader, knownAccount, expectedSlot, accountProof, storageProof);
-
-        (address account, uint256 slot, bytes32 value) = childToParentProver.verifyStorageSlot(blockHash, input);
-
-        assertEq(account, knownAccount);
-        assertEq(slot, expectedSlot);
-        assertEq(value, expectedValue);
+        assertEq(actualAccount, account, "account mismatch");
+        assertEq(actualSlot, slot, "slot mismatch");
+        assertEq(actualValue, value, "value mismatch");
     }
 
     function test_verifyStorageSlot_broadcaster_notHomeChain() public {
@@ -346,93 +288,42 @@ contract BroadcasterTest is Test {
 
         uint256 expectedSlot = uint256(keccak256(abi.encode(message, publisher)));
 
-        bytes32 expectedValue = 0x0000000000000000000000000000000000000000000000000000000068fa57d8;
+        string memory path = "test/payloads/ethereum/broadcast_proof_block_9496454.json";
 
-        address knownAccount = 0xAb23DF3fd78F45E54466d08926c3A886211aC5A1; // broadcaster
+        string memory json = vm.readFile(path);
+        uint256 blockNumber = json.readUint(".blockNumber");
+        bytes32 blockHash = json.readBytes32(".blockHash");
+        address account = json.readAddress(".account");
+        uint256 slot = json.readUint(".slot");
+        bytes32 value = bytes32(json.readUint(".slotValue"));
+        bytes memory rlpBlockHeader = json.readBytes(".rlpBlockHeader");
+        bytes memory rlpAccountProof = json.readBytes(".rlpAccountProof");
+        bytes memory rlpStorageProof = json.readBytes(".rlpStorageProof");
 
-        uint256 blockNumber = 9496454; // block number on parent chain
+        assertEq(expectedSlot, slot, "slot mismatch");
 
-        BlockHeaders.L1BlockHeader memory blockHeader = BlockHeaders.L1BlockHeader({
-            parentHash: 0xee9b4472f4d8c1b58f362c102d3af6e81e620d817f59c4566ee70acc403fa6f8,
-            sha3Uncles: 0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347,
-            miner: 0x3826539Cbd8d68DCF119e80B994557B4278CeC9f,
-            stateRoot: 0xb11937ee06682d2f6469a0a8c219dc024b590d015fcc8601d11dde4c4c30dd86,
-            transactionsRoot: 0x99f8df7e21515bb7252be5d7993374ed2cbdcf61803c14aa84d9f04bcbe71abf,
-            receiptsRoot: 0x8829245840598393135ccaf3006419980663d7a74036ad92ce543adb20a3c3d6,
-            logsBloom: hex"f00000c0122000110801852032900a04080c8108131281806101c107423a58c2e0200400a04030b20038043280300848810100008a80c813c8843821fc20031090080b00450021212002046a24000040042085616022c088a80204512402001502050059220081800104d020800008424200600001804000082186140205412004080600055008832080800046aa208c2154010000aca011a503840185000d8922ac008310201024042050010d00308a1340300010088881828b260020450d0018d801361000040c0020146a000240850613000088800c2010211c1a4e01240b2010300900900141c0421ad02482102a0402024c290448c00240370601644648",
-            difficulty: 0,
-            number: 9496454,
-            gasLimit: 60000000,
-            gasUsed: 11416508,
-            timestamp: 1761507384,
-            extraData: hex"626573752032352e31302d646576656c6f702d31373934643462",
-            mixHash: 0xa90c770588f500b303571ab09f2fef9335989b742fe07cb59c86d32967b470a3,
-            nonce: 0x0000000000000000,
-            baseFeePerGas: 10,
-            withdrawalsRoot: 0xd60747bd62c89c322e7c555bc4ce8b86ef47fe46777a4b7975dc64ee93c4a01f,
-            blobGasUsed: 1048576,
-            excessBlobGas: 0,
-            parentBeaconBlockRoot: 0x34ef4702de06ebc214120d2a09df376a65740a5ab27dca82fd5d4c89f38f7c9e,
-            requestsHash: 0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-        });
-
-        bytes memory rlpBlockHeader = BlockHeaders.encode(blockHeader);
-
-        bytes32 blockHash = keccak256(rlpBlockHeader);
-
-        bytes32 expectedBlockHash = 0x9696097155f4737f3fed52933f8c010a2592decfc88117da9c1442002c1f37ee;
+        bytes32 expectedBlockHash = keccak256(rlpBlockHeader);
 
         assertEq(blockHash, expectedBlockHash);
 
-        bytes[] memory accountProofList = new bytes[](8);
+        IBuffer buffer = IBuffer(0x0000000048C4Ed10cF14A02B9E0AbDDA5227b071);
 
-        accountProofList[0] = RLP.encode(
-            hex"f90211a0b0b95e67e8aa61300a71afe6157bf84b39233462ea64aa0ede48cf35feaabbcfa052a9ca3ff2ca72798469a010a004a29b0ae970ce27f5ef8d998b27a9b0625207a0f3436bfd2ec36d3296cd081062f0a2bab4a4549f97f889ba5a4f9cb36290c447a064e9aceea7480537d7844b2d848b3182feabf30112e385bcb47388dd627521bba00b8fec9858a453b4a8bf04263305f54054bc078221d60332f1aa3343cc194705a0bd67eb93fad2af1a55b444b683b6b2095575453ec3d1dee0f6a7c0e53f827caea0228eb016dd6ae3ad9f848803e74d96eec8ea49929e774b8a38b5fac469ed0e47a032bf38c9e8d75739465fa659cc1d4d61a156054c943654b5b1a6b5462b33fb1ba0a51d7804ccfe088ea82e7601ae5ed1bf9a5449efa8aae9376ac2711ed010e277a0d6ca8b774bcf95ed32f4f346f3e334f6393788e068fe5b9c4bf8587748f67bf0a095bd4aa36b965ac3b87f4f4da74c7733435d3cf79474b8f9246052096bbc3f03a0fe15d293a3e6cfcf766a915498b038a3fb28e6db194b42106831cde5cdad48d9a076d4a753e7b873269515c60291cbdf26f52a218735ca1399fde86dce36f8ade3a0338d465e52fb472f2d12788d03b22d0c9fcdd6224ef73c114d153a2e49cb322ea0484a5e7df4ff5319ca78d07211b89bcf0dc3ccbdeae8563d31aa644e9c2ef22ea0bb1e7d0bbda92fc18e40f54b90aa9b26c7ebd950e07ef2f45bcb744f0304f30480"
-        );
-        accountProofList[1] = RLP.encode(
-            hex"f90211a0d9595c35e1e689fb1561039e08d66b2fb23d11ab966c8f4c3778ea1e6e1a525ca00af85211e3bf3a227e81b849767c7cfcda320457b8d4ade04e0927b8690bfb27a0c8e3444abaa0adff441f3abdd6e68820285616319154a7d4dcea50a58ef670f9a0c44739ea6bcbe5fea9f3daa3dcc80b1598b956a69eb906089e8929c042ddef3ba0b0cd38f1002cf6d9d76aaf2ed94baba6b34209b38662151111d2e67ad874fbfaa0e791e8ca9fbd4af504f484fada447f440d245e647e4b25236535d57bf6a0247ea03cf7749165fa81377d5ae438df0023a76a1cdbaae582f026a1f4a33487f46cb8a075782af998e1c0d0ad3d45e5f7f60bdf094114a1d91ab7aff17c01a249c0d591a0269ca516d1f5bf9633f4c3f088decf98ff0aa6ecf8010bed9282417b9a40514ea0975958f99f7f882a43d145a7004d86cffea1d7bd47e4743ac8591e1370af7c87a0a52be157e3d3735ccd7b70810dd4f5b8dc2bf93c0f8cb1e5b6099de0b408300ea03160c5fb073619be4bbf4c5395ba8088471779297d1920c4f8e6367e51e35e49a02342b7acb077299a819d7d324adc4d141942714fc7a522c73649e239fe010508a08950b87a5b5c626d6914b3b9efe9f14c8b48655362a17c1bb4fc67e6e541d5c3a00515e77dace3066455f8b6fc2267d35e8b2e1bda947d4d0f249e2890c5e3d251a0d591d436c00345c54cd588e196ff0f91835f39cf538a039df94555c7e7294ca880"
-        );
-        accountProofList[2] = RLP.encode(
-            hex"f90211a01a4198c0f5ce8b5d394cb42a6b59b7d0c666bf61bc50bf048670cf0737855fdca0895cccc84959ac6392f0ec1e5e9dbac24c6d1e3fe684fcaa5e9ecdbf0696c144a0a2ed8b41e0a718bb7b800db1612497088bc7839ebe099a762daf9a446c19ac42a0495fde26bf761a71317e017e0351ad61fb09d5ded1cdfd14cc6ab0f9ba1e7cf8a091aade5c90cd00386f964e1f9e468a5fc30e26ba052b28edc95b16307825992ba05c3066c65c561d4b87c043d6ec8ff144c761fde69ad32b2679a976d17dc668cca09f6cc72b8c372908f42a942fbea0efa82e367a3d27eba7a7a8d1b461f24855e6a09408510fcb45f702e9c0b2f189704c8b50cdc86436574f347d5de02179511c1ca01a62e2d29a307572c6df2ea7162a5f2aadbb1028d521f3ec470d94d9d5a8a162a0bce9be38d51d2aa47e8cabfc2637dff161646e6e7f40922b160cbf292eeaf69da073ac4f5f3c162e11349a7e2fbf751859cd829a434e2cc1bd49187715463f494aa089c8aa06113765e7e68697ef16c5a26753a989903d5626edf41cdf21f6860552a01701293ca754ea65ae893d0705226f63d1795b775f671011d23f6e2f661b87f4a09ea77441ed691b51c643befa090c72e7408622e008f5f5df2c1d400811ecd589a01e1e427f5e2964520e4b9e818ee44d7f56678f91fc32f0759ee8b0c0b76f654da0d55d93e68fe5d21766bcf487fb898b2c61781a6763fdff779fc2241417d9db7280"
-        );
-        accountProofList[3] = RLP.encode(
-            hex"f90211a0c5d06e34ca79ed78c18adb7affe8742de2e58201fca0bf436c828d8232f6d0baa0fab5b29e06466da3c3792a890153738a3035f7d20274e6f8b60ecf72fa1e789fa078c4744aee74da56cfd2f1d2fa609a7118b05420253f779c53d96c7145e982b9a042f2ae0ae4e1cbe72b2f295bfe252c4ace3fb83a8e964557616ee9bd228566f3a0fcbd0da6912cc1cf44e4a1553a66aefe6f9642b74963f480058cf7a1cabf4b36a00d5c5c04878ec0c07b56b1374dbc37a6051e94ff55557ee68534666fb0f02895a0b0009ef22aee2091cad38c0fc04126008ebb3c1ec85e0ee015c45afda40d814ba076e3e653cc38062bed7b583bc89addd852efd3777a8c7b6c9767cb17b84fe996a016503e66b0b417bc130207b84b29b2b1a2471047b2d26b97d8318087d8b28a90a09677de7562ade630ae4c2f2aa639af5a71b801b88c54036536beb7ea3f4da20ba0a26fd6ee4ba73135e022a86543f110c8cff8fc196da70476728e29afa53abbd4a0b6b02ed8681c67bbcdbaa4250a9a8b2af9553990ebd9c415e61ba89922d38563a0416f8fa03b7c8e16437a8a0b1c6e73ce375f369cdb620ded8d95504b3ab67a06a0c1342004868ff43da6430fd9dd0d6a1d9ced88b454d5a48c79c41fe4565129eca0e45241b73f4d329f4fe909401f9aa76b7e46162e6fc3dd81be819d1c06acff51a0f71ec474fdd9230f7292c0c4002f2b5603325868486ccd93c14de53f65fb6e6480"
-        );
-        accountProofList[4] = RLP.encode(
-            hex"f90211a0e54f82daf54b26973f584016ca833654dee0a659464428fe1ce53097380bc2d0a097a696b4cd659cb0fe2f87d9a5f8fee87a032ff6ac95489fb985103bf232aca5a001b9af9e74ac1132eb2f9c20ac950178ea066a1bf67898b2bfa908b374881015a0592e35261c24a24435af64b11a177cbc346f4a0c91d4eb9b229ac373e8a9e5eea0a6d5d2e84b5e6a32f5aeaddb2635e7c78de78c8a45c2a609e628364ac88fd1e4a0a1ce8455d7a9a560bef917b5bab4be927586f070ba515c75a1b58d86883679a7a03b1e2c4c3adb9611b891605f206f6feba27c1e8f0dc971785d871f8aa5a6c71ca05af4aa3a2323e521a2ccf5d74bb29c343e89bdfd5a056ba00b117e751adfc4eba0df4cbfa36a4af781876cc0b172fbc3752933f0bed3f4dcb38642b4b5e3b95535a088bed8ddd0b03ad9d519643589e106daf8b0a6ee7510efb3ffc436b6d08c385aa0cfa4a71af2c4ee6856b64199be680df4f04987d28dc707b9b81b1ae2135342aca007f48265cb2cb83f63518a4f813f344836cc4ccf969eff0a0d8bf98bf4570d90a0f189aeb9c6a9c5517d6940b57a5bf3c61fa9a589a35bab963a15176731d3ab76a00e51492b77450e0544151e6b16c9a24e6b1d316a5cc992bd0f52bb846dae23bfa0dfe5989673399538a7dfece6561477b803a0f0cbf3064dbb5b7be8a39deac533a02ca0c5810e279a986c31d251c1d3413cb505a03bc85c172bdce8a6b35e276dfb80"
-        );
-        accountProofList[5] = RLP.encode(
-            hex"f90211a02614da908a4849f529b99e68ca69202ced4848b3bf6d1588d107535056e63eeca00477bfd2aecc7a0914f087efee823ae72a6b723d960a55e6c0c931917410b91ba000b6602e9ad6a574bda8edd73f36dc19bf59e8f07cbef550c6e62ad8d7837275a080181a744c9ce8bfb3ac8ea4f5fde39c5dd5123d768cd672ad8724e70d7d263fa06f4f223a69c0872022884fb78088456e2871fabb67946a5c3aa1c2fc97067f53a0789e4ffbb34e200bb32122488867a04c6af28be25d7ce3627219eeb27da1d1e6a083bcf68bd3418e85c3ffe8721a9e98aa51eb1f8eb96e0b8c8c94084636e8b9fda01d55714ed9e4b5394924f8e7514374cfe5757a4e512a66bc6b61ed6bd99ae3d4a0f253938718dbf4377cd93103862dbb45f1077405a2d3a57738d45a1fac21553da059b843bad4688ecb2ddee56c13a7c990ed84efe655eb0fee8d06cbd4f52886fba017e2ac27459cbf0133cc9f9c2623e029c71137764368f57e2de62070011b74dda0d77d24119a2950d6b4f90eebbd4d5342f592f3c8f9980debed42ebd0004d5ecda0c64c80f579948559cd119490389c1370348b031a1ab72ec84ae18a783dfd49aea04fcff07c044cbc30b26ca0fc41d2ec474506fab38bbbbb582519f09543e2ea13a0ffbb5ce620fc8e2b39ee70b18dab1fd31dabf7a1361232db072b5534d6c45ea3a047aec790619add4898883dd60be479887cd8bb312ffb92c7f253c5162a9d33a180"
-        );
-        accountProofList[6] = RLP.encode(
-            hex"f8b1a0c7491b416a7a20bfc78fe1f7a4518958524b539c331c25ebb60cb7d651e94c4b8080808080808080a07d39eba3b1cab99692c17e368f1506b4c9d1270b6bdbeed83253143a9f51efa38080a082a3f66f1fdba2188333439a63fea1632b0a504d1735fe45dcdbc750c980d74aa0e76eeb8f7a7ff529ca36d01f44bffa3e85b363a8d6a2b2c9d25c2114dac70689a043b641bafe98b738fff861b3875f87245830c1d29a7c0d411d1da3958fa0f3e18080"
-        );
-        accountProofList[7] = RLP.encode(
-            hex"f8669d35ea91a4f74675160ac2ae6e03f04be23fbf7e800eb88db12c6f5904c0b846f8440180a0c672639a72b537f19eaae20d66e47cd1d977ac18ed81e0bba3b200f671e5bcd1a03debe8ce6033a7570465c1bd57dfe3c0ca9dba458721039d4d47c10d5025252b"
-        );
+        address aliasedPusher = 0x6B6D4f3d0f0eFAeED2aeC9B59b67Ec62a4667e99;
+        bytes32[] memory blockHashes = new bytes32[](1);
+        blockHashes[0] = blockHash;
 
-        bytes memory accountProof = RLP.encode(accountProofList);
+        vm.prank(aliasedPusher);
+        buffer.receiveHashes(blockNumber, blockHashes);
 
-        bytes32 stateRoot = keccak256(
-            hex"f90211a0b0b95e67e8aa61300a71afe6157bf84b39233462ea64aa0ede48cf35feaabbcfa052a9ca3ff2ca72798469a010a004a29b0ae970ce27f5ef8d998b27a9b0625207a0f3436bfd2ec36d3296cd081062f0a2bab4a4549f97f889ba5a4f9cb36290c447a064e9aceea7480537d7844b2d848b3182feabf30112e385bcb47388dd627521bba00b8fec9858a453b4a8bf04263305f54054bc078221d60332f1aa3343cc194705a0bd67eb93fad2af1a55b444b683b6b2095575453ec3d1dee0f6a7c0e53f827caea0228eb016dd6ae3ad9f848803e74d96eec8ea49929e774b8a38b5fac469ed0e47a032bf38c9e8d75739465fa659cc1d4d61a156054c943654b5b1a6b5462b33fb1ba0a51d7804ccfe088ea82e7601ae5ed1bf9a5449efa8aae9376ac2711ed010e277a0d6ca8b774bcf95ed32f4f346f3e334f6393788e068fe5b9c4bf8587748f67bf0a095bd4aa36b965ac3b87f4f4da74c7733435d3cf79474b8f9246052096bbc3f03a0fe15d293a3e6cfcf766a915498b038a3fb28e6db194b42106831cde5cdad48d9a076d4a753e7b873269515c60291cbdf26f52a218735ca1399fde86dce36f8ade3a0338d465e52fb472f2d12788d03b22d0c9fcdd6224ef73c114d153a2e49cb322ea0484a5e7df4ff5319ca78d07211b89bcf0dc3ccbdeae8563d31aa644e9c2ef22ea0bb1e7d0bbda92fc18e40f54b90aa9b26c7ebd950e07ef2f45bcb744f0304f30480"
-        );
-
-        assertEq(stateRoot, blockHeader.stateRoot);
-        bytes[] memory storageProofList = new bytes[](1);
-
-        storageProofList[0] =
-            RLP.encode(hex"e8a120e9c5cc9c750ef3a170b3a02cf938ffded668959e8c4d274ee43f58103248e67e858468fa57d8");
-
-        bytes memory storageProof = RLP.encode(storageProofList);
-
-        bytes memory input = abi.encode(rlpBlockHeader, knownAccount, expectedSlot, accountProof, storageProof);
+        bytes memory input = abi.encode(rlpBlockHeader, account, expectedSlot, rlpAccountProof, rlpStorageProof);
 
         ChildToParentProver childToParentProverCopy = new ChildToParentProver(childChainId);
 
-        (address account, uint256 slot, bytes32 value) = childToParentProverCopy.verifyStorageSlot(blockHash, input);
+        (address actualAccount, uint256 actualSlot, bytes32 actualValue) =
+            childToParentProverCopy.verifyStorageSlot(blockHash, input);
 
-        assertEq(account, knownAccount);
-        assertEq(slot, expectedSlot);
-        assertEq(value, expectedValue);
+        assertEq(actualAccount, account, "account mismatch");
+        assertEq(actualSlot, slot, "slot mismatch");
+        assertEq(actualValue, value, "value mismatch");
     }
 }

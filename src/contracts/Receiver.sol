@@ -5,7 +5,6 @@ import {IReceiver} from "./interfaces/IReceiver.sol";
 import {IBlockHashProver} from "./interfaces/IBlockHashProver.sol";
 import {IBlockHashProverPointer} from "./interfaces/IBlockHashProverPointer.sol";
 import {BLOCK_HASH_PROVER_POINTER_SLOT} from "./BlockHashProverPointer.sol";
-
 contract Receiver is IReceiver {
     mapping(bytes32 blockHashProverPointerId => IBlockHashProver blockHashProverCopy) private _blockHashProverCopies;
 
@@ -58,7 +57,7 @@ contract Receiver is IReceiver {
 
         IBlockHashProver oldProverCopy = _blockHashProverCopies[bhpPointerId];
 
-        if (oldProverCopy.version() >= bhpCopy.version()) {
+        if (address(oldProverCopy) != address(0) && oldProverCopy.version() >= bhpCopy.version()) {
             revert NewerProverVersion();
         }
 
