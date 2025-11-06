@@ -72,6 +72,7 @@ async function main() {
         rlpBlockHeader: rlpBlockHeader,
         rlpAccountProof: rlpAccountProof,
         rlpStorageProof: rlpStorageProof,
+        ...('sendRoot' in blockHeader && { sendRoot: (blockHeader as any).sendRoot }),
     }
 
     if(output){
@@ -98,7 +99,7 @@ async function _getRlpStorageAndAccountProof(client: PublicClient , account: `0x
         stateRoot: keccak256(proof.accountProof[0]),
         rlpAccountProof: toRlp(proof.accountProof),
         rlpStorageProof: toRlp(proof.storageProof[0].proof),
-        slotValue: toHex(Number(proof.storageProof[0].value)),
+        slotValue: toHex(proof.storageProof[0].value),
     }
 }
 

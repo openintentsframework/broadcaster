@@ -6,10 +6,6 @@ import {IBlockHashProver} from "../../interfaces/IBlockHashProver.sol";
 import {IOutbox} from "@arbitrum/nitro-contracts/src/bridge/IOutbox.sol";
 import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 
-import {console} from "forge-std/console.sol";
-
-// import {console} from "forge-std/console.sol";
-
 /// @notice Arbitrum implementation of a parent to child IBlockHashProver.
 /// @dev    verifyTargetBlockHash and getTargetBlockHash get block hashes from the child chain's Outbox contract.
 ///         verifyStorageSlot is implemented to work against any Arbitrum child chain with a standard Ethereum block header and state trie.
@@ -36,8 +32,7 @@ contract ParentToChildProver is IBlockHashProver {
         view
         returns (bytes32 targetBlockHash)
     {
-        // console.log("homeBlockHash");
-        // console.logBytes32(homeBlockHash);
+        
         // decode the input
         (bytes memory rlpBlockHeader, bytes32 sendRoot, bytes memory accountProof, bytes memory storageProof) =
             abi.decode(input, (bytes, bytes32, bytes, bytes));
