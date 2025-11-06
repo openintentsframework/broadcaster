@@ -1,43 +1,34 @@
-name: CI
+name: checks
 
 on:
   push:
-  pull_request:
-  workflow_dispatch:
+    branches:
+      - master
+      - next-v*
+      - release-v*
+  pull_request: {}
+  workflow_dispatch: {}
 
-env:
-  FOUNDRY_PROFILE: ci
 
 jobs:
-  check:
-    strategy:
-      fail-fast: true
-
-    name: Foundry project
+  tests:
     runs-on: ubuntu-latest
+
+    env:
+      ETHEREUM_RPC_URL:  ${{ secrets.ETHEREUM_RPC_URL }}
+      ARBITRUM_RPC_URL:  ${{ secrets.ARBITRUM_RPC_URL }}
+      OPTIMISM_RPC_URL:  ${{ secrets.OPTIMISM_RPC_URL }}
+      ZKSYNC_RPC_URL:  ${{ secrets.ZKSYNC_RPC_URL }}
+      LINEA_RPC_URL:  ${{ secrets.LINEA_RPC_URL }}
+      SCROLL_RPC_URL:  ${{ secrets.SCROLL_RPC_URL }}
+
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: recursive
+        
+      - name: Set up environment
+        uses: ./.github/actions/setup
 
-      - name: Install Foundry
-        uses: foundry-rs/foundry-toolchain@v1
-
-      - name: Show Forge version
-        run: |
-          forge --version
-
-      - name: Run Forge fmt
-        run: |
-          forge fmt --check
-        id: fmt
-
-      - name: Run Forge build
-        run: |
-          forge build --sizes
-        id: build
-
-      - name: Run Forge tests
-        run: |
-          forge test -vvv
-        id: test
+      - name: Run tests
+        run: forge test -vv

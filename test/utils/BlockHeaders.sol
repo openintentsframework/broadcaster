@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
 
-contract BlockHeaders {
+import {RLP} from "@openzeppelin/contracts/utils/RLP.sol";
+
+library BlockHeaders {
+    using RLP for RLP.Encoder;
+
     struct L1BlockHeader {
         bytes32 parentHash;
         bytes32 sha3Uncles;
@@ -26,7 +30,7 @@ contract BlockHeaders {
         bytes32 requestsHash;
     }
 
-    struct L2BlockHeader {
+    struct ArbitrumBlockHeader {
         bytes32 parentHash;
         bytes32 sha3Uncles;
         address miner;
@@ -48,8 +52,60 @@ contract BlockHeaders {
         uint64 excessBlobGas;
         bytes32 parentBeaconBlockRoot;
         bytes32 requestsHash;
+        uint256 totalDifficulty;
         uint256 l1BlockNumber;
         uint256 sendCount;
         bytes32 sendRoot;
+        uint256 arbOsVersion;
+    }
+
+    function encode(L1BlockHeader memory h) internal pure returns (bytes memory out) {
+        RLP.Encoder memory enc = RLP.encoder();
+        enc.push(h.parentHash);
+        enc.push(h.sha3Uncles);
+        enc.push(h.miner);
+        enc.push(h.stateRoot);
+        enc.push(h.transactionsRoot);
+        enc.push(h.receiptsRoot);
+        enc.push(h.logsBloom);
+        enc.push(h.difficulty);
+        enc.push(h.number);
+        enc.push(h.gasLimit);
+        enc.push(h.gasUsed);
+        enc.push(h.timestamp);
+        enc.push(h.extraData);
+        enc.push(h.mixHash);
+        enc.push(abi.encodePacked(h.nonce));
+        enc.push(h.baseFeePerGas);
+        enc.push(h.withdrawalsRoot);
+        enc.push(h.blobGasUsed);
+        enc.push(h.excessBlobGas);
+        enc.push(h.parentBeaconBlockRoot);
+        enc.push(h.requestsHash);
+
+        out = enc.encode(); // wraps items as an RLP list
+    }
+
+    function encode(ArbitrumBlockHeader memory h) internal pure returns (bytes memory out) {
+        RLP.Encoder memory enc = RLP.encoder();
+        enc.push(h.parentHash);
+        enc.push(h.sha3Uncles);
+        enc.push(h.miner);
+        enc.push(h.stateRoot);
+        enc.push(h.transactionsRoot);
+        enc.push(h.receiptsRoot);
+        enc.push(h.logsBloom);
+        enc.push(h.difficulty);
+        enc.push(h.number);
+        enc.push(h.gasLimit);
+        enc.push(h.gasUsed);
+        enc.push(h.timestamp);
+        enc.push(h.extraData);
+        enc.push(h.mixHash);
+        enc.push(abi.encodePacked(h.nonce));
+        enc.push(h.baseFeePerGas);
+        enc.push(h.totalDifficulty);
+
+        out = enc.encode(); // wraps items as an RLP list
     }
 }

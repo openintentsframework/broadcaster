@@ -1,4 +1,5 @@
 import { Address, Hash, Hex, PublicClient, toHex, toRlp } from 'viem'
+import fs from 'fs';
 
 /**
  * BaseProverHelper is a base class for prover helpers that provides common functionality
@@ -54,22 +55,38 @@ export abstract class BaseProverHelper {
   ): Promise<{ rlpAccountProof: Hex; rlpStorageProof: Hex; slotValue: Hash }> {
     const client =
       chain === 'target' ? this.targetChainClient : this.homeChainClient
+    console.log("_getRlpStorageAndAccountProof");
     const block = await client.getBlock({
       blockHash,
       includeTransactions: false,
     })
 
+    //console.log("block", block);
+
     if (!block) {
       throw new Error('Block not found')
     }
 
-    const proof = await client.getProof({
-      address: account,
-      storageKeys: [toHex(slot, { size: 32 })],
-      blockNumber: block.number,
-    })
+    let proof: any;
 
-    const slotValue = toHex(proof.storageProof[0].value, { size: 32 })
+    try{
+      proof = await client.getProof({
+        address: account,
+        storageKeys: [toHex(slot, { size: 32 })],
+        blockNumber: block.number,
+      })
+    } catch (error) {
+      console.error("eth_getProof failed:", error);
+      throw new Error(`Failed to get proof for account ${account} at slot ${slot}: ${error}`)
+    }
+
+
+    // Convert slot value to proper bytes32 hex format
+    const rawValue = proof.storageProof[0].value
+    const slotValue = typeof rawValue === 'string' && rawValue.startsWith('0x')
+      ? (rawValue as Hash)
+      : toHex(BigInt(rawValue), { size: 32 })
+    
     const rlpAccountProof = toRlp(proof.accountProof)
     const rlpStorageProof = toRlp(proof.storageProof[0].proof)
 

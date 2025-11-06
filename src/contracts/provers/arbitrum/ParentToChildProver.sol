@@ -6,8 +6,6 @@ import {IBlockHashProver} from "../../interfaces/IBlockHashProver.sol";
 import {IOutbox} from "@arbitrum/nitro-contracts/src/bridge/IOutbox.sol";
 import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 
-import {console} from "forge-std/console.sol";
-
 /// @notice Arbitrum implementation of a parent to child IBlockHashProver.
 /// @dev    verifyTargetBlockHash and getTargetBlockHash get block hashes from the child chain's Outbox contract.
 ///         verifyStorageSlot is implemented to work against any Arbitrum child chain with a standard Ethereum block header and state trie.
@@ -18,6 +16,8 @@ contract ParentToChildProver is IBlockHashProver {
     ///      Should be set to 3 unless the outbox contract has been modified.
     ///      See https://github.com/OffchainLabs/nitro-contracts/blob/9d0e90ef588f94a9d2ffa4dc22713d91a76f57d4/src/bridge/AbsOutbox.sol#L32
     uint256 public immutable rootsSlot;
+
+    error TargetBlockHashNotFound();
 
     constructor(address _outbox, uint256 _rootsSlot) {
         outbox = _outbox;
@@ -32,6 +32,7 @@ contract ParentToChildProver is IBlockHashProver {
         view
         returns (bytes32 targetBlockHash)
     {
+        
         // decode the input
         (bytes memory rlpBlockHeader, bytes32 sendRoot, bytes memory accountProof, bytes memory storageProof) =
             abi.decode(input, (bytes, bytes32, bytes, bytes));
@@ -39,8 +40,6 @@ contract ParentToChildProver is IBlockHashProver {
         // calculate the slot based on the provided send root
         // see: https://github.com/OffchainLabs/nitro-contracts/blob/9d0e90ef588f94a9d2ffa4dc22713d91a76f57d4/src/bridge/AbsOutbox.sol#L32
         uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(rootsSlot), sendRoot));
-
-        console.log("slot", slot);
 
         // verify proofs and get the block hash
         targetBlockHash =
@@ -54,6 +53,10 @@ contract ParentToChildProver is IBlockHashProver {
         bytes32 sendRoot = abi.decode(input, (bytes32));
         // get the target block hash from the outbox
         targetBlockHash = IOutbox(outbox).roots(sendRoot);
+
+        if(targetBlockHash == bytes32(0)) {
+            revert TargetBlockHashNotFound();
+        }
     }
 
     /// @notice Verify a storage slot given a target chain block hash and a proof.

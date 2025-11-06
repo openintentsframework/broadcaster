@@ -1,0 +1,23 @@
+{
+  "name": "storage-proof-generator",
+  "version": "0.1.0",
+  "private": false,
+  "license": "MIT",
+  "bin": {
+    "storage-proof-generator": "dist/index.cjs"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "tsup src/index.ts --dts --format cjs --target node20 --minify --sourcemap --clean",
+    "dev": "tsx src/index.ts --help"
+  },
+  "dependencies": {
+    "viem": "^2.38.6"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.24",
+    "tsup": "^8.5.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}
