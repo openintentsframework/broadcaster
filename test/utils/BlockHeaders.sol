@@ -60,20 +60,51 @@ library BlockHeaders {
     }
 
     function encode(L1BlockHeader memory h) internal pure returns (bytes memory out) {
-        RLP.Encoder memory enc = RLP.encoder().push(h.parentHash).push(h.sha3Uncles).push(h.miner).push(h.stateRoot)
-            .push(h.transactionsRoot).push(h.receiptsRoot).push(h.logsBloom).push(h.difficulty).push(h.number)
-            .push(h.gasLimit).push(h.gasUsed).push(h.timestamp).push(h.extraData).push(h.mixHash)
-            .push(abi.encodePacked(h.nonce)).push(h.baseFeePerGas).push(h.withdrawalsRoot).push(h.blobGasUsed)
-            .push(h.excessBlobGas).push(h.parentBeaconBlockRoot).push(h.requestsHash);
+        RLP.Encoder memory enc = RLP.encoder();
+        enc.push(h.parentHash);
+        enc.push(h.sha3Uncles);
+        enc.push(h.miner);
+        enc.push(h.stateRoot);
+        enc.push(h.transactionsRoot);
+        enc.push(h.receiptsRoot);
+        enc.push(h.logsBloom);
+        enc.push(h.difficulty);
+        enc.push(h.number);
+        enc.push(h.gasLimit);
+        enc.push(h.gasUsed);
+        enc.push(h.timestamp);
+        enc.push(h.extraData);
+        enc.push(h.mixHash);
+        enc.push(abi.encodePacked(h.nonce));
+        enc.push(h.baseFeePerGas);
+        enc.push(h.withdrawalsRoot);
+        enc.push(h.blobGasUsed);
+        enc.push(h.excessBlobGas);
+        enc.push(h.parentBeaconBlockRoot);
+        enc.push(h.requestsHash);
 
         out = enc.encode(); // wraps items as an RLP list
     }
 
     function encode(ArbitrumBlockHeader memory h) internal pure returns (bytes memory out) {
-        RLP.Encoder memory enc = RLP.encoder().push(h.parentHash).push(h.sha3Uncles).push(h.miner).push(h.stateRoot)
-            .push(h.transactionsRoot).push(h.receiptsRoot).push(h.logsBloom).push(h.difficulty).push(h.number)
-            .push(h.gasLimit).push(h.gasUsed).push(h.timestamp).push(h.extraData).push(h.mixHash)
-            .push(abi.encodePacked(h.nonce)).push(h.baseFeePerGas).push(h.totalDifficulty);
+        RLP.Encoder memory enc = RLP.encoder();
+        enc.push(h.parentHash);
+        enc.push(h.sha3Uncles);
+        enc.push(h.miner);
+        enc.push(h.stateRoot);
+        enc.push(h.transactionsRoot);
+        enc.push(h.receiptsRoot);
+        enc.push(h.logsBloom);
+        enc.push(h.difficulty);
+        enc.push(h.number);
+        enc.push(h.gasLimit);
+        enc.push(h.gasUsed);
+        enc.push(h.timestamp);
+        enc.push(h.extraData);
+        enc.push(h.mixHash);
+        enc.push(abi.encodePacked(h.nonce));
+        enc.push(h.baseFeePerGas);
+        enc.push(h.totalDifficulty);
 
         out = enc.encode(); // wraps items as an RLP list
     }
