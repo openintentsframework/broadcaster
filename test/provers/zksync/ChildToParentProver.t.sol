@@ -110,7 +110,6 @@ contract ZksyncChildToParentProverTest is Test {
 
         assertEq(blockHash, expectedBlockHash);
 
-
         bytes memory input = abi.encode(rlpBlockHeader, account, expectedSlot, rlpAccountProof, rlpStorageProof);
 
         ChildToParentProver childToParentProverCopy = new ChildToParentProver(blockHashBuffer, childChainId);
