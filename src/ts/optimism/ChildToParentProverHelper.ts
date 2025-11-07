@@ -126,5 +126,28 @@ export class OptimismChildToParentProverHelper
 
     return { input, slotValue }
   }
+
+  /**
+   * Build input for getTargetBlockHashByBlockNumber()
+   * Gets the target block hash at a specific home chain block number
+   */
+  async buildInputForGetTargetBlockHashByBlockNumber(
+    blockNumber: bigint
+  ): Promise<{ input: Hex; targetBlockHash: Hash }> {
+    // Read the L1 block hash from the predeploy at the specified block number
+    const targetBlockHash = await this.homeChainClient.getStorageAt({
+      address: this.l1BlockPredeploy,
+      slot: `0x${this.l1BlockHashSlot.toString(16)}` as Hex,
+      blockNumber,
+    }) as Hash
+
+    // For Optimism, getTargetBlockHashByBlockNumber() doesn't need input
+    // It reads the predeploy directly at the given block
+    return {
+      input: '0x' as Hex,
+      targetBlockHash,
+    }
+  }
+  
 }
 
