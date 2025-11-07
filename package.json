@@ -39,7 +39,7 @@
   "scripts": {
     "build": "hardhat compile && wagmi generate && tsc",
     "clean": "hardhat clean && rm -rf wagmi && rm -rf dist",
-    "test": "yarn build && hardhat test"
+    "test": "yarn build && forge test"
   },
   "dependencies": {
   }
