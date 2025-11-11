@@ -12,7 +12,7 @@
   resolved "https://registry.npmjs.org/@adraffy/ens-normalize/-/ens-normalize-1.10.1.tgz"
   integrity sha512-96Z2IP3mYmF1Xg2cDm8f1gWGf/HUVedQ3FMifV4kG/PQ4yEP51xDtRAEfhVNt5f/uzpNkZHwWQuUcu6D6K+Ekw==
 
-"@arbitrum/nitro-contracts@^3.0.0", "@arbitrum/nitro-contracts@^3.1.0":
+"@arbitrum/nitro-contracts@^3.1.0":
   version "3.1.1"
   resolved "https://registry.npmjs.org/@arbitrum/nitro-contracts/-/nitro-contracts-3.1.1.tgz"
   integrity sha512-30s5ocUZbDx22MybngvO7WZtCgYoPYmkHnnBl07FZnN3gOv+oy4WQB0Ln2QG4aBzPp6hCg76Yw9mQJDN/+OkCg==
@@ -22,11 +22,6 @@
     "@openzeppelin/contracts-upgradeable" "4.7.3"
     patch-package "^6.5.1"
     solady "0.0.182"
-
-"@commander-js/extra-typings@^13.1.0":
-  version "13.1.0"
-  resolved "https://registry.npmjs.org/@commander-js/extra-typings/-/extra-typings-13.1.0.tgz"
-  integrity sha512-q5P52BYb1hwVWE6dtID7VvuJWrlfbCv4klj7BjUUOqMz4jbSZD4C9fJ9lRjL2jnBGTg+gDDlaXN51rkWcLk4fg==
 
 "@cspotcode/source-map-support@^0.8.0":
   version "0.8.1"
@@ -1295,16 +1290,6 @@ blakejs@^1.1.0:
   resolved "https://registry.npmjs.org/blakejs/-/blakejs-1.2.1.tgz"
   integrity sha512-QXUSXI3QVc/gJME0dBpXrag1kbzOqCjCX8/b54ntNyW6sjtoqxqRk3LTmXzaJoh71zMsDCjM+47jS7XiwN/+fQ==
 
-block-hash-pusher@Offchainlabs/block-hash-pusher:
-  version "1.0.0"
-  resolved "https://codeload.github.com/Offchainlabs/block-hash-pusher/tar.gz/085872efb820563b9c50d85732457147523fbe67"
-  integrity sha512-s/70XVjHZ+YB9Z1sCWFxm0k+3s/adD1JYH8WIKvAMGiezgxQBfM6LV2YlFr/XZfOtdd4ZvZy0Mx0yZIjI4nkEw==
-  dependencies:
-    "@arbitrum/nitro-contracts" "^3.0.0"
-    "@commander-js/extra-typings" "^13.1.0"
-    commander "^13.1.0"
-    dotenv "^16.4.7"
-
 bn.js@^4.11.9:
   version "4.12.2"
   resolved "https://registry.npmjs.org/bn.js/-/bn.js-4.12.2.tgz"
@@ -1635,11 +1620,6 @@ command-exists@^1.2.8:
   resolved "https://registry.npmjs.org/command-exists/-/command-exists-1.2.9.tgz"
   integrity sha512-LTQ/SGc+s0Xc0Fu5WaKnR0YiygZkm9eKFvyS+fRsU7/ZWFF8ykFM6Pc9aCVf1+xasOOZpO3BAVgVrKvsqKHV7w==
 
-commander@^13.1.0, commander@~13.1.0:
-  version "13.1.0"
-  resolved "https://registry.npmjs.org/commander/-/commander-13.1.0.tgz"
-  integrity sha512-/rFeCpNJQbhSZjGVwO9RFV3xPqbnERS8MmIQzCtD/zl6gpJuV/bMLuN92oG3F7d8oDEHHRrujSXNUr8fpjntKw==
-
 commander@^8.1.0:
   version "8.3.0"
   resolved "https://registry.npmjs.org/commander/-/commander-8.3.0.tgz"
@@ -1796,7 +1776,7 @@ dotenv-expand@^10.0.0:
   resolved "https://registry.npmjs.org/dotenv-expand/-/dotenv-expand-10.0.0.tgz"
   integrity sha512-GopVGCpVS1UKH75VKHGuQFqS1Gusej0z4FyQkPdwjil2gNIv+LNsqBlboOzpJFZKVT95GkCyWJbBSdFEFUWI2A==
 
-dotenv@^16.3.1, dotenv@^16.4.7, dotenv@^16.5.0:
+dotenv@^16.3.1, dotenv@^16.5.0:
   version "16.6.1"
   resolved "https://registry.npmjs.org/dotenv/-/dotenv-16.6.1.tgz"
   integrity sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==
@@ -2256,6 +2236,11 @@ fs.realpath@^1.0.0:
   version "1.0.0"
   resolved "https://registry.npmjs.org/fs.realpath/-/fs.realpath-1.0.0.tgz"
   integrity sha512-OO0pH2lK6a0hZnAdau5ItzHPI6pUlvI7jMVnxUQRtw4owF2wk8lOSabtGDCTP4Ggrg2MbGnWO9X8K1t4+fGMDw==
+
+fsevents@~2.3.2:
+  version "2.3.3"
+  resolved "https://registry.npmjs.org/fsevents/-/fsevents-2.3.3.tgz"
+  integrity sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==
 
 function-bind@^1.1.2:
   version "1.1.2"
