@@ -48,12 +48,28 @@ async function main() {
         blockNumber: block,
     });
 
-    const rlpBlockHeader = _convertToRlpBlock(blockHeader);
+    let rlpBlockHeader: Hex;
+    
+    try {
+        const rawHeader = await client.request({
+            method: 'debug_getRawHeader' as any,
+            params: [toHex(block)] as any
+        }) as Hex;
+        rlpBlockHeader = rawHeader;
+        console.log("[storage-proof-generator] Using debug_getRawHeader for block RLP");
+    } catch (e) {
+        console.log("[storage-proof-generator] debug_getRawHeader not available, using manual RLP encoding");
+        rlpBlockHeader = _convertToRlpBlock(blockHeader);
+    }
 
     const expectedBlockHash = keccak256(rlpBlockHeader);
 
     if(expectedBlockHash !== blockHeader.hash){
-        fail("Block hash mismatch");
+        console.log("Expected:", expectedBlockHash);
+        console.log("Actual:  ", blockHeader.hash);
+        console.log("Block fields:", Object.keys(blockHeader).sort());
+        console.log("RLP Block Header:", rlpBlockHeader);
+        fail("Block hash mismatch - run with DEBUG=1 for details");
     }
 
     const {stateRoot, rlpAccountProof, rlpStorageProof, slotValue} = await _getRlpStorageAndAccountProof(client, account as `0x${string}` , slot, block);
