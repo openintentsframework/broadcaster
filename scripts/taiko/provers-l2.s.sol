@@ -10,33 +10,26 @@ import { BlockHashProverPointer } from "../../src/contracts/BlockHashProverPoint
 /// @dev This script deploys the prover that allows reading L1 state from L2
 contract DeployL2Prover is Script {
     function run() public {
-        // Configuration for Taiko L2
         address signalServiceL2 = 0x1670010000000000000000000000000000000005;
         uint256 checkpointsSlot = 254;
-        uint256 homeChainId = 167001; // L2 chain ID
-        address owner = 0xFABB0ac9d68B0B445fB7357272Ff202C5651694a;
+        uint256 homeChainId = 167001;
+        address owner = vm.envAddress("TAIKO_DEPLOYER_ADDRESS");
 
         vm.startBroadcast();
         
-        // Deploy ChildToParentProver on L2
         TaikoChildToParentProver childToParentProver = new TaikoChildToParentProver(
             signalServiceL2, 
             checkpointsSlot, 
             homeChainId
         );
         
-        // Deploy BlockHashProverPointer on L2
         BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
-        
-        // Set the implementation address
         blockHashProverPointer.setImplementationAddress(address(childToParentProver));
         
         vm.stopBroadcast();
 
-        console.log("=== L2 Deployment Complete ===");
-        console.log("ChildToParentProver deployed to:", address(childToParentProver));
-        console.log("BlockHashProverPointer deployed to:", address(blockHashProverPointer));
-        console.log("Owner:", owner);
+        console.log("ChildToParentProver:", address(childToParentProver));
+        console.log("L2ProverPointer:", address(blockHashProverPointer));
     }
 }
 

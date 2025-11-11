@@ -9,25 +9,15 @@ import { Broadcaster } from "../../src/contracts/Broadcaster.sol";
 /// @dev This script broadcasts a message using the Broadcaster contract on L2
 contract BroadcastL2Message is Script {
     function run() public {
-        // L2 Broadcaster address
-        address broadcasterAddress = 0x6BdBb69660E6849b98e8C524d266a0005D3655F7;
-        
-        // Define your message here - change this to your desired message
-        bytes32 message = keccak256("Hello from Taiko L2!");
+        address broadcasterAddress = vm.envAddress("L2_BROADCASTER");
+        bytes32 message = keccak256(abi.encodePacked("Message", block.timestamp, msg.sender));
         
         vm.startBroadcast();
-        
-        // Broadcast the message
-        Broadcaster broadcaster = Broadcaster(broadcasterAddress);
-        broadcaster.broadcastMessage(message);
-        
+        Broadcaster(broadcasterAddress).broadcastMessage(message);
         vm.stopBroadcast();
 
-        console.log("=== L2 Message Broadcast Complete ===");
-        console.log("Broadcaster address:", broadcasterAddress);
-        console.log("Message hash:");
+        console.log("Broadcaster:", broadcasterAddress);
         console.logBytes32(message);
-        console.log("Publisher:", msg.sender);
     }
 }
 
