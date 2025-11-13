@@ -40,5 +40,17 @@ contract BlockHashProverPointerTest is Test {
         vm.expectRevert(abi.encodeWithSelector(BlockHashProverPointer.NonIncreasingVersion.selector, 1, 1));
         blockHashProverPointer.setImplementationAddress(address(mockProver));
     }
+
+    function test_setImplementationAddress_reverts_if_implementation_address_is_invalid() public {
+        vm.prank(owner);
+        vm.expectRevert(abi.encodeWithSelector(BlockHashProverPointer.InvalidImplementationAddress.selector));
+        blockHashProverPointer.setImplementationAddress(address(0));
+    }
+
+    function test_setImplementationAddress_reverts_if_implementation_address_is_invalid_eoa() public {
+        vm.prank(owner);
+        vm.expectRevert(abi.encodeWithSelector(BlockHashProverPointer.InvalidImplementationAddress.selector));
+        blockHashProverPointer.setImplementationAddress(makeAddr("invalid"));
+    }
 }
 
