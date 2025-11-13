@@ -12,6 +12,7 @@ contract BlockHashProverPointer is IBlockHashProverPointer, Ownable {
     address internal _implementationAddress;
 
     error NonIncreasingVersion(uint256 newVersion, uint256 oldVersion);
+    error InvalidImplementationAddress();
 
     constructor(address _initialOwner) Ownable(_initialOwner) {}
 
@@ -25,12 +26,25 @@ contract BlockHashProverPointer is IBlockHashProverPointer, Ownable {
     }
 
     function setImplementationAddress(address _newImplementationAddress) external onlyOwner {
-        if(implementationAddress() !=  address(0)) {
-        uint256 newVersion = IBlockHashProver(_newImplementationAddress).version();
-        uint256 oldVersion = IBlockHashProver(implementationAddress()).version();
-        if (newVersion <= oldVersion) {
-            revert NonIncreasingVersion(newVersion, oldVersion);
-        }}
+        if(_newImplementationAddress == address(0)) {
+            revert InvalidImplementationAddress();
+        }
+
+        (bool success, bytes memory returnData) = _newImplementationAddress.staticcall(abi.encodeWithSelector(IBlockHashProver.version.selector));
+        if (!success || returnData.length != 32) {
+            revert InvalidImplementationAddress();
+        }
+
+        uint256 newVersion = abi.decode(returnData, (uint256));
+
+        address currentImplementationAddress = implementationAddress();
+        if(currentImplementationAddress !=  address(0)) {
+            uint256 oldVersion = IBlockHashProver(currentImplementationAddress).version();
+            if (newVersion <= oldVersion) {
+                revert NonIncreasingVersion(newVersion, oldVersion);
+            }
+        }
+
         _implementationAddress = _newImplementationAddress;
         _setCodeHash(_newImplementationAddress.codehash);
     }
