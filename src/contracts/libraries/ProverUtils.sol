@@ -23,6 +23,12 @@ library ProverUtils {
     ///      https://github.com/ethereum/go-ethereum/blob/35dd84ce2999ecf5ca8ace50a4d1a6abc231c370/core/types/state_account.go#L31-L36
     uint256 internal constant STORAGE_ROOT_INDEX = 2;
 
+    /// @dev Thrown when the block hash does not match the block header.
+    error BlockHashDoesNotMatch();
+
+    /// @dev Thrown when the account does not exist.
+    error AccountDoesNotExist();
+
     /// @dev Extracts the state root from the RLP encoded block header.
     ///      Assumes the state root is the fourth item in the block header.
     /// @param rlpBlockHeader The RLP encoded block header.
@@ -67,7 +73,9 @@ library ProverUtils {
         bytes memory rlpStorageProof
     ) internal pure returns (bytes32 value) {
         // verify the block header
-        require(blockHash == keccak256(rlpBlockHeader), "Block hash does not match");
+        if(blockHash != keccak256(rlpBlockHeader)) {
+            revert BlockHashDoesNotMatch();
+        }
 
         // extract the state root from the block header
         bytes32 stateRoot = extractStateRootFromBlockHeader(rlpBlockHeader);
@@ -113,7 +121,9 @@ library ProverUtils {
             getAccountDataFromStateRoot(stateRoot, rlpAccountProof, account);
     
 
-        require(accountExists, "Account does not exist");
+        if(!accountExists) {
+            revert AccountDoesNotExist();
+        }
 
         (bool slotExists, bytes memory slotValue) =
             Lib_SecureMerkleTrie.get(abi.encode(slot), rlpStorageProof, extractStorageRootFromAccountData(accountValue));
