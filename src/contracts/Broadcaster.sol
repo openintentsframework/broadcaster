@@ -25,7 +25,11 @@ contract Broadcaster is IBroadcaster {
         emit MessageBroadcast(message, msg.sender);
     }
 
+    /// @notice Checks if a message has been broadcasted by a given publisher.
     /// @dev Not required by the standard, but useful for visibility.
+    /// @param message The message to check.
+    /// @param publisher The address of the publisher who may have broadcast the message.
+    /// @return True if the message has been broadcasted by the publisher, false otherwise.
     function hasBroadcasted(bytes32 message, address publisher) external view returns (bool) {
         return _loadStorageSlot(_computeMessageSlot(message, publisher)) != 0;
     }
