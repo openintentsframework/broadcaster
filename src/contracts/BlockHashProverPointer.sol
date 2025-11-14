@@ -20,6 +20,7 @@ contract BlockHashProverPointer is IBlockHashProverPointer, Ownable {
     }
 
     /// @notice Return the code hash of the latest version of the prover.
+    /// @return codeHash The code hash of the current implementation stored in the pointer slot.
     function implementationCodeHash() public view returns (bytes32 codeHash) {
         codeHash = StorageSlot.getBytes32Slot(BLOCK_HASH_PROVER_POINTER_SLOT).value;
     }
