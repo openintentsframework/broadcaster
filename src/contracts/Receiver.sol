@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.27;
+pragma solidity 0.8.28;
 
 import {IReceiver} from "./interfaces/IReceiver.sol";
 import {IBlockHashProver} from "./interfaces/IBlockHashProver.sol";
