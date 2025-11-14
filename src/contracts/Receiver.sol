@@ -16,6 +16,7 @@ contract Receiver is IReceiver {
     error WrongBlockHashProverPointerSlot();
     error DifferentCodeHash();
     error NewerProverVersion();
+    error 
 
     function verifyBroadcastMessage(RemoteReadArgs calldata broadcasterReadArgs, bytes32 message, address publisher)
         external
