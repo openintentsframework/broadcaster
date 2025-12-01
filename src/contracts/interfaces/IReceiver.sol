@@ -46,5 +46,7 @@ interface IReceiver {
 
     /// @notice The BlockHashProverCopy on the local chain corresponding to the bhpPointerId
     ///         MUST return 0 if the BlockHashProverPointer does not exist.
+    /// @param bhpPointerId The unique identifier of the BlockHashProverPointer.
+    /// @return bhpCopy The BlockHashProver copy stored on the local chain, or address(0) if not found.
     function blockHashProverCopy(bytes32 bhpPointerId) external view returns (IBlockHashProver bhpCopy);
 }
