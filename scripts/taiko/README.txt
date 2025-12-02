@@ -16,9 +16,11 @@ QUICK START
 2. Deploy all contracts:
    ./scripts/taiko/deploy.sh
 
-3. Broadcast and test:
-   ./scripts/taiko/broadcast.sh l2
-   # Follow E2E flow below
+3. Broadcast and generate proof (ONE COMMAND):
+   ./scripts/taiko/broadcast-and-prove.sh l2
+
+4. Run test to verify:
+   forge test --mt test_verifyBroadcastMessage_from_TaikoL2 -vv
 
 ========================================
 SETUP
@@ -88,7 +90,11 @@ Verify a Taiko L2 message from Ethereum L1
 
 Concept: Broadcast message on L2, verify it from L1 using ParentToChildProver
 
-Steps:
+EASY WAY (recommended):
+  ./scripts/taiko/broadcast-and-prove.sh l2
+  forge test --mt test_verifyBroadcastMessage_from_TaikoL2 -vv
+
+MANUAL Steps:
 
 1. Broadcast on L2:
    ./scripts/taiko/broadcast.sh l2
@@ -117,7 +123,11 @@ Verify an Ethereum L1 message from Taiko L2
 
 Concept: Broadcast message on L1, verify it from L2 using ChildToParentProver
 
-Steps:
+EASY WAY (recommended):
+  ./scripts/taiko/broadcast-and-prove.sh l1
+  forge test --mt test_verifyBroadcastMessage_from_Ethereum -vv
+
+MANUAL Steps:
 
 1. Broadcast on L1:
    ./scripts/taiko/broadcast.sh l1
@@ -151,6 +161,26 @@ Expected result: Test passes, message verified from L2
 AUTOMATED WORKFLOWS
 ========================================
 
+./scripts/taiko/broadcast-and-prove.sh [l1|l2|both]
+  ⭐ RECOMMENDED: One-command workflow for broadcast + proof generation
+
+  Automatically:
+  1. Broadcasts message on specified chain(s)
+  2. Extracts TX hash from forge output
+  3. Gets storage slot, message, publisher, block number
+  4. Generates storage proof
+  5. Saves proof to test/payloads/taiko/
+
+  Examples:
+    ./scripts/taiko/broadcast-and-prove.sh l2    # L2 only
+    ./scripts/taiko/broadcast-and-prove.sh l1    # L1 only
+    ./scripts/taiko/broadcast-and-prove.sh both  # Both chains
+    ./scripts/taiko/broadcast-and-prove.sh       # Same as 'both'
+
+  Output files:
+    - L1: test/payloads/taiko/taikoProofL1.json
+    - L2: test/payloads/taiko/taikoProofL2.json
+
 ./scripts/taiko/workflow-l1-to-l2.sh
   Automated L1 proof generation workflow
   Interactive prompts guide you through the process
@@ -179,6 +209,9 @@ In tests we mock this with vm.store().
 ========================================
 HELPER SCRIPTS
 ========================================
+
+./scripts/taiko/broadcast-and-prove.sh [l1|l2|both]
+  One-command broadcast + proof generation (see AUTOMATED WORKFLOWS)
 
 ./scripts/taiko/get-slot.sh <tx_hash> [l1|l2] [debug]
   Get storage slot and proof generation command from broadcast tx
