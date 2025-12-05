@@ -30,7 +30,7 @@ contract ReceiverTaikoTest is Test {
     uint256 public ethereumForkId;
     uint256 public taikoL2ForkId;
 
-    address public constant L1_SIGNAL_SERVICE = 0xbB128Fd4942e8143B8dc10f38CCfeADb32544264;
+    address public constant L1_SIGNAL_SERVICE = 0x53789e39E3310737E8C8cED483032AAc25B39ded;
     address public constant L2_SIGNAL_SERVICE = 0x1670010000000000000000000000000000000005;
     uint256 public constant CHECKPOINTS_SLOT = 254;
     uint256 public constant L1_CHAIN_ID = 32382;

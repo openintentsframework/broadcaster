@@ -9,19 +9,10 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-# Load environment
+# Load environment and configuration
 source .env
+source scripts/taiko/config.sh
 source scripts/taiko/addresses.sh
-
-# RPCs and Chain IDs
-L1_RPC="https://l1rpc.internal.taiko.xyz"
-L2_RPC="https://rpc.internal.taiko.xyz"
-L1_CHAIN_ID="32382"
-L2_CHAIN_ID="167001"
-
-# SignalService addresses
-L1_SIGNAL_SERVICE="0xbB128Fd4942e8143B8dc10f38CCfeADb32544264"
-L2_SIGNAL_SERVICE="0x1670010000000000000000000000000000000005"
 
 # Output functions
 print_header() {
@@ -164,7 +155,7 @@ extract_message_info() {
     RESULT_SLOT=$(cast keccak "$ENCODED")
 }
 
-# Generate storage proof
+# Generate storage proof using openintents-storage-proof-generator (npm package)
 generate_proof() {
     local rpc=$1
     local account=$2
@@ -172,12 +163,10 @@ generate_proof() {
     local block=$4
     local output=$5
 
-    cd scripts/storage-proof-generator
-    node dist/index.cjs \
+    storage-proof-generator \
         --rpc "$rpc" \
         --account "$account" \
         --slot "$slot" \
         --block "$block" \
-        --output "../../$output"
-    cd ../..
+        --output "$output"
 }

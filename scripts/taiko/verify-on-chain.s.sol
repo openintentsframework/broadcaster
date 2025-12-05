@@ -6,15 +6,26 @@ import {stdJson} from "forge-std/StdJson.sol";
 import {IReceiver} from "../../src/contracts/interfaces/IReceiver.sol";
 
 /// @notice Script to verify a broadcast message on-chain using the deployed Receiver contract
+/// @dev Addresses are read from environment variables (source scripts/taiko/addresses.sh)
 contract VerifyOnChain is Script {
     using stdJson for string;
 
-    // Deployed contract addresses (from addresses.sh)
-    address constant L1_RECEIVER = 0x9B06D17ce54B06dF4A644900492036E3AC384517;
-    address constant L2_RECEIVER = 0x9B06D17ce54B06dF4A644900492036E3AC384517;
-    // Use ProverPointer (initialized) instead of BlockHashProverPointer (not initialized)
-    address constant L1_PROVER_POINTER = 0x5E81a027E3128876A666A42aBA6f6E38b20B4F2c;
-    address constant L2_PROVER_POINTER = 0x5E81a027E3128876A666A42aBA6f6E38b20B4F2c;
+    // Addresses loaded from environment variables (set via: source scripts/taiko/addresses.sh)
+    function getL1Receiver() internal view returns (address) {
+        return vm.envAddress("L1_RECEIVER");
+    }
+
+    function getL2Receiver() internal view returns (address) {
+        return vm.envAddress("L2_RECEIVER");
+    }
+
+    function getL1ProverPointer() internal view returns (address) {
+        return vm.envAddress("L1_PROVER_POINTER");
+    }
+
+    function getL2ProverPointer() internal view returns (address) {
+        return vm.envAddress("L2_PROVER_POINTER");
+    }
 
     /// @notice Verify L1 message on L2 (L1 → L2 flow)
     function verifyL1MessageOnL2() public view {
@@ -44,7 +55,7 @@ contract VerifyOnChain is Script {
         bytes memory storageProofInput = abi.encode(rlpBlockHeader, account, slot, rlpAccountProof, rlpStorageProof);
 
         address[] memory route = new address[](1);
-        route[0] = L2_PROVER_POINTER;
+        route[0] = getL2ProverPointer();
 
         bytes[] memory bhpInputs = new bytes[](1);
         bhpInputs[0] = abi.encode(uint48(blockNumber));
@@ -56,7 +67,7 @@ contract VerifyOnChain is Script {
         });
 
         // Call the deployed Receiver contract
-        (bytes32 broadcasterId, uint256 timestamp) = IReceiver(L2_RECEIVER).verifyBroadcastMessage(
+        (bytes32 broadcasterId, uint256 timestamp) = IReceiver(getL2Receiver()).verifyBroadcastMessage(
             remoteReadArgs,
             message,
             publisher
@@ -96,7 +107,7 @@ contract VerifyOnChain is Script {
         bytes memory storageProofInput = abi.encode(rlpBlockHeader, account, slot, rlpAccountProof, rlpStorageProof);
 
         address[] memory route = new address[](1);
-        route[0] = L1_PROVER_POINTER;
+        route[0] = getL1ProverPointer();
 
         bytes[] memory bhpInputs = new bytes[](1);
         bhpInputs[0] = abi.encode(uint48(blockNumber));
@@ -108,7 +119,7 @@ contract VerifyOnChain is Script {
         });
 
         // Call the deployed Receiver contract
-        (bytes32 broadcasterId, uint256 timestamp) = IReceiver(L1_RECEIVER).verifyBroadcastMessage(
+        (bytes32 broadcasterId, uint256 timestamp) = IReceiver(getL1Receiver()).verifyBroadcastMessage(
             remoteReadArgs,
             message,
             publisher

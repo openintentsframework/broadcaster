@@ -260,7 +260,7 @@ L1 (Ethereum/Taiko Parent - Chain ID: 32382)
 ├── Receiver (verifies remote messages)
 ├── BlockHashProverPointer
 ├── ParentToChildProver (reads L2 blocks via SignalService)
-└── SignalService (0xbB128Fd4942e8143B8dc10f38CCfeADb32544264)
+└── SignalService (0x53789e39E3310737E8C8cED483032AAc25B39ded)
     └── Stores L2 block checkpoints
 
 L2 (Taiko Child Chain - Chain ID: 167001)

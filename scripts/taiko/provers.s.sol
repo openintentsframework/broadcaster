@@ -8,11 +8,12 @@ import { BlockHashProverPointer } from "../../src/contracts/BlockHashProverPoint
 
 /// @notice Deploy ParentToChildProver on L1 (Ethereum/Taiko Parent Chain)
 /// @dev This script deploys the prover that allows reading L2 state from L1
+///      Configuration is read from environment variables (source scripts/taiko/config.sh)
 contract DeployL1Prover is Script {
     function run() public {
-        address signalServiceL1 = 0xbB128Fd4942e8143B8dc10f38CCfeADb32544264;
-        uint256 checkpointsSlot = 254;
-        uint256 homeChainId = 32382;
+        address signalServiceL1 = vm.envAddress("L1_SIGNAL_SERVICE");
+        uint256 checkpointsSlot = vm.envUint("CHECKPOINTS_SLOT");
+        uint256 homeChainId = vm.envUint("L1_CHAIN_ID");
         address owner = vm.envAddress("TAIKO_DEPLOYER_ADDRESS");
 
         vm.startBroadcast();

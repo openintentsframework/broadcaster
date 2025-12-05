@@ -1,10 +1,10 @@
 {
-  "message": "0x8dba6220003f4c468c74ed61df03682103690cc3129e5dc0ed02a33f7726d806",
+  "message": "0x821b00756d8f0d0fa2d87f81b3b137a107e1b8b6dff9269e945ec5e17346059d",
   "publisher": "0x1cbd3b2770909d4e10f157cabc84c7264073c9ec",
   "broadcaster": "0x6BdBb69660E6849b98e8C524d266a0005D3655F7",
-  "broadcastBlock": 11983,
-  "proofBlock": 11983,
-  "slot": "0x5cf0a02c352c6c9b0b5b9dac0097e6646e044e84c5444c271bb7e25f050dd8bc",
-  "txHash": "0xe434dc10c780a372005fa0a213fa80ad9c5177cec823382041011d6095fb524b",
+  "broadcastBlock": 1383,
+  "proofBlock": 1383,
+  "slot": "0x30ee8c342ebe3fde533285c4d9691cd4cbdbd1d2e00fa667232d6dbec706c7d6",
+  "txHash": "0xdd02a2cf48c44f96986cb1c60f6549d7656883e3bce43629191751a8bd0df141",
   "direction": "l2-to-l1"
 }

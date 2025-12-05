@@ -2,15 +2,11 @@
 set -e
 
 source .env
+source scripts/taiko/config.sh
 
 if [ -f scripts/taiko/addresses.sh ]; then
     source scripts/taiko/addresses.sh
 fi
-
-L1_RPC="https://l1rpc.internal.taiko.xyz"
-L2_RPC="https://rpc.internal.taiko.xyz"
-L1_VERIFIER_URL="https://l1explorerapi.internal.taiko.xyz/api/"
-L2_VERIFIER_URL="https://blockscoutapi.internal.taiko.xyz/api/"
 
 check_deployed() {
     local address=$1
@@ -143,7 +139,7 @@ if [ "$SKIP_L1" = false ] || [ "$SKIP_L1_PROVER" = false ]; then
     
     if [ "$SKIP_L1_PROVER" = false ]; then
         forge verify-contract --rpc-url "$L1_RPC" --verifier blockscout --verifier-url "$L1_VERIFIER_URL" \
-            --constructor-args $(cast abi-encode "constructor(address,uint256,uint256)" "0xbB128Fd4942e8143B8dc10f38CCfeADb32544264" "254" "32382") \
+            --constructor-args $(cast abi-encode "constructor(address,uint256,uint256)" "$L1_SIGNAL_SERVICE" "$CHECKPOINTS_SLOT" "$L1_CHAIN_ID") \
             "$L1_PARENT_TO_CHILD_PROVER" src/contracts/provers/taiko/ParentToChildProver.sol:ParentToChildProver || true
 
         forge verify-contract --rpc-url "$L1_RPC" --verifier blockscout --verifier-url "$L1_VERIFIER_URL" \
@@ -154,7 +150,7 @@ fi
 
 if [ "$SKIP_L2" = false ] || [ "$SKIP_L2_PROVER" = false ]; then
     echo "Verifying L2 contracts..."
-    
+
     if [ "$SKIP_L2" = false ]; then
         forge verify-contract --rpc-url "$L2_RPC" --verifier blockscout --verifier-url "$L2_VERIFIER_URL" \
             "$L2_BROADCASTER" src/contracts/Broadcaster.sol:Broadcaster || true
@@ -166,10 +162,10 @@ if [ "$SKIP_L2" = false ] || [ "$SKIP_L2_PROVER" = false ]; then
             --constructor-args $(cast abi-encode "constructor(address)" "$TAIKO_DEPLOYER_ADDRESS") \
             "$L2_POINTER" src/contracts/BlockHashProverPointer.sol:BlockHashProverPointer || true
     fi
-    
+
     if [ "$SKIP_L2_PROVER" = false ]; then
         forge verify-contract --rpc-url "$L2_RPC" --verifier blockscout --verifier-url "$L2_VERIFIER_URL" \
-            --constructor-args $(cast abi-encode "constructor(address,uint256,uint256)" "0x1670010000000000000000000000000000000005" "254" "167001") \
+            --constructor-args $(cast abi-encode "constructor(address,uint256,uint256)" "$L2_SIGNAL_SERVICE" "$CHECKPOINTS_SLOT" "$L2_CHAIN_ID") \
             "$L2_CHILD_TO_PARENT_PROVER" src/contracts/provers/taiko/ChildToParentProver.sol:ChildToParentProver || true
 
         forge verify-contract --rpc-url "$L2_RPC" --verifier blockscout --verifier-url "$L2_VERIFIER_URL" \

@@ -41,7 +41,7 @@ contract ParentToChildProverTest is Test {
     MockSignalService public mockSignalService;
 
     // Taiko Testnet addresses (for reference)
-    address public constant L1_SIGNAL_SERVICE_ADDR = 0xbB128Fd4942e8143B8dc10f38CCfeADb32544264;
+    address public constant L1_SIGNAL_SERVICE_ADDR = 0x53789e39E3310737E8C8cED483032AAc25B39ded;
     uint256 public constant CHECKPOINTS_SLOT = 254;
     uint256 public constant L1_CHAIN_ID = 32382; // Taiko Testnet L1
     uint256 public constant L2_CHAIN_ID = 167001; // Taiko Testnet L2
