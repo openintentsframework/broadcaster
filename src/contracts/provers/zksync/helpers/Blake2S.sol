@@ -90,7 +90,7 @@ library Blake2S {
         bytes memory key,
         uint256[2] memory salt,
         uint256[2] memory person
-    ) internal view {
+    ) internal pure {
         if (outlen == 0 || outlen > 32 || outlen % 4 != 0 || key.length > 32) revert("outlen");
 
         ctx.b[0] = 0;
@@ -159,7 +159,7 @@ library Blake2S {
         }
     }
 
-    function min(uint256 a, uint256 b) internal view returns(uint256) {
+    function min(uint256 a, uint256 b) internal pure returns(uint256) {
         if(a < b) return a;
         return b;
     }
@@ -421,7 +421,7 @@ library Blake2S {
      * @param a The 32-bit word in little-endian format.
      * @return b The 32-bit word in big-endian format.
      */
-    function getWords32(uint256 a) private view returns (uint256 b) {
+    function getWords32(uint256 a) private pure returns (uint256 b) {
         return
             (a >> 24) |
             ((a >> 8) & 0x0000FF00) |

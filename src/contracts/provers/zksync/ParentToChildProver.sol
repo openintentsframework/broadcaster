@@ -13,9 +13,9 @@ interface IZkSyncDiamond {
     function storedBatchHash(uint256) external view returns (bytes32);
 }
 
-/// @notice Arbitrum implementation of a child to parent IBlockHashProver.
-/// @dev    verifyTargetBlockHash and getTargetBlockHash get block hashes from the child chain's Outbox contract.
-///         verifyStorageSlot is implemented to work against any Arbitrum child chain with a standard Ethereum block header and state trie.
+/// @notice  Implementation of a parent to child IBlockHashProver.
+/// @dev    verifyTargetBlockHash and getTargetBlockHash get block hashes from the zksync diamond.
+///         verifyStorageSlot is implemented to work against any zksync diamond.
 contract ParentToChildProver is IBlockHashProver {
 
     IZkSyncDiamond immutable public zksyncDiamondAddress;
@@ -29,6 +29,7 @@ contract ParentToChildProver is IBlockHashProver {
         uint64 indexRepeatedStorageChanges;
         uint256 numberOfLayer1Txs;
         bytes32 priorityOperationsHash;
+        bytes32 dependencyRootsRollingHash;
         bytes32 l2LogsTreeRoot;
         uint256 timestamp;
         bytes32 commitment;
@@ -42,6 +43,7 @@ contract ParentToChildProver is IBlockHashProver {
         uint64 indexRepeatedStorageChanges;
         uint256 numberOfLayer1Txs;
         bytes32 priorityOperationsHash;
+        bytes32 dependencyRootsRollingHash;
         bytes32 l2LogsTreeRoot;
         uint256 timestamp;
         bytes32 commitment;
@@ -113,12 +115,14 @@ contract ParentToChildProver is IBlockHashProver {
             indexRepeatedStorageChanges: _proof.metadata.indexRepeatedStorageChanges,
             numberOfLayer1Txs: _proof.metadata.numberOfLayer1Txs,
             priorityOperationsHash: _proof.metadata.priorityOperationsHash,
+            dependencyRootsRollingHash: _proof.metadata.dependencyRootsRollingHash,
             l2LogsTreeRoot: _proof.metadata.l2LogsTreeRoot,
             timestamp: _proof.metadata.timestamp,
             commitment: _proof.metadata.commitment
         });
+
+
         bytes32 computedL1BatchHash = _hashStoredBatchInfo(batch);
-        
 
         if(computedL1BatchHash != targetBlockHash) {
             revert InvalidBatchHash();

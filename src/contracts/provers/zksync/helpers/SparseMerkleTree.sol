@@ -387,12 +387,12 @@ contract SparseMerkleTree {
     }
 
     /// @notice Returns the bit at the given bitOffset
-    function bit(uint256 value, uint256 bitOffset) public view returns (bool) {
+    function bit(uint256 value, uint256 bitOffset) public pure returns (bool) {
         return (value >> bitOffset) & 1 == 1;
     }
 
     /// @notice Reverses the bits of a 256-bit integer
-    function reverse(uint256 input) public view returns (uint256 v) {
+    function reverse(uint256 input) public pure returns (uint256 v) {
         v = input;
 
         // swap bytes
