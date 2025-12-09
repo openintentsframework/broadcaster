@@ -2,14 +2,17 @@
 pragma solidity 0.8.28;
 
 import {Test, console} from "forge-std/Test.sol";
-import {ParentToChildProver, ZkSyncProof, L2Message} from "../../../src/contracts/provers/zksync/ParentToChildProver.sol";
+import {
+    ParentToChildProver,
+    ZkSyncProof,
+    L2Message
+} from "../../../src/contracts/provers/zksync/ParentToChildProver.sol";
 
 contract ZkSyncParentToChildProverTest is Test {
-
     function setUp() public {}
 
     function test_verifyStorageSlot() public {
-        ParentToChildProver prover = new ParentToChildProver(address(0), 0, 32657);
+        ParentToChildProver prover = new ParentToChildProver(address(0), 0, 300);
 
         bytes32[] memory logProof = new bytes32[](36);
         logProof[0] = 0x010f0c0000000000000000000000000000000000000000000000000000000000;
@@ -60,6 +63,6 @@ contract ZkSyncParentToChildProverTest is Test {
             proof: logProof
         });
 
-        prover.verifyStorageSlot(0x2cb0c71d367ee2243d25c197a05b1f40cfe6fbfc8802440ae028b58488fe657b, abi.encode(proof));
+        prover.verifyStorageSlot(0x4cbeceb2a95a01369ab104ec6a305e37cb22d3717abb91da6880e038c3160470, abi.encode(proof));
     }
 }

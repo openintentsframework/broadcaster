@@ -113,22 +113,23 @@ contract ParentToChildProver is IBlockHashProver {
             abi.encodePacked(log.l2ShardId, log.isService, log.txNumberInBatch, log.sender, log.key, log.value)
         );
 
-        bytes32 batchSettlementRoot = _proveL2LeafInclusion({
+        if(!_proveL2LeafInclusion({
             _chainId: childChainId,
             _blockOrBatchNumber: proof.batchNumber,
             _leafProofMask: proof.index,
             _leaf: hashedLog,
-            _proof: proof.proof
-        });
-
-        if(batchSettlementRoot != targetBlockHash) {
+            _proof: proof.proof,
+            _targetBatchRoot: targetBlockHash
+        })){
             revert("Batch settlement root mismatch");
         }
 
+        (bytes32 messageSent, bytes32 timestamp) = abi.decode(proof.message.data, (bytes32, bytes32));
+
         
-        account = address(0);
-        slot = 0;
-        value = bytes32(0);
+        account = proof.message.sender;
+        slot = uint256(keccak256(abi.encode(account, messageSent)));
+        value = timestamp;
         
     }
 
@@ -137,8 +138,9 @@ contract ParentToChildProver is IBlockHashProver {
         uint256 _blockOrBatchNumber,
         uint256 _leafProofMask,
         bytes32 _leaf,
-        bytes32[] memory _proof
-    ) internal view returns (bytes32){
+        bytes32[] memory _proof, 
+        bytes32 _targetBatchRoot
+    ) internal view returns (bool){
 
         ProofData memory proofData = MessageHashing._getProofData({
             _chainId: _chainId,
@@ -148,24 +150,20 @@ contract ParentToChildProver is IBlockHashProver {
             _proof: _proof
         });
 
-        console.log("proofData.finalProofNode", proofData.finalProofNode);
-        console.log("proofData.batchSettlementRoot");
-        console.logBytes32(proofData.batchSettlementRoot);
-        // if (proofData.finalProofNode) {
-        //     // For proof based interop this is the SL InteropRoot at block number _blockOrBatchNumber
-        //     bytes32 correctBatchRoot = L2_INTEROP_ROOT_STORAGE.interopRoots(_chainId, _blockOrBatchNumber);
-        //     return correctBatchRoot == proofData.batchSettlementRoot && correctBatchRoot != bytes32(0);
-        // }
 
-        return proofData.batchSettlementRoot;
+        if (proofData.finalProofNode) {
 
-        // return _proveL2LeafInclusion({
-        //     _chainId: proofData.settlementLayerChainId,
-        //     _blockOrBatchNumber: proofData.settlementLayerBatchNumber, // SL block number
-        //     _leafProofMask: proofData.settlementLayerBatchRootMask,
-        //     _leaf: proofData.chainIdLeaf,
-        //     _proof: MessageHashing.extractSliceUntilEnd(_proof, proofData.ptr)
-        // });
+            return _targetBatchRoot == proofData.batchSettlementRoot && _targetBatchRoot != bytes32(0);
+        }
+
+        return _proveL2LeafInclusion({
+            _chainId: proofData.settlementLayerChainId,
+            _blockOrBatchNumber: proofData.settlementLayerBatchNumber, //SL block number
+            _leafProofMask: proofData.settlementLayerBatchRootMask,
+            _leaf: proofData.chainIdLeaf,
+            _proof: MessageHashing.extractSliceUntilEnd(_proof, proofData.ptr),
+            _targetBatchRoot: _targetBatchRoot
+        });
 
     }
 
