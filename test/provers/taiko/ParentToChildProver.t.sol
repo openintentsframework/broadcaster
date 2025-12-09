@@ -142,13 +142,8 @@ contract ParentToChildProverTest is Test {
         assertEq(computedBlockHash, L2_BLOCK_HASH, "rlpBlockHeader hash mismatch");
 
         // Encode storage proof input
-        bytes memory storageProofInput = abi.encode(
-            rlpBlockHeader,
-            L2_BROADCASTER,
-            L2_STORAGE_SLOT,
-            rlpAccountProof,
-            rlpStorageProof
-        );
+        bytes memory storageProofInput =
+            abi.encode(rlpBlockHeader, L2_BROADCASTER, L2_STORAGE_SLOT, rlpAccountProof, rlpStorageProof);
 
         // Call verifyStorageSlot with the trusted block hash
         (address account, uint256 slot, bytes32 value) = prover.verifyStorageSlot(L2_BLOCK_HASH, storageProofInput);
@@ -166,13 +161,8 @@ contract ParentToChildProverTest is Test {
         bytes memory rlpAccountProof = proofJson.readBytes(".rlpAccountProof");
         bytes memory rlpStorageProof = proofJson.readBytes(".rlpStorageProof");
 
-        bytes memory storageProofInput = abi.encode(
-            rlpBlockHeader,
-            L2_BROADCASTER,
-            L2_STORAGE_SLOT,
-            rlpAccountProof,
-            rlpStorageProof
-        );
+        bytes memory storageProofInput =
+            abi.encode(rlpBlockHeader, L2_BROADCASTER, L2_STORAGE_SLOT, rlpAccountProof, rlpStorageProof);
 
         // Use wrong block hash - should revert
         bytes32 wrongBlockHash = bytes32(uint256(1));
@@ -241,13 +231,8 @@ contract ParentToChildProverTest is Test {
         bytes memory rlpAccountProof = proofJson.readBytes(".rlpAccountProof");
         bytes memory rlpStorageProof = proofJson.readBytes(".rlpStorageProof");
 
-        bytes memory storageProofInput = abi.encode(
-            rlpBlockHeader,
-            L2_BROADCASTER,
-            L2_STORAGE_SLOT,
-            rlpAccountProof,
-            rlpStorageProof
-        );
+        bytes memory storageProofInput =
+            abi.encode(rlpBlockHeader, L2_BROADCASTER, L2_STORAGE_SLOT, rlpAccountProof, rlpStorageProof);
 
         (address account, uint256 slot, bytes32 value) = prover.verifyStorageSlot(l2BlockHash, storageProofInput);
 
@@ -281,11 +266,7 @@ contract ParentToChildProverTest is Test {
         uint256 customSlot = 200;
         uint256 customChainId = 888;
 
-        ParentToChildProver customProver = new ParentToChildProver(
-            customSignalService,
-            customSlot,
-            customChainId
-        );
+        ParentToChildProver customProver = new ParentToChildProver(customSignalService, customSlot, customChainId);
 
         assertEq(customProver.signalService(), customSignalService);
         assertEq(customProver.checkpointsSlot(), customSlot);
@@ -307,18 +288,10 @@ contract ParentToChildProverTest is Test {
         prover.getTargetBlockHash(input);
     }
 
-    function testFuzz_constructor_acceptsAnyParameters(
-        address signalService,
-        uint256 slot,
-        uint256 chainId
-    ) public {
+    function testFuzz_constructor_acceptsAnyParameters(address signalService, uint256 slot, uint256 chainId) public {
         vm.assume(signalService != address(0));
 
-        ParentToChildProver fuzzProver = new ParentToChildProver(
-            signalService,
-            slot,
-            chainId
-        );
+        ParentToChildProver fuzzProver = new ParentToChildProver(signalService, slot, chainId);
 
         assertEq(fuzzProver.signalService(), signalService);
         assertEq(fuzzProver.checkpointsSlot(), slot);
