@@ -113,13 +113,19 @@ contract ParentToChildProver is IBlockHashProver {
             abi.encodePacked(log.l2ShardId, log.isService, log.txNumberInBatch, log.sender, log.key, log.value)
         );
 
-        _proveL2LeafInclusion({
+        bytes32 batchSettlementRoot = _proveL2LeafInclusion({
             _chainId: childChainId,
             _blockOrBatchNumber: proof.batchNumber,
             _leafProofMask: proof.index,
             _leaf: hashedLog,
             _proof: proof.proof
         });
+
+        if(batchSettlementRoot != targetBlockHash) {
+            revert("Batch settlement root mismatch");
+        }
+
+        
         account = address(0);
         slot = 0;
         value = bytes32(0);
@@ -132,7 +138,7 @@ contract ParentToChildProver is IBlockHashProver {
         uint256 _leafProofMask,
         bytes32 _leaf,
         bytes32[] memory _proof
-    ) internal view returns (bool){
+    ) internal view returns (bytes32){
 
         ProofData memory proofData = MessageHashing._getProofData({
             _chainId: _chainId,
@@ -151,15 +157,15 @@ contract ParentToChildProver is IBlockHashProver {
         //     return correctBatchRoot == proofData.batchSettlementRoot && correctBatchRoot != bytes32(0);
         // }
 
-        return true;
+        return proofData.batchSettlementRoot;
 
-        return _proveL2LeafInclusion({
-            _chainId: proofData.settlementLayerChainId,
-            _blockOrBatchNumber: proofData.settlementLayerBatchNumber, // SL block number
-            _leafProofMask: proofData.settlementLayerBatchRootMask,
-            _leaf: proofData.chainIdLeaf,
-            _proof: MessageHashing.extractSliceUntilEnd(_proof, proofData.ptr)
-        });
+        // return _proveL2LeafInclusion({
+        //     _chainId: proofData.settlementLayerChainId,
+        //     _blockOrBatchNumber: proofData.settlementLayerBatchNumber, // SL block number
+        //     _leafProofMask: proofData.settlementLayerBatchRootMask,
+        //     _leaf: proofData.chainIdLeaf,
+        //     _proof: MessageHashing.extractSliceUntilEnd(_proof, proofData.ptr)
+        // });
 
     }
 
