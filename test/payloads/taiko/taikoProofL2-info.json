@@ -1,0 +1,10 @@
+{
+  "message": "0xde772fa39ffca4e38809e49ad80c7b64dacc2386633cdfdb9d26b409474df0a2",
+  "publisher": "0x1cbd3b2770909d4e10f157cabc84c7264073c9ec",
+  "broadcaster": "0x6BdBb69660E6849b98e8C524d266a0005D3655F7",
+  "broadcastBlock": 1581,
+  "proofBlock": 1581,
+  "slot": "0xda4c7a797a4637b5fae314d1baf6d995c386ddc64cc60315cded0efdeb9f0e15",
+  "txHash": "0x0f7afe2732a135b05daf6337cc7d35f17fd33a42b537d40df173f176d2684e8c",
+  "direction": "l2-to-l1"
+}
