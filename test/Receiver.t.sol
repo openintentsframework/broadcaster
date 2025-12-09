@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.27;
+pragma solidity 0.8.28;
 
 import {console, Test} from "forge-std/Test.sol";
 import {stdJson} from "forge-std/StdJson.sol";
@@ -293,7 +293,7 @@ contract ReceiverTest is Test {
 
         uint256 expectedSlot = uint256(keccak256("eip7888.pointer.slot")) - 1;
 
-        string memory path = "test/payloads/ethereum/arb_pointer_proof_block_9574620.json";
+        string memory path = "test/payloads/ethereum/arb_pointer_proof_block_9747805.json";
 
         string memory json = vm.readFile(path);
         uint256 blockNumber = json.readUint(".blockNumber");
@@ -352,6 +352,63 @@ contract ReceiverTest is Test {
         assertEq(address(arbParentToChildProverCopy).codehash, value, "wrong storage slot value");
     }
 
+    function test_updateBlockHashProverCopy_from_Arbitrum_into_OP_reverts_when_different_code_hash() public {
+        vm.selectFork(optimismForkId);
+
+        receiver = new Receiver();
+
+        OPChildToParentProver childToParentProver = new OPChildToParentProver(block.chainid);
+
+        BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
+
+        vm.prank(owner);
+        blockHashProverPointer.setImplementationAddress(address(childToParentProver));
+
+        uint256 expectedSlot = uint256(keccak256("eip7888.pointer.slot")) - 1;
+
+        string memory path = "test/payloads/ethereum/arb_pointer_proof_block_9574620.json";
+
+        string memory json = vm.readFile(path);
+        uint256 blockNumber = json.readUint(".blockNumber");
+        bytes32 blockHash = json.readBytes32(".blockHash");
+        address account = json.readAddress(".account");
+        uint256 slot = json.readUint(".slot");
+        bytes32 value = bytes32(json.readUint(".slotValue"));
+        bytes memory rlpBlockHeader = json.readBytes(".rlpBlockHeader");
+        bytes memory rlpAccountProof = json.readBytes(".rlpAccountProof");
+        bytes memory rlpStorageProof = json.readBytes(".rlpStorageProof");
+
+        assertEq(expectedSlot, slot, "slot mismatch");
+
+        bytes32 expectedBlockHash = keccak256(rlpBlockHeader);
+
+        assertEq(blockHash, expectedBlockHash);
+        bytes memory input = abi.encode(rlpBlockHeader, account, slot, rlpAccountProof, rlpStorageProof);
+
+        IL1Block l1Block = IL1Block(childToParentProver.l1BlockPredeploy());
+
+        vm.prank(l1Block.DEPOSITOR_ACCOUNT());
+        l1Block.setL1BlockValues(
+            uint64(blockNumber), uint64(block.timestamp), block.basefee, blockHash, 0, bytes32(0), 0, 0
+        );
+
+        address[] memory route = new address[](1);
+        route[0] = address(blockHashProverPointer);
+
+        bytes[] memory bhpInputs = new bytes[](1);
+        bhpInputs[0] = bytes("");
+
+        bytes memory storageProofToLastProver = input;
+
+        IReceiver.RemoteReadArgs memory remoteReadArgs =
+            IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
+
+        ArbParentToChildProver arbParentToChildProverCopy = new ArbParentToChildProver(address(outbox), 3);
+
+        vm.expectRevert(Receiver.DifferentCodeHash.selector);
+        receiver.updateBlockHashProverCopy(remoteReadArgs, arbParentToChildProverCopy);
+    }
+
     function test_verifyBroadcastMessage_from_Arbitrum_into_OP() public {
         vm.selectFork(optimismForkId);
 
@@ -371,7 +428,7 @@ contract ReceiverTest is Test {
         {
             uint256 expectedSlot = uint256(keccak256("eip7888.pointer.slot")) - 1;
 
-            string memory path = "test/payloads/ethereum/arb_pointer_proof_block_9574620.json";
+            string memory path = "test/payloads/ethereum/arb_pointer_proof_block_9747805.json";
 
             string memory json = vm.readFile(path);
             uint256 blockNumber = json.readUint(".blockNumber");
