@@ -142,13 +142,8 @@ contract ChildToParentProverTest is Test {
         assertEq(computedBlockHash, L1_BLOCK_HASH, "rlpBlockHeader hash mismatch");
 
         // Encode storage proof input
-        bytes memory storageProofInput = abi.encode(
-            rlpBlockHeader,
-            L1_BROADCASTER,
-            L1_STORAGE_SLOT,
-            rlpAccountProof,
-            rlpStorageProof
-        );
+        bytes memory storageProofInput =
+            abi.encode(rlpBlockHeader, L1_BROADCASTER, L1_STORAGE_SLOT, rlpAccountProof, rlpStorageProof);
 
         // Call verifyStorageSlot with the trusted block hash
         (address account, uint256 slot, bytes32 value) = prover.verifyStorageSlot(L1_BLOCK_HASH, storageProofInput);
@@ -166,13 +161,8 @@ contract ChildToParentProverTest is Test {
         bytes memory rlpAccountProof = proofJson.readBytes(".rlpAccountProof");
         bytes memory rlpStorageProof = proofJson.readBytes(".rlpStorageProof");
 
-        bytes memory storageProofInput = abi.encode(
-            rlpBlockHeader,
-            L1_BROADCASTER,
-            L1_STORAGE_SLOT,
-            rlpAccountProof,
-            rlpStorageProof
-        );
+        bytes memory storageProofInput =
+            abi.encode(rlpBlockHeader, L1_BROADCASTER, L1_STORAGE_SLOT, rlpAccountProof, rlpStorageProof);
 
         // Use wrong block hash - should revert
         bytes32 wrongBlockHash = bytes32(uint256(1));
@@ -241,13 +231,8 @@ contract ChildToParentProverTest is Test {
         bytes memory rlpAccountProof = proofJson.readBytes(".rlpAccountProof");
         bytes memory rlpStorageProof = proofJson.readBytes(".rlpStorageProof");
 
-        bytes memory storageProofInput = abi.encode(
-            rlpBlockHeader,
-            L1_BROADCASTER,
-            L1_STORAGE_SLOT,
-            rlpAccountProof,
-            rlpStorageProof
-        );
+        bytes memory storageProofInput =
+            abi.encode(rlpBlockHeader, L1_BROADCASTER, L1_STORAGE_SLOT, rlpAccountProof, rlpStorageProof);
 
         (address account, uint256 slot, bytes32 value) = prover.verifyStorageSlot(l1BlockHash, storageProofInput);
 
@@ -281,11 +266,7 @@ contract ChildToParentProverTest is Test {
         uint256 customSlot = 100;
         uint256 customChainId = 999;
 
-        ChildToParentProver customProver = new ChildToParentProver(
-            customSignalService,
-            customSlot,
-            customChainId
-        );
+        ChildToParentProver customProver = new ChildToParentProver(customSignalService, customSlot, customChainId);
 
         assertEq(customProver.signalService(), customSignalService);
         assertEq(customProver.checkpointsSlot(), customSlot);
