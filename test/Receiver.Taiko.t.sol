@@ -39,8 +39,8 @@ contract ReceiverTaikoTest is Test {
     address owner = makeAddr("owner");
 
     function setUp() public {
-        ethereumForkId = vm.createFork(vm.envString("TAIKO_PARENT_RPC_URL"));
-        taikoL2ForkId = vm.createFork(vm.envString("TAIKO_CHILD_RPC_URL"));
+        ethereumForkId = vm.createFork("https://l1rpc.internal.taiko.xyz");
+        taikoL2ForkId = vm.createFork("https://rpc.internal.taiko.xyz");
     }
 
     function test_verifyBroadcastMessage_from_TaikoL2_into_Ethereum() public {
