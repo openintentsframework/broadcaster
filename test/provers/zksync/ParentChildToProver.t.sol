@@ -14,6 +14,8 @@ contract ZkSyncParentToChildProverTest is Test {
     function test_verifyStorageSlot() public {
         ParentToChildProver prover = new ParentToChildProver(address(0), 0, 300);
 
+        // transaction hash: 0x6ae69e72d45d219609f24e4e7c7711245ac61b7b0fdd872aae39c0d167ee4ed7
+
         bytes32[] memory logProof = new bytes32[](36);
         logProof[0] = 0x010f0c0000000000000000000000000000000000000000000000000000000000;
         logProof[1] = 0xd3eef36d4c28d71c8783d3da0246085b59cc8b18dc6f461ec9a5c96619470cb4;
