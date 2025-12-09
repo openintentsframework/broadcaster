@@ -48,12 +48,12 @@ contract ParentToChildProverTest is Test {
 
     // Test data from taikoProofL2.json (L2 proof for L2→L1 verification)
     // This proof is used to verify storage on L2 from L1's perspective
-    uint256 public constant L2_BLOCK_NUMBER = 0x2ecf; // 11983
-    bytes32 public constant L2_BLOCK_HASH = 0xf99a026b22ba24d54de0fe2e4b449900d3833e57ca89ac0d48af94b8b2575ec0;
-    bytes32 public constant L2_STATE_ROOT = 0x42482a146847a4b778ff25a42f2251c764e39326d8fa81c1dde22b5fd92e33be;
+    uint256 public constant L2_BLOCK_NUMBER = 0x62d; // 1581
+    bytes32 public constant L2_BLOCK_HASH = 0xb859c7813278100c2f3534eafb86fd13b4ef36bd1f5edb03dc635a87d41db6c4;
+    bytes32 public constant L2_STATE_ROOT = 0x8652ba175668dfcac7ecbdafa1fa852bb48c61c8bc972f05b9fd9c0090e3c0ac;
     address public constant L2_BROADCASTER = 0x6BdBb69660E6849b98e8C524d266a0005D3655F7;
-    uint256 public constant L2_STORAGE_SLOT = 0x5cf0a02c352c6c9b0b5b9dac0097e6646e044e84c5444c271bb7e25f050dd8bc;
-    bytes32 public constant L2_SLOT_VALUE = 0x00000000000000000000000000000000000000000000000000000000692f40cc;
+    uint256 public constant L2_STORAGE_SLOT = 0xda4c7a797a4637b5fae314d1baf6d995c386ddc64cc60315cded0efdeb9f0e15;
+    bytes32 public constant L2_SLOT_VALUE = 0x0000000000000000000000000000000000000000000000000000000069385d14;
 
     function setUp() public {
         // Deploy mock SignalService
