@@ -62,6 +62,11 @@ contract ParentToChildProver is IBlockHashProver {
         uint64 index;
     }
 
+    struct ConcatenatedStorageProofs {
+        StorageProof l2ToL1Proof;
+        StorageProof l3ToL2Proof;
+    }
+
     constructor(IZkSyncDiamond _zksyncDiamondAddress, SparseMerkleTree _smt) {
         zksyncDiamondAddress = _zksyncDiamondAddress;
         smt = _smt;
@@ -95,42 +100,80 @@ contract ParentToChildProver is IBlockHashProver {
         view
         returns (address account, uint256 slot, bytes32 value)
     {
-       (StorageProof memory _proof) = abi.decode(input, (StorageProof));
+       (ConcatenatedStorageProofs memory _proof) = abi.decode(input, (ConcatenatedStorageProofs));
 
-       bytes32 l2BatchHash = smt.getRootHash(
-            _proof.path, 
+       StorageProof memory l3ToL2Proof = _proof.l3ToL2Proof;
+
+
+       bytes32 l3BatchHash = smt.getRootHash(
+            l3ToL2Proof.path, 
             TreeEntry({
-                key: _proof.key,
-                value: _proof.value,
-                leafIndex: _proof.index
+                key: l3ToL2Proof.key,
+                value: l3ToL2Proof.value,
+                leafIndex: l3ToL2Proof.index
             }), 
-            _proof.account
+            l3ToL2Proof.account
         );
 
         // Build stored batch info and compute its hash
         // batchHash of the StoredBatchInfo is computed from the proof
         StoredBatchInfo memory batch = StoredBatchInfo({
-            batchNumber: _proof.metadata.batchNumber,
-            batchHash: l2BatchHash,
-            indexRepeatedStorageChanges: _proof.metadata.indexRepeatedStorageChanges,
-            numberOfLayer1Txs: _proof.metadata.numberOfLayer1Txs,
-            priorityOperationsHash: _proof.metadata.priorityOperationsHash,
-            dependencyRootsRollingHash: _proof.metadata.dependencyRootsRollingHash,
-            l2LogsTreeRoot: _proof.metadata.l2LogsTreeRoot,
-            timestamp: _proof.metadata.timestamp,
-            commitment: _proof.metadata.commitment
+            batchNumber: l3ToL2Proof.metadata.batchNumber,
+            batchHash: l3BatchHash,
+            indexRepeatedStorageChanges: l3ToL2Proof.metadata.indexRepeatedStorageChanges,
+            numberOfLayer1Txs: l3ToL2Proof.metadata.numberOfLayer1Txs,
+            priorityOperationsHash: l3ToL2Proof.metadata.priorityOperationsHash,
+            dependencyRootsRollingHash: l3ToL2Proof.metadata.dependencyRootsRollingHash,
+            l2LogsTreeRoot: l3ToL2Proof.metadata.l2LogsTreeRoot,
+            timestamp: l3ToL2Proof.metadata.timestamp,
+            commitment: l3ToL2Proof.metadata.commitment
         });
 
+        bytes32 computedL3ToL2BatchHash = _hashStoredBatchInfo(batch);
 
-        bytes32 computedL1BatchHash = _hashStoredBatchInfo(batch);
+        StorageProof memory l2ToL1Proof = _proof.l2ToL1Proof;
 
-        if(computedL1BatchHash != targetBlockHash) {
+
+        if(computedL3ToL2BatchHash != l2ToL1Proof.value){
+            revert("Hash mismatch");
+        }
+
+        bytes32 l2BatchHash = smt.getRootHash(
+            l2ToL1Proof.path, 
+            TreeEntry({
+                key: l2ToL1Proof.key,
+                value: l2ToL1Proof.value,
+                leafIndex: l2ToL1Proof.index
+            }), 
+            l2ToL1Proof.account
+        );
+
+        StoredBatchInfo memory l1Batch = StoredBatchInfo({
+            batchNumber: l2ToL1Proof.metadata.batchNumber,
+            batchHash: l2BatchHash,
+            indexRepeatedStorageChanges: l2ToL1Proof.metadata.indexRepeatedStorageChanges,
+            numberOfLayer1Txs: l2ToL1Proof.metadata.numberOfLayer1Txs,
+            priorityOperationsHash: l2ToL1Proof.metadata.priorityOperationsHash,
+            dependencyRootsRollingHash: l2ToL1Proof.metadata.dependencyRootsRollingHash,
+            l2LogsTreeRoot: l2ToL1Proof.metadata.l2LogsTreeRoot,
+            timestamp: l2ToL1Proof.metadata.timestamp,
+            commitment: l2ToL1Proof.metadata.commitment
+        });
+
+        bytes32 computedL2ToL1BatchHash = _hashStoredBatchInfo(l1Batch);
+
+
+        if(computedL2ToL1BatchHash != targetBlockHash){
             revert InvalidBatchHash();
         }
 
-        account = _proof.account;
-        slot = _proof.key;
-        value = _proof.value;
+
+
+
+
+        account = l3ToL2Proof.account;
+        slot = l3ToL2Proof.key;
+        value = l3ToL2Proof.value;
 
 
     }

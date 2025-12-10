@@ -81,7 +81,7 @@ contract ZkSyncParentToChildProverTest is Test {
         path[22] = 0xbbcf9dba2802d9aa802e048eef22b2e8f682677464106cf083c53c22f32240af;
         path[23] = 0xb34a7a64886a3fab5e0eeb91f12f2ea5ea78ff05054790099fd2120c30c2ae0e;
 
-        ParentToChildProver.StorageProof memory proof = ParentToChildProver.StorageProof({
+        ParentToChildProver.StorageProof memory zkSyncEraProof = ParentToChildProver.StorageProof({
             metadata: ParentToChildProver.BatchMetadata({
                 batchNumber: 0x48d0,
                 indexRepeatedStorageChanges: 0x26f3fc0, //
@@ -99,10 +99,61 @@ contract ZkSyncParentToChildProverTest is Test {
             index: 40831776
         });
 
-        bytes32 targetBatchHash = 0x00ffc6d3d34bf5144d9bed2035b326343260e96893458e87b620153ee52547c5;
+        // L3 to L2 batch hash
+        // cast call 0x939f73bFD6809a9650aDb2707e44cC0f8aB0874F "storedBatchHash(uint256)" 18640 --rpc-url https://rpc.era-gateway-testnet.zksync.dev
+
+        // L2 to L1 batch hash
+        // cast call 0xFFDbb7B7F35A8b81618F64d95BCc878297759744 "storedBatchHash(uint256)" 43863 --rpc-url $ETHEREUM_RPC_URL
+
+        bytes32 targetBatchHash = 0xaf0cd41c321b298e702f3d47d2336486e50093c723552043c8c9867f5478cd4f;
+
+        bytes32[] memory pathGateway = new bytes32[](18);
+
+        pathGateway[0] = 0x66cfc8976c9bd4707fe25b0908daa0d4f164b754fa8075553af04c4f64d61e3c;
+        pathGateway[1] = 0x504996688972fdd418f88b3a9e52de4114fb72a11e6c20a8a6ea50fa5f3883ad;
+        pathGateway[2] = 0xf26ae7789e3cfea2e2e76b00ca95fe56d08dd1313fe90d2f472028b7f3c714ac;
+        pathGateway[3] = 0x2ae99a8a24965a34a9005ef9fbea42787357718a935fd23b014f827ec7d24a8e;
+        pathGateway[4] = 0xf4caba13aa8607f4326394fc3aee2192964135910675327b0d310047168fad67;
+        pathGateway[5] = 0xdaadf1c8094bb917666d006c4c156c8c78560da04c3b30a8995fc6a4c7aaef1d;
+        pathGateway[6] = 0x90c57be089b16ca4f8fbcca3683ed657b73007cc1765cc841ec70a57fe292b3a;
+        pathGateway[7] = 0x6f3f374cae27a7ed701c6ada59278db7664a46a98356d96d12c490958727b57d;
+        pathGateway[8] = 0x44b4a54b774e14af113783aebdc32029e75ff883cf7e14587220b1674dce9803;
+        pathGateway[9] = 0xad70ac53301dcebcfacea93d0be2694e9fa69bf63335214739d56d530e997d80;
+        pathGateway[10] = 0x811d1b52e83dfa53b48f1f3dfa41a396e75d9505bab9acd1ccacb3601b4690d4;
+        pathGateway[11] = 0x388d6bb942695bef9f077bd93dac00809cddb61886903acf2df2946c565206aa;
+        pathGateway[12] = 0xafae105b610d44b5eab756b2040562a5f81b126221586b613c14d6abd1e05dc7;
+        pathGateway[13] = 0xe2dd547046cd2ea82cf98ca84eb322c0a1306a5805c89c2d3644bfc7cda905ce;
+        pathGateway[14] = 0x67051efd9bd4d1dd6a0362e9edc76f58f39307ca9254ecebce074e408e8cd0a9;
+        pathGateway[15] = 0xa54c07a3fe146ef5bcca630eeedf5f6b3cd9b7d9e90f2b342daf56d6db6df70e;
+        pathGateway[16] = 0x9089ffb610cdc9bf51ef73f6676059f713105e0db91bf036be92d64592a77c56;
+        pathGateway[17] = 0xf6be630dcad1d0b2400138832b01b9d137540257abc89787f1ac4d0e8ad5f8de;
+
+        ParentToChildProver.StorageProof memory gatewayProof = ParentToChildProver.StorageProof({
+            metadata: ParentToChildProver.BatchMetadata({
+                batchNumber: 0xab57,
+                indexRepeatedStorageChanges: 0x2c972, //
+                numberOfLayer1Txs: 0x1,
+                priorityOperationsHash: 0x7f05ecf02dc39da7fe0e3f34ce96016caedd3924807d8463c6833a8461d87314, //
+                dependencyRootsRollingHash: 0x0000000000000000000000000000000000000000000000000000000000000000,
+                l2LogsTreeRoot: 0x52c472af7bf73cc80a63e281a78c82a98afb8070f02d68c1457ff663fd51c8df, //
+                timestamp: 0x6932a100,
+                commitment: 0x4caea07cd5d5d84ed3aef0e7996629fb5a5f39cb3e279300e1df4d718b8a45ae //
+            }),
+            account: 0x939f73bFD6809a9650aDb2707e44cC0f8aB0874F,
+            key: 0x8c679509bce200e0a72120fb84bd8cf10205459bda331dcf9162a17e3ec81dd3,
+            value: 0x00ffc6d3d34bf5144d9bed2035b326343260e96893458e87b620153ee52547c5,
+            path: pathGateway,
+            index: 182640
+        });
+
+        ParentToChildProver.ConcatenatedStorageProofs memory proof =
+            ParentToChildProver.ConcatenatedStorageProofs({l3ToL2Proof: zkSyncEraProof, l2ToL1Proof: gatewayProof});
 
         bytes memory input = abi.encode(proof);
 
+        
+        vm.startSnapshotGas("zksync_parent_to_child", "verifyStorageSlot");
         prover.verifyStorageSlot(targetBatchHash, input);
+        vm.stopSnapshotGas("zksync_parent_to_child", "verifyStorageSlot");
     }
 }
