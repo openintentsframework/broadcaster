@@ -17,6 +17,7 @@ import {ChildToParentProver as ArbChildToParentProver} from "../src/contracts/pr
 import {ParentToChildProver as ArbParentToChildProver} from "../src/contracts/provers/arbitrum/ParentToChildProver.sol";
 import {ChildToParentProver as OPChildToParentProver} from "../src/contracts/provers/optimism/ChildToParentProver.sol";
 import {ChildToParentProver as LineaChildToParentProver} from "../src/contracts/provers/linea/ChildToParentProver.sol";
+import {ParentToChildProver as LineaParentToChildProver} from "../src/contracts/provers/linea/ParentToChildProver.sol";
 import {
     ChildToParentProver as ZksyncChildToParentProver
 } from "../src/contracts/provers/zksync/ChildToParentProver.sol";
@@ -1026,6 +1027,90 @@ contract ReceiverTest is Test {
 
         assertEq(broadcasterId, expectedBroadcasterId, "wrong broadcasterId");
         assertEq(timestamp, uint256(valueArbitrum), "wrong timestamp");
+    }
+
+    /// @notice Test verifying a message broadcasted on Linea L2 from Ethereum L1
+    /// @dev Uses Linea's Sparse Merkle Tree (SMT) proofs with MiMC hashing
+    function test_verifyBroadcastMessage_from_Linea_into_Ethereum() public {
+        vm.selectFork(ethereumForkId);
+
+        receiver = new Receiver();
+
+        // Linea Rollup on Sepolia
+        address lineaRollup = 0xB218f8A4Bc926cF1cA7b3423c154a0D627Bdb7E5;
+        uint256 stateRootHashesSlot = 282;
+        uint256 homeChainId = 11155111; // Sepolia
+
+        LineaParentToChildProver parentToChildProver =
+            new LineaParentToChildProver(lineaRollup, stateRootHashesSlot, homeChainId);
+
+        BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
+
+        vm.prank(owner);
+        blockHashProverPointer.setImplementationAddress(address(parentToChildProver));
+
+        // Read the SMT proof data
+        string memory path = "test/payloads/linea/lineaProofL2-smt.json";
+        string memory json = vm.readFile(path);
+
+        uint256 l2BlockNumber = json.readUint(".l2BlockNumber");
+        bytes32 zkStateRoot = json.readBytes32(".zkStateRoot");
+        address account = json.readAddress(".account");
+        bytes32 slot = json.readBytes32(".slot");
+        bytes32 value = bytes32(json.readUint(".slotValue"));
+
+        // Mock LineaRollup to return the zkStateRoot for this block
+        vm.mockCall(
+            lineaRollup,
+            abi.encodeWithSignature("stateRootHashes(uint256)", l2BlockNumber),
+            abi.encode(zkStateRoot)
+        );
+
+        // Read encoded SMT proof from file
+        string memory encodedProofHex = vm.readFile("test/payloads/linea/encoded-smt-proof.txt");
+        bytes memory smtProof = vm.parseBytes(encodedProofHex);
+
+        // Construct the route
+        address[] memory route = new address[](1);
+        route[0] = address(blockHashProverPointer);
+
+        bytes[] memory bhpInputs = new bytes[](1);
+        bhpInputs[0] = abi.encode(l2BlockNumber);
+
+        bytes memory storageProofToLastProver = smtProof;
+
+        IReceiver.RemoteReadArgs memory remoteReadArgs =
+            IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
+
+        // Calculate expected message hash from the slot
+        // The slot is keccak256(abi.encode(message, publisher))
+        // We need to find the message that produces this slot
+        // For this test, we use the known message from the broadcast
+        bytes32 message = 0x7ef698ac3d608dabceaf43d5d1df44247f7f339c28cde2f19ac25a79e2392673;
+        address publisher = 0x0d08bae6bAF232EFA1208A6CaC66a389D5c27981;
+
+        // Verify the slot matches
+        uint256 expectedSlot = uint256(keccak256(abi.encode(message, publisher)));
+        assertEq(expectedSlot, uint256(slot), "slot mismatch");
+
+        (bytes32 broadcasterId, uint256 timestamp) = receiver.verifyBroadcastMessage(remoteReadArgs, message, publisher);
+
+        assertEq(
+            broadcasterId,
+            keccak256(
+                abi.encode(
+                    keccak256(
+                        abi.encode(
+                            bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
+                            address(blockHashProverPointer)
+                        )
+                    ),
+                    account
+                )
+            ),
+            "wrong broadcasterId"
+        );
+        assertEq(timestamp, uint256(value), "wrong timestamp");
     }
 }
 

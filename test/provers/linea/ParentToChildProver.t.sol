@@ -167,21 +167,29 @@ contract ParentToChildProverTest is Test {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // verifyStorageSlot Tests
+    // verifyStorageSlot Tests (SMT Proof Format)
     // ═══════════════════════════════════════════════════════════════════════════
 
     /// @dev verifyStorageSlot is pure and works on any chain
-    ///      For Linea, it takes the state root directly (not block hash)
-    ///      This test requires a real storage proof from Linea L2
+    ///      For Linea, it uses Sparse Merkle Tree (SMT) proofs with MiMC hashing
+    ///      Input format: (address, uint256, uint256, bytes[], uint256, bytes[], bytes32)
+    ///      Proofs must be generated using linea_getProof RPC method
     function test_verifyStorageSlot_revertsWithInvalidProof() public {
+        // Create empty proof arrays (will fail verification)
+        bytes[] memory emptyAccountProof = new bytes[](0);
+        bytes[] memory emptyStorageProof = new bytes[](0);
+
         bytes memory input = abi.encode(
             address(0x123), // account
             uint256(0), // slot
-            bytes("invalid account proof"), // accountProof
-            bytes("invalid storage proof") // storageProof
+            uint256(0), // accountLeafIndex
+            emptyAccountProof, // accountProof (SMT format)
+            uint256(0), // storageLeafIndex
+            emptyStorageProof, // storageProof (SMT format)
+            bytes32(0) // claimedStorageValue
         );
 
-        // Should revert due to invalid proof
+        // Should revert due to invalid proof (wrong proof length)
         vm.expectRevert();
         prover.verifyStorageSlot(L2_STATE_ROOT, input);
     }
@@ -191,61 +199,69 @@ contract ParentToChildProverTest is Test {
     // ═══════════════════════════════════════════════════════════════════════════
 
     function test_version() public view {
-        assertEq(prover.version(), 1);
+        // Version 2: SMT proof support
+        assertEq(prover.version(), 2);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // Integration Tests (require real proofs)
+    // Integration Tests (require real SMT proofs from linea_getProof)
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// @notice Integration test for L2→L1 verification
-    /// @dev This test is skipped until we have real proof data
-    ///      To enable: generate proof using scripts/generate-linea-proof.ts
-    function test_integration_L2ToL1_verification() public {
-        // Check if proof file exists
-        string memory proofPath = "test/payloads/linea/lineaProofL2.json";
-        try vm.readFile(proofPath) returns (string memory json) {
-            // Parse proof data
-            uint256 l2BlockNumber = json.readUint(".l2BlockNumber");
-            bytes32 l2StateRoot = json.readBytes32(".l2StateRoot");
-            address account = json.readAddress(".account");
-            uint256 slot = json.readUint(".slot");
-            bytes32 expectedValue = json.readBytes32(".slotValue");
-            bytes memory accountProof = json.readBytes(".rlpAccountProof");
-            bytes memory storageProof = json.readBytes(".rlpStorageProof");
+    /// @notice Integration test for L2→L1 verification using Sparse Merkle Tree proofs
+    /// @dev This test requires proof data from linea_getProof RPC method
+    ///      The proof file should be generated using the linea_getProof API
+    ///      File format: test/payloads/linea/lineaProofL2-smt.json
+    function test_integration_L2ToL1_verification_SMT() public {
+        // Check if encoded proof file exists
+        string memory proofPath = "test/payloads/linea/encoded-smt-proof.txt";
+        try vm.readFile(proofPath) returns (string memory encodedProofHex) {
+            console.log("Found encoded SMT proof file, running integration test...");
 
-            // Set up mock
-            mockLineaRollup.setStateRootHash(l2BlockNumber, l2StateRoot);
-            vm.chainId(ETH_MAINNET_CHAIN_ID);
+            // Expected values from the JSON file
+            bytes32 zkStateRoot = 0x0b9797153d1cef2b38f6e87d2c225791b74107ae7ce28e60bf498b9d1c094f14;
+            address expectedAccount = 0x20728d202A12f8306d01D0E54aE99885AfA31d83;
+            uint256 expectedSlot = 0xc7f3206d60205e1634924ee1e67de7607b9a5991744aaf3526fde997abcc5170;
+            bytes32 expectedValue = 0x000000000000000000000000000000000000000000000000000000006938964b;
 
-            // Step 1: Get L2 state root from L1's LineaRollup
-            bytes32 stateRoot = prover.getTargetBlockHash(abi.encode(l2BlockNumber));
-            assertEq(stateRoot, l2StateRoot, "State root mismatch");
+            // Convert hex string to bytes
+            bytes memory encodedProof = vm.parseBytes(encodedProofHex);
 
-            // Step 2: Verify storage slot on L2 (using state root directly)
-            bytes memory storageInput = abi.encode(
-                account,
-                slot,
-                accountProof,
-                storageProof
-            );
+            console.log("ZK State Root:", vm.toString(zkStateRoot));
+            console.log("Encoded proof length:", encodedProof.length);
 
-            (address returnedAccount, uint256 returnedSlot, bytes32 value) =
-                prover.verifyStorageSlot(stateRoot, storageInput);
+            // Call verifyStorageSlot with the SMT proof
+            (address account, uint256 slot, bytes32 value) = prover.verifyStorageSlot(zkStateRoot, encodedProof);
 
-            // Step 3: Verify results
-            assertEq(returnedAccount, account, "Account mismatch");
-            assertEq(returnedSlot, slot, "Slot mismatch");
+            console.log("Verified Account:", account);
+            console.log("Verified Slot:", slot);
+            console.log("Verified Value:", vm.toString(value));
+
+            // Verify the results match expected values
+            assertEq(account, expectedAccount, "Account mismatch");
+            assertEq(slot, expectedSlot, "Slot mismatch");
             assertEq(value, expectedValue, "Value mismatch");
 
-            console.log("Integration test passed!");
-            console.log("Verified Linea L2 storage from L1");
-            console.log("L2 Block:", l2BlockNumber);
-            console.log("Storage Value (timestamp):", uint256(value));
+            console.log("SMT proof verification SUCCESS!");
         } catch {
             // Proof file doesn't exist, skip test
-            console.log("Skipping integration test - proof file not found");
-            console.log("Generate proof using: npm run generate-linea-proof");
+            console.log("Skipping SMT integration test - encoded proof file not found");
+            console.log("Generate proof using: node scripts/linea/encode-smt-proof.js");
         }
+    }
+
+    /// @notice Legacy test that documents the old MPT format is no longer supported
+    /// @dev Linea uses SMT (Sparse Merkle Tree), not MPT (Merkle-Patricia Trie)
+    ///      The stateRootHashes on L1 store SMT roots, not MPT roots
+    function test_legacy_MPT_format_not_supported() public pure {
+        // This test documents that:
+        // 1. Linea L2 blocks have an MPT stateRoot in the header
+        // 2. BUT LineaRollup on L1 stores a DIFFERENT ZK SMT stateRoot
+        // 3. Therefore eth_getProof (MPT) proofs cannot verify against L1's stateRootHashes
+        // 4. Must use linea_getProof (SMT) proofs instead
+        //
+        // Example:
+        // L2 Block stateRoot (MPT): 0xa8cd77482ddd4b54e678023293190493c9d9d50e094e1402b4d044f153e7bc46
+        // L1 stateRootHashes (SMT): 0x0b9797153d1cef2b38f6e87d2c225791b74107ae7ce28e60bf498b9d1c094f14
+        // These are DIFFERENT values!
     }
 }
