@@ -1,431 +1,287 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.28;
 
-// https://github.com/AlexNi245/blake2s-solidity/blob/main/contracts/Blake2S.sol
+library Blake2s {
+    uint32 constant BLOCKBYTES = 64;
+    uint32 constant OUTBYTES = 32;
 
-/**
- * @title Blake2S Hash Function for Solidity
- * @notice This library implements the BLAKE2s cryptographic hash function within Solidity.
- *         BLAKE2s is optimized for 8- to 32-bit platforms and produces digests of any size
- *         between 1 and 32 bytes. For more details, see the BLAKE2 RFC at
- *         https://www.rfc-editor.org/rfc/rfc7693.txt.
- */
-library Blake2S {
-    uint256 public constant DEFAULT_OUTLEN = 32;
-    bytes public constant DEFAULT_EMPTY_KEY = "";
+    uint32 constant IV0 = 0x6A09E667;
+    uint32 constant IV1 = 0xBB67AE85;
+    uint32 constant IV2 = 0x3C6EF372;
+    uint32 constant IV3 = 0xA54FF53A;
+    uint32 constant IV4 = 0x510E527F;
+    uint32 constant IV5 = 0x9B05688C;
+    uint32 constant IV6 = 0x1F83D9AB;
+    uint32 constant IV7 = 0x5BE0CD19;
 
-    // Initialization Vector constants as defined in the BLAKE2 RFC
-    uint32 private constant IV0 = 0x6A09E667;
-    uint32 private constant IV1 = 0xBB67AE85;
-    uint32 private constant IV2 = 0x3C6EF372;
-    uint32 private constant IV3 = 0xA54FF53A;
-    uint32 private constant IV4 = 0x510E527F;
-    uint32 private constant IV5 = 0x9B05688C;
-    uint32 private constant IV6 = 0x1F83D9AB;
-    uint32 private constant IV7 = 0x5BE0CD19;
-
-    /**
-     * @dev BLAKE2S context struct containing all necessary fields for the hash computation.
-     */
-    struct BLAKE2S_ctx {
-        uint256[2] b; // Input buffer: 2 elements of 32 bytes each to make up 64 bytes
-        uint256[8] h; // Chained state: 8 words of 32 bits each
-        uint256 t; // Total number of bytes
-        uint256 c; // Counter for buffer, indicates how much is filled
-        uint256 outlen; // Digest output size
+    struct Hasher {
+        bytes sigma;
+        uint256[2] m;
     }
 
-    /**
-     * @dev Computes the BLAKE2s hash of the input and returns the digest.
-     * @param input The input data to hash.
-     * @return The 32-byte hash digest.
-     */
-    function toDigest(
-        bytes memory input
-    ) public view returns (bytes32) {
-        BLAKE2S_ctx memory ctx;
-        uint256[2] memory DEFAULT_EMPTY_INPUT;
-        //Custom Keys or Output Size are not supported yet, primarily because they are not tested. However they can be added in the future
-        init(
-            ctx,
-            DEFAULT_OUTLEN,
-            DEFAULT_EMPTY_KEY,
-            DEFAULT_EMPTY_INPUT,
-            DEFAULT_EMPTY_INPUT
-        );
-        update(ctx, input);
-        return finalize(ctx);
+    function newHasher() internal pure returns (Hasher memory) {
+        // Sigma table with values pre-multiplied by 4 (byte offsets into m)
+        return Hasher(hex"0004080c1014181c2024282c3034383c38281020243c3418043000082c1c140c2c20300014083c3428380c181c0424101c240c0434302c380818142810003c202400141c0810283c38042c3018200c3408301828002c200c10341c143c3804243014043c38341028001c180c2408202c342c1c3830040c2414003c1020180828183c38242c0c00203008341c04102814280820101c1804143c2c24380c303400", [uint256(0), 0]);
     }
 
-    function toDigest(
-        bytes memory input1,
-        bytes memory input2
-    ) public view returns (bytes32) {
-        BLAKE2S_ctx memory ctx;
-        uint256[2] memory DEFAULT_EMPTY_INPUT;
-        //Custom Keys or Output Size are not supported yet, primarily because they are not tested. However they can be added in the future
-        init(
-            ctx,
-            DEFAULT_OUTLEN,
-            DEFAULT_EMPTY_KEY,
-            DEFAULT_EMPTY_INPUT,
-            DEFAULT_EMPTY_INPUT
-        );
-        update(ctx, input1);
-        update(ctx, input2);
-        return finalize(ctx);
-    }
+    function hash(Hasher memory hasher, bytes memory input) internal pure returns (bytes32) {
+        // Initialize state: h[0] = IV0 ^ 0x01010000 ^ OUTBYTES, h[1..7] = IV[1..7]
+        uint256 h1 = uint256(IV0 ^ 0x01010000 ^ OUTBYTES) 
+                  | (uint256(IV1) << 32) 
+                  | (uint256(IV2) << 64) 
+                  | (uint256(IV3) << 96);
+        uint256 h2 = uint256(IV4) 
+                   | (uint256(IV5) << 32) 
+                   | (uint256(IV6) << 64) 
+                   | (uint256(IV7) << 96);
+        uint256 len = input.length;
+        uint256 t = 0;
 
-    /**
-     * @dev Initializes the BLAKE2s context with the given parameters.
-     * @param ctx The BLAKE2s context to initialize.
-     * @param outlen The desired output length of the hash.
-     * @param key The key input for keyed hashing (up to 32 bytes).
-     * @param salt The salt input for randomizing the hash (exactly 2 uint32s).
-     * @param person The personalization input for personalizing the hash (exactly 2 uint32s).
-     */
-    function init(
-        BLAKE2S_ctx memory ctx,
-        uint256 outlen,
-        bytes memory key,
-        uint256[2] memory salt,
-        uint256[2] memory person
-    ) internal pure {
-        if (outlen == 0 || outlen > 32 || outlen % 4 != 0 || key.length > 32) revert("outlen");
+        bytes memory sigma = hasher.sigma;
+        uint256[2] memory m = hasher.m;
+        uint256 m0;
+        uint256 m1;
 
-        ctx.b[0] = 0;
-        ctx.b[1] = 0;
-        ctx.t = 0;
-        ctx.c = 0;
-
-        // Initialize chained-state to IV
-        //I think it's more gas efficient to assign the values directly to the array instead of assigning them one by one
-        ctx.h[0] = IV0;
-        ctx.h[1] = IV1;
-        ctx.h[2] = IV2;
-        ctx.h[3] = IV3;
-        ctx.h[4] = IV4;
-        ctx.h[5] = IV5;
-        ctx.h[6] = IV6;
-        ctx.h[7] = IV7;
-
-        // Set up parameter block
-        ctx.h[0] = ctx.h[0] ^ 0x01010000 ^ (uint32(key.length) << 8) ^ outlen;
-
-        if (salt.length == 2) {
-            ctx.h[4] = ctx.h[4] ^ salt[0];
-            ctx.h[5] = ctx.h[5] ^ salt[1];
-        }
-
-        if (person.length == 2) {
-            ctx.h[6] = ctx.h[6] ^ person[0];
-            ctx.h[7] = ctx.h[7] ^ person[1];
-        }
-
-        ctx.outlen = outlen;
-    }
-
-    /**
-     * @dev Updates the BLAKE2s context with new input data.
-     * @param ctx The BLAKE2s context to update.
-     * @param input The input data to be added to the hash computation.
-     * - 204320
-     * - 
-     */
-    function update(BLAKE2S_ctx memory ctx, bytes memory input) internal view {
         unchecked {
-            uint256 inputLength = uint32(input.length);
-            uint256 c = ctx.c;
-            for (uint256 i = 0; i < inputLength;) {
-                // If buffer is full, update byte counters and compress
-                if (c == 64) {
-                    // BLAKE2s block size is 64 bytes
-                    ctx.t += c; // Increment counter t by the number of bytes in the buffer
-                    compress(ctx, false);
-
-                    //clear buffer counter after compressing
-                    c = 0;
+            while (len > BLOCKBYTES) {
+                t += BLOCKBYTES;
+                assembly ("memory-safe") {
+                    let ptr := add(add(input, 32), sub(t, 64))
+                    m0 := mload(ptr)
+                    m1 := mload(add(ptr, 32))
                 }
-
-                uint256 size = min(inputLength - i, 64 - c);
-                assembly {
-                    // Memcpy
-                    pop(staticcall(not(0), 0x4, add(add(input, 32), i), size, add(mload(ctx), c), size))
-                }
-                c += size;
-                i += size;
+                (h1, h2) = compress(sigma, m, m0, m1, h1, h2, uint64(t), false);
+                len -= BLOCKBYTES;
             }
-            ctx.c = c;
+
+            assembly ("memory-safe") {
+                let src := add(add(input, 32), t)
+                switch gt(len, 32)
+                case 0 {
+                    m0 := and(mload(src), shl(shl(3, sub(32, len)), not(0)))
+                    m1 := 0
+                }
+                default {
+                    m0 := mload(src)
+                    m1 := and(mload(add(src, 32)), shl(shl(3, sub(64, len)), not(0)))
+                }
+            }
+            t += len;
+            (h1, h2) = compress(sigma, m, m0, m1, h1, h2, uint64(t), true);
+        }
+
+        return hashFromState(h1, h2);
+    }
+
+    function hashFromState(uint256 h1, uint256 h2) private pure returns (bytes32) {
+        uint256 x = (h1 << 128) | (h2 & MASK128);
+        unchecked {
+            x = ((x >> 64) & 0x0000000000000000FFFFFFFFFFFFFFFF0000000000000000FFFFFFFFFFFFFFFF) |
+                ((x << 64) & 0xFFFFFFFFFFFFFFFF0000000000000000FFFFFFFFFFFFFFFF0000000000000000);
+            x = ((x >> 32) & 0x00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF) |
+                ((x << 32) & 0xFFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000FFFFFFFF00000000);
+            x = ((x >> 16) & 0x0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF) |
+                ((x << 16) & 0xFFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000);
+            x = ((x >> 8) & 0x00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF) |
+                ((x << 8) & 0xFF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00);
+        }
+        return bytes32(x);
+    }
+
+    // Mask for 4 lanes of 32-bit words (bits 0-127)
+    uint256 constant MASK128 = (1 << 128) - 1;
+    uint256 constant MASK32 = 0xFFFFFFFF;
+
+    uint256 constant HIGHBIT = 0x80000000800000008000000080000000;
+
+    // Packed add: add 4x32-bit lanes without cross-lane carry
+    function add32x4(uint256 a, uint256 b) private pure returns (uint256) {
+        unchecked {
+            uint256 abLoSum = (a & ~HIGHBIT) + (b & ~HIGHBIT);
+            uint256 abHiXor = (a ^ b) & HIGHBIT;
+            return abLoSum ^ abHiXor;
         }
     }
 
-    function min(uint256 a, uint256 b) internal pure returns(uint256) {
-        if(a < b) return a;
-        return b;
+    // Packed add of 3 values: a + b + c
+    function add32x4_3(uint256 a, uint256 b, uint256 c) private pure returns (uint256) {
+        unchecked {
+            uint256 abcHiXor = (a ^ b ^ c) & HIGHBIT;
+
+            uint256 aLo = a & ~HIGHBIT;
+            uint256 bLo = b & ~HIGHBIT;
+            uint256 cLo = c & ~HIGHBIT;
+
+            uint256 abLoSum = aLo + bLo;
+            uint256 abLo    = abLoSum & ~HIGHBIT;
+            uint256 abHi    = abLoSum ^ abLo;
+
+            return (abLo + cLo) ^ abHi ^ abcHiXor;
+        }
     }
 
-    /**
-     * @dev Compresses the BLAKE2s context's internal state with the input buffer.
-     * @param ctx The BLAKE2s context containing the state and input buffer.
-     * @param last Indicates if this is the last block to compress, setting the finalization flag.
-     *
-     * The function performs the BLAKE2s compression function, which mixes both the input buffer
-     * and the state (chained value) together using the BLAKE2s mixing function 'G'. It updates
-     * the internal state with the result of the compression. If 'last' is true, it also performs
-     * the necessary operations to finalize the hash, such as inverting the finalization flag.
-     */
-    function compress(BLAKE2S_ctx memory ctx, bool last) internal view {
-        uint256[16] memory v;
-
-        // Initialize v[0..15]
-        assembly {
-            // memcpy ctx.h[:8] -> v[:8]
-            pop(staticcall(not(0), 0x4, mload(add(ctx, 32)), 256, v, 256))
+    function rotr32x4_16(uint256 x) private pure returns (uint256) {
+        unchecked {
+            uint256 right = (x >> 16) & 0x0000FFFF0000FFFF0000FFFF0000FFFF;
+            uint256 left = (x << 16) & 0xFFFF0000FFFF0000FFFF0000FFFF0000;
+            return right | left;
         }
-        // Second half from the IV
-        v[8] = IV0;
-        v[9] = IV1;
-        v[10] = IV2;
-        v[11] = IV3;
-        v[12] = IV4;
-        v[13] = IV5;
-        v[14] = IV6;
-        v[15] = IV7;
+    }
 
-        // Low 64 bits of t
-        v[12] = (v[12] ^ uint32(ctx.t & 0xFFFFFFFF)) & 0xFFFFFFFF;
-        // High 64 bits of t (BLAKE2s uses only 32 bits for t[1], so this is often zeroed)
-        v[13] = (v[13] ^ uint32(ctx.t >> 32)) & 0xFFFFFFFF;
-
-        // Set the last block flag if this is the last block
-        if (last) {
-            v[14] = (~v[14]) & 0xFFFFFFFF;
+    function rotr32x4_12(uint256 x) private pure returns (uint256) {
+        unchecked {
+            uint256 right = (x >> 12) & 0x000FFFFF000FFFFF000FFFFF000FFFFF;
+            uint256 left = (x << 20) & 0xFFF00000FFF00000FFF00000FFF00000;
+            return right | left;
         }
+    }
+
+    function rotr32x4_8(uint256 x) private pure returns (uint256) {
+        unchecked {
+            uint256 right = (x >> 8) & 0x00FFFFFF00FFFFFF00FFFFFF00FFFFFF;
+            uint256 left = (x << 24) & 0xFF000000FF000000FF000000FF000000;
+            return right | left;
+        }
+    }
+
+    function rotr32x4_7(uint256 x) private pure returns (uint256) {
+        unchecked {
+            uint256 right = (x >> 7) & 0x01FFFFFF01FFFFFF01FFFFFF01FFFFFF;
+            uint256 left = (x << 25) & 0xFE000000FE000000FE000000FE000000;
+            return right | left;
+        }
+    }
+
+    // Rotate lanes left by 1: [0,1,2,3] -> [1,2,3,0]
+    function rotl_lanes_1(uint256 x) private pure returns (uint256 result) {
+        assembly ("memory-safe") {
+            mstore(16, x)
+            mstore(0, x)
+            result := mload(12)
+        }
+    }
+
+    // Rotate lanes left by 2: [0,1,2,3] -> [2,3,0,1]
+    function rotl_lanes_2(uint256 x) private pure returns (uint256 result) {
+        assembly ("memory-safe") {
+            mstore(16, x)
+            mstore(0, x)
+            result := mload(8)
+        }
+    }
+
+    // Rotate lanes left by 3: [0,1,2,3] -> [3,0,1,2]
+    function rotl_lanes_3(uint256 x) private pure returns (uint256 result) {
+        assembly ("memory-safe") {
+            mstore(16, x)
+            mstore(0, x)
+            result := mload(4)
+        }
+    }
+
+    // G function on 4 parallel lanes
+    function G4(uint256 a, uint256 b, uint256 c, uint256 d, uint256 x, uint256 y) 
+        private pure returns (uint256, uint256, uint256, uint256) 
+    {
+        unchecked {
+            a = add32x4_3(a, b, x);
+            d = rotr32x4_16(d ^ a);
+            c = add32x4(c, d);
+            b = rotr32x4_12(b ^ c);
+            a = add32x4_3(a, b, y);
+            d = rotr32x4_8(d ^ a);
+            c = add32x4(c, d);
+            b = rotr32x4_7(b ^ c);
+            return (a, b, c, d);
+        }
+    }
+
+    // Pack 4 message words into lanes
+    function packM(uint32 m0, uint32 m1, uint32 m2, uint32 m3) private pure returns (uint256) {
+        return uint256(m0) | (uint256(m1) << 32) | (uint256(m2) << 64) | (uint256(m3) << 96);
+    }
+
+    // Byte-swap within each 32-bit lane (8 lanes)
+    function bswap32x8(uint256 x) private pure returns (uint256) {
+        unchecked {
+            uint256 mask0 = 0x000000FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF;
+            uint256 mask1 = 0x0000FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF00;
+            uint256 mask2 = 0x00FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF0000;
+            uint256 mask3 = 0xFF000000FF000000FF000000FF000000FF000000FF000000FF000000FF000000;
+            return ((x & mask0) << 24) | ((x & mask1) << 8) | ((x & mask2) >> 8) | ((x & mask3) >> 24);
+        }
+    }
+
+    // Get m[sigma[r * 16 + i]] where sigma values are pre-multiplied by 4
+    function getWordBySigma(uint256[2] memory m, bytes memory sigma, uint256 r, uint256 i) private pure returns (uint32 result) {
+        assembly ("memory-safe") {
+            // offset = sigma[r * 16 + i] (already multiplied by 4)
+            let offset := shr(248, mload(add(add(sigma, 32), add(shl(4, r), i))))
+            result := shr(224, mload(add(m, offset)))
+        }
+    }
+
+    function compress(bytes memory sigma, uint256[2] memory m, uint256 m0, uint256 m1, uint256 h1, uint256 h2, uint64 t, bool isFinal) 
+        private pure returns (uint256, uint256) 
+    {
+        m[0] = bswap32x8(m0);
+        m[1] = bswap32x8(m1);
+
+        // Initialize working vector v as 4 rows
+        // row0 = v[0..3] = h[0..3]
+        // row1 = v[4..7] = h[4..7]
+        // row2 = v[8..11] = IV[0..3]
+        // row3 = v[12..15] = IV[4..7] ^ (t, t>>32, final, 0)
+        uint256 row0 = h1;
+        uint256 row1 = h2;
+        uint256 row2 = uint256(IV0) | (uint256(IV1) << 32) | (uint256(IV2) << 64) | (uint256(IV3) << 96);
+        
+        uint32 v12 = uint32(t) ^ IV4;
+        uint32 v13 = uint32(t >> 32) ^ IV5;
+        uint32 v14 = isFinal ? (type(uint32).max ^ IV6) : IV6;
+        uint32 v15 = IV7;
+        uint256 row3 = uint256(v12) | (uint256(v13) << 32) | (uint256(v14) << 64) | (uint256(v15) << 96);
 
         unchecked {
-            // Initialize b0 and b1 with the bytes from the input buffer, and swap their endianness
-            uint256 b0 = ctx.b[0];
-            uint256 b1 = ctx.b[1];
-
-            // Swap endianness on 32bit words
-            b0 = ((b0 >> 24) & 0x000000FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF) | 
-                 ((b0 >> 8) & 0x0000FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF00) | 
-                 ((b0 << 8) & 0x00FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF0000) | 
-                 ((b0 << 24) & 0xFF000000FF000000FF000000FF000000FF000000FF000000FF000000FF000000);
-            b1 = ((b1 >> 24) & 0x000000FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF) | 
-                 ((b1 >> 8) & 0x0000FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF00) | 
-                 ((b1 << 8) & 0x00FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF0000) | 
-                 ((b1 << 24) & 0xFF000000FF000000FF000000FF000000FF000000FF000000FF000000FF000000);
-
-            // // SIGMA Block according to rfc7693
-            // uint8[16][10] memory SIGMA = [
-            //     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
-            //     [14, 10, 4, 8, 9, 15, 13, 6, 1, 12, 0, 2, 11, 7, 5, 3],
-            //     [11, 8, 12, 0, 5, 2, 15, 13, 10, 14, 3, 6, 7, 1, 9, 4],
-            //     [7, 9, 3, 1, 13, 12, 11, 14, 2, 6, 5, 10, 4, 0, 15, 8],
-            //     [9, 0, 5, 7, 2, 4, 10, 15, 14, 1, 11, 12, 6, 8, 3, 13],
-            //     [2, 12, 6, 10, 0, 11, 8, 3, 4, 13, 7, 5, 15, 14, 1, 9],
-            //     [12, 5, 1, 15, 14, 13, 4, 10, 0, 7, 6, 3, 9, 2, 8, 11],
-            //     [13, 11, 7, 14, 12, 1, 3, 9, 5, 0, 15, 4, 8, 6, 2, 10],
-            //     [6, 15, 14, 9, 11, 3, 0, 8, 12, 2, 13, 7, 1, 4, 10, 5],
-            //     [10, 2, 8, 4, 7, 6, 1, 5, 15, 11, 9, 14, 3, 12, 13, 0]
-            // ];
-
-            // //call G function 10 times
-            // for (uint round = 0; round < 10; round++) {
-            //     G(v, 0, 4, 8, 12, m[SIGMA[round][0]], m[SIGMA[round][1]]);
-            //     G(v, 1, 5, 9, 13, m[SIGMA[round][2]], m[SIGMA[round][3]]);
-            //     G(v, 2, 6, 10, 14, m[SIGMA[round][4]], m[SIGMA[round][5]]);
-            //     G(v, 3, 7, 11, 15, m[SIGMA[round][6]], m[SIGMA[round][7]]);
-            //     G(v, 0, 5, 10, 15, m[SIGMA[round][8]], m[SIGMA[round][9]]);
-            //     G(v, 1, 6, 11, 12, m[SIGMA[round][10]], m[SIGMA[round][11]]);
-            //     G(v, 2, 7, 8, 13, m[SIGMA[round][12]], m[SIGMA[round][13]]);
-            //     G(v, 3, 4, 9, 14, m[SIGMA[round][14]], m[SIGMA[round][15]]);
-            // }
-            // Unrolled version of the loop above
-
-            assembly {
-                /**
-                * @dev Performs the BLAKE2s mixing function 'G' as defined in the BLAKE2 specification.
-                * @param v The working vector which is being mixed.
-                * @param a Index of the first element in the working vector to mix.
-                * @param b Index of the second element in the working vector to mix.
-                * @param c Index of the third element in the working vector to mix.
-                * @param d Index of the fourth element in the working vector to mix.
-                * @param x The first input word to the mixing function.
-                * @param y The second input word to the mixing function.
-                *
-                * This function updates the working vector 'v' with the results of the mixing operations.
-                * It is a core part of the compression function, which is in turn a core part of the BLAKE2s hash function.
-                */
-                function G(z, a, b, c, d, x, y) {
-                    // v[a] = (v[a] + v[b] + x) & 0xFFFFFFFF;
-                    mstore(add(z, a), and(add(add(mload(add(z, a)), mload(add(z, b))), x), 0xFFFFFFFF))
-                    // v[d] = (((v[d] ^ v[a]) >> 16) | ((v[d] ^ v[a]) << 16)) & 0xFFFFFFFF;
-                    mstore(add(z, d), and(or(shr(16, xor(mload(add(z, d)), mload(add(z, a)))), shl(16, xor(mload(add(z, d)), mload(add(z, a))))), 0xFFFFFFFF))
-                    // v[c] = (v[c] + v[d]) & 0xFFFFFFFF;
-                    mstore(add(z, c), and(add(mload(add(z, c)), mload(add(z, d))), 0xFFFFFFFF))
-                    // v[b] = (((v[b] ^ v[c]) >> 12) | ((v[b] ^ v[c]) << 20)) & 0xFFFFFFFF;
-                    mstore(add(z, b), and(or(shr(12, xor(mload(add(z, b)), mload(add(z, c)))), shl(20, xor(mload(add(z, b)), mload(add(z, c))))), 0xFFFFFFFF))
-                    // v[a] = (v[a] + v[b] + y) & 0xFFFFFFFF;
-                    mstore(add(z, a), and(add(add(mload(add(z, a)), mload(add(z, b))), y), 0xFFFFFFFF))
-                    // v[d] = (((v[d] ^ v[a]) >> 8) | ((v[d] ^ v[a]) << 24)) & 0xFFFFFFFF;
-                    mstore(add(z, d), and(or(shr(8, xor(mload(add(z, d)), mload(add(z, a)))), shl(24, xor(mload(add(z, d)), mload(add(z, a))))), 0xFFFFFFFF))
-                    // v[c] = (v[c] + v[d]) & 0xFFFFFFFF;
-                    mstore(add(z, c), and(add(mload(add(z, c)), mload(add(z, d))), 0xFFFFFFFF))
-                    // v[b] = (((v[b] ^ v[c]) >> 7) | ((v[b] ^ v[c]) << 25)) & 0xFFFFFFFF;
-                    mstore(add(z, b), and(or(shr(7, xor(mload(add(z, b)), mload(add(z, c)))), shl(25, xor(mload(add(z, b)), mload(add(z, c))))), 0xFFFFFFFF))
-                }
-
-                // Round 0
-                G(v, 0, 128, 256, 384, and(shr(224, b0), 0xFFFFFFFF), and(shr(192, b0), 0xFFFFFFFF))
-                G(v, 32, 160, 288, 416, and(shr(160, b0), 0xFFFFFFFF), and(shr(128, b0), 0xFFFFFFFF))
-                G(v, 64, 192, 320, 448, and(shr(96, b0), 0xFFFFFFFF), and(shr(64, b0), 0xFFFFFFFF))
-                G(v, 96, 224, 352, 480, and(shr(32, b0), 0xFFFFFFFF), and(shr(0, b0), 0xFFFFFFFF))
-                G(v, 0, 160, 320, 480, and(shr(224, b1), 0xFFFFFFFF), and(shr(192, b1), 0xFFFFFFFF))
-                G(v, 32, 192, 352, 384, and(shr(160, b1), 0xFFFFFFFF), and(shr(128, b1), 0xFFFFFFFF))
-                G(v, 64, 224, 256, 416, and(shr(96, b1), 0xFFFFFFFF), and(shr(64, b1), 0xFFFFFFFF))
-                G(v, 96, 128, 288, 448, and(shr(32, b1), 0xFFFFFFFF), and(shr(0, b1), 0xFFFFFFFF))
-
-                // Round 1
-                G(v, 0, 128, 256, 384, and(shr(32, b1), 0xFFFFFFFF), and(shr(160, b1), 0xFFFFFFFF))
-                G(v, 32, 160, 288, 416, and(shr(96, b0), 0xFFFFFFFF), and(shr(224, b1), 0xFFFFFFFF))
-                G(v, 64, 192, 320, 448, and(shr(192, b1), 0xFFFFFFFF), and(shr(0, b1), 0xFFFFFFFF))
-                G(v, 96, 224, 352, 480, and(shr(64, b1), 0xFFFFFFFF), and(shr(32, b0), 0xFFFFFFFF))
-                G(v, 0, 160, 320, 480, and(shr(192, b0), 0xFFFFFFFF), and(shr(96, b1), 0xFFFFFFFF))
-                G(v, 32, 192, 352, 384, and(shr(224, b0), 0xFFFFFFFF), and(shr(160, b0), 0xFFFFFFFF))
-                G(v, 64, 224, 256, 416, and(shr(128, b1), 0xFFFFFFFF), and(shr(0, b0), 0xFFFFFFFF))
-                G(v, 96, 128, 288, 448, and(shr(64, b0), 0xFFFFFFFF), and(shr(128, b0), 0xFFFFFFFF))
-
-                // Round 2
-                G(v, 0, 128, 256, 384, and(shr(128, b1), 0xFFFFFFFF), and(shr(224, b1), 0xFFFFFFFF))
-                G(v, 32, 160, 288, 416, and(shr(96, b1), 0xFFFFFFFF), and(shr(224, b0), 0xFFFFFFFF))
-                G(v, 64, 192, 320, 448, and(shr(64, b0), 0xFFFFFFFF), and(shr(160, b0), 0xFFFFFFFF))
-                G(v, 96, 224, 352, 480, and(shr(0, b1), 0xFFFFFFFF), and(shr(64, b1), 0xFFFFFFFF))
-                G(v, 0, 160, 320, 480, and(shr(160, b1), 0xFFFFFFFF), and(shr(32, b1), 0xFFFFFFFF))
-                G(v, 32, 192, 352, 384, and(shr(128, b0), 0xFFFFFFFF), and(shr(32, b0), 0xFFFFFFFF))
-                G(v, 64, 224, 256, 416, and(shr(0, b0), 0xFFFFFFFF), and(shr(192, b0), 0xFFFFFFFF))
-                G(v, 96, 128, 288, 448, and(shr(192, b1), 0xFFFFFFFF), and(shr(96, b0), 0xFFFFFFFF))
+            // 10 rounds
+            for (uint256 r = 0; r < 10; r++) {
+                // Column Gs: G(v[0,4,8,12]), G(v[1,5,9,13]), G(v[2,6,10,14]), G(v[3,7,11,15])
+                // x = m[sigma(r,0)], m[sigma(r,2)], m[sigma(r,4)], m[sigma(r,6)] for the 4 column Gs
+                // y = m[sigma(r,1)], m[sigma(r,3)], m[sigma(r,5)], m[sigma(r,7)]
+                uint256 mx = packM(getWordBySigma(m, sigma, r, 0), getWordBySigma(m, sigma, r, 2), getWordBySigma(m, sigma, r, 4), getWordBySigma(m, sigma, r, 6));
+                uint256 my = packM(getWordBySigma(m, sigma, r, 1), getWordBySigma(m, sigma, r, 3), getWordBySigma(m, sigma, r, 5), getWordBySigma(m, sigma, r, 7));
                 
-                // Round 3
-                G(v, 0, 128, 256, 384, and(shr(0, b0), 0xFFFFFFFF), and(shr(192, b1), 0xFFFFFFFF))
-                G(v, 32, 160, 288, 416, and(shr(128, b0), 0xFFFFFFFF), and(shr(192, b0), 0xFFFFFFFF))
-                G(v, 64, 192, 320, 448, and(shr(64, b1), 0xFFFFFFFF), and(shr(96, b1), 0xFFFFFFFF))
-                G(v, 96, 224, 352, 480, and(shr(128, b1), 0xFFFFFFFF), and(shr(32, b1), 0xFFFFFFFF))
-                G(v, 0, 160, 320, 480, and(shr(160, b0), 0xFFFFFFFF), and(shr(32, b0), 0xFFFFFFFF))
-                G(v, 32, 192, 352, 384, and(shr(64, b0), 0xFFFFFFFF), and(shr(160, b1), 0xFFFFFFFF))
-                G(v, 64, 224, 256, 416, and(shr(96, b0), 0xFFFFFFFF), and(shr(224, b0), 0xFFFFFFFF))
-                G(v, 96, 128, 288, 448, and(shr(0, b1), 0xFFFFFFFF), and(shr(224, b1), 0xFFFFFFFF))
-
-                // Round 4
-                G(v, 0, 128, 256, 384, and(shr(192, b1), 0xFFFFFFFF), and(shr(224, b0), 0xFFFFFFFF))
-                G(v, 32, 160, 288, 416, and(shr(64, b0), 0xFFFFFFFF), and(shr(0, b0), 0xFFFFFFFF))
-                G(v, 64, 192, 320, 448, and(shr(160, b0), 0xFFFFFFFF), and(shr(96, b0), 0xFFFFFFFF))
-                G(v, 96, 224, 352, 480, and(shr(160, b1), 0xFFFFFFFF), and(shr(0, b1), 0xFFFFFFFF))
-                G(v, 0, 160, 320, 480, and(shr(32, b1), 0xFFFFFFFF), and(shr(192, b0), 0xFFFFFFFF))
-                G(v, 32, 192, 352, 384, and(shr(128, b1), 0xFFFFFFFF), and(shr(96, b1), 0xFFFFFFFF))
-                G(v, 64, 224, 256, 416, and(shr(32, b0), 0xFFFFFFFF), and(shr(224, b1), 0xFFFFFFFF))
-                G(v, 96, 128, 288, 448, and(shr(128, b0), 0xFFFFFFFF), and(shr(64, b1), 0xFFFFFFFF))
-
-                // Round 5
-                G(v, 0, 128, 256, 384, and(shr(160, b0), 0xFFFFFFFF), and(shr(96, b1), 0xFFFFFFFF))
-                G(v, 32, 160, 288, 416, and(shr(32, b0), 0xFFFFFFFF), and(shr(160, b1), 0xFFFFFFFF))
-                G(v, 64, 192, 320, 448, and(shr(224, b0), 0xFFFFFFFF), and(shr(128, b1), 0xFFFFFFFF))
-                G(v, 96, 224, 352, 480, and(shr(224, b1), 0xFFFFFFFF), and(shr(128, b0), 0xFFFFFFFF))
-                G(v, 0, 160, 320, 480, and(shr(96, b0), 0xFFFFFFFF), and(shr(64, b1), 0xFFFFFFFF))
-                G(v, 32, 192, 352, 384, and(shr(0, b0), 0xFFFFFFFF), and(shr(64, b0), 0xFFFFFFFF))
-                G(v, 64, 224, 256, 416, and(shr(0, b1), 0xFFFFFFFF), and(shr(32, b1), 0xFFFFFFFF))
-                G(v, 96, 128, 288, 448, and(shr(192, b0), 0xFFFFFFFF), and(shr(192, b1), 0xFFFFFFFF))
-
-                // Round 6
-                G(v, 0, 128, 256, 384, and(shr(96, b1), 0xFFFFFFFF), and(shr(64, b0), 0xFFFFFFFF))
-                G(v, 32, 160, 288, 416, and(shr(192, b0), 0xFFFFFFFF), and(shr(0, b1), 0xFFFFFFFF))
-                G(v, 64, 192, 320, 448, and(shr(32, b1), 0xFFFFFFFF), and(shr(64, b1), 0xFFFFFFFF))
-                G(v, 96, 224, 352, 480, and(shr(96, b0), 0xFFFFFFFF), and(shr(160, b1), 0xFFFFFFFF))
-                G(v, 0, 160, 320, 480, and(shr(224, b0), 0xFFFFFFFF), and(shr(0, b0), 0xFFFFFFFF))
-                G(v, 32, 192, 352, 384, and(shr(32, b0), 0xFFFFFFFF), and(shr(128, b0), 0xFFFFFFFF))
-                G(v, 64, 224, 256, 416, and(shr(192, b1), 0xFFFFFFFF), and(shr(160, b0), 0xFFFFFFFF))
-                G(v, 96, 128, 288, 448, and(shr(224, b1), 0xFFFFFFFF), and(shr(128, b1), 0xFFFFFFFF))
-
-                // Round 7
-                G(v, 0, 128, 256, 384, and(shr(64, b1), 0xFFFFFFFF), and(shr(128, b1), 0xFFFFFFFF))
-                G(v, 32, 160, 288, 416, and(shr(0, b0), 0xFFFFFFFF), and(shr(32, b1), 0xFFFFFFFF))
-                G(v, 64, 192, 320, 448, and(shr(96, b1), 0xFFFFFFFF), and(shr(192, b0), 0xFFFFFFFF))
-                G(v, 96, 224, 352, 480, and(shr(128, b0), 0xFFFFFFFF), and(shr(192, b1), 0xFFFFFFFF))
-                G(v, 0, 160, 320, 480, and(shr(64, b0), 0xFFFFFFFF), and(shr(224, b0), 0xFFFFFFFF))
-                G(v, 32, 192, 352, 384, and(shr(0, b1), 0xFFFFFFFF), and(shr(96, b0), 0xFFFFFFFF))
-                G(v, 64, 224, 256, 416, and(shr(224, b1), 0xFFFFFFFF), and(shr(32, b0), 0xFFFFFFFF))
-                G(v, 96, 128, 288, 448, and(shr(160, b0), 0xFFFFFFFF), and(shr(160, b1), 0xFFFFFFFF))
-
-                // Round 8
-                G(v, 0, 128, 256, 384, and(shr(32, b0), 0xFFFFFFFF), and(shr(0, b1), 0xFFFFFFFF))
-                G(v, 32, 160, 288, 416, and(shr(32, b1), 0xFFFFFFFF), and(shr(192, b1), 0xFFFFFFFF))
-                G(v, 64, 192, 320, 448, and(shr(128, b1), 0xFFFFFFFF), and(shr(128, b0), 0xFFFFFFFF))
-                G(v, 96, 224, 352, 480, and(shr(224, b0), 0xFFFFFFFF), and(shr(224, b1), 0xFFFFFFFF))
-                G(v, 0, 160, 320, 480, and(shr(96, b1), 0xFFFFFFFF), and(shr(160, b0), 0xFFFFFFFF))
-                G(v, 32, 192, 352, 384, and(shr(64, b1), 0xFFFFFFFF), and(shr(0, b0), 0xFFFFFFFF))
-                G(v, 64, 224, 256, 416, and(shr(192, b0), 0xFFFFFFFF), and(shr(96, b0), 0xFFFFFFFF))
-                G(v, 96, 128, 288, 448, and(shr(160, b1), 0xFFFFFFFF), and(shr(64, b0), 0xFFFFFFFF))
-
-                // Round 9
-                G(v, 0, 128, 256, 384, and(shr(160, b1), 0xFFFFFFFF), and(shr(160, b0), 0xFFFFFFFF))
-                G(v, 32, 160, 288, 416, and(shr(224, b1), 0xFFFFFFFF), and(shr(96, b0), 0xFFFFFFFF))
-                G(v, 64, 192, 320, 448, and(shr(0, b0), 0xFFFFFFFF), and(shr(32, b0), 0xFFFFFFFF))
-                G(v, 96, 224, 352, 480, and(shr(192, b0), 0xFFFFFFFF), and(shr(64, b0), 0xFFFFFFFF))
-                G(v, 0, 160, 320, 480, and(shr(0, b1), 0xFFFFFFFF), and(shr(128, b1), 0xFFFFFFFF))
-                G(v, 32, 192, 352, 384, and(shr(192, b1), 0xFFFFFFFF), and(shr(32, b1), 0xFFFFFFFF))
-                G(v, 64, 224, 256, 416, and(shr(128, b0), 0xFFFFFFFF), and(shr(96, b1), 0xFFFFFFFF))
-                G(v, 96, 128, 288, 448, and(shr(64, b1), 0xFFFFFFFF), and(shr(224, b0), 0xFFFFFFFF))
+                (row0, row1, row2, row3) = G4(row0, row1, row2, row3, mx, my);
+                
+                // Rotate rows for diagonal layout
+                row1 = rotl_lanes_1(row1);
+                row2 = rotl_lanes_2(row2);
+                row3 = rotl_lanes_3(row3);
+                
+                // Diagonal Gs
+                // After rotation, lane i of each row gives us the diagonal elements
+                // x = m[sigma(r,8)], m[sigma(r,10)], m[sigma(r,12)], m[sigma(r,14)]
+                // y = m[sigma(r,9)], m[sigma(r,11)], m[sigma(r,13)], m[sigma(r,15)]
+                mx = packM(getWordBySigma(m, sigma, r, 8), getWordBySigma(m, sigma, r, 10), getWordBySigma(m, sigma, r, 12), getWordBySigma(m, sigma, r, 14));
+                my = packM(getWordBySigma(m, sigma, r, 9), getWordBySigma(m, sigma, r, 11), getWordBySigma(m, sigma, r, 13), getWordBySigma(m, sigma, r, 15));
+                
+                (row0, row1, row2, row3) = G4(row0, row1, row2, row3, mx, my);
+                
+                // Rotate back to column layout
+                row1 = rotl_lanes_3(row1);
+                row2 = rotl_lanes_2(row2);
+                row3 = rotl_lanes_1(row3);
             }
         }
 
+        // Finalize: h[i] ^= v[i] ^ v[i+8]
+        h1 = h1 ^ row0 ^ row2;
+        h2 = h2 ^ row1 ^ row3;
 
-        // Update the state with the result of the G mixing operations
-        for (uint i = 0; i < 8; i++) {
-            ctx.h[i] = ctx.h[i] ^ v[i] ^ v[i + 8];
-        }
+        return (h1, h2);
     }
+}
 
-    /**
-     * @dev Finalizes the hashing process and produces the final hash output.
-     * @param ctx The BLAKE2s context that contains the state to be finalized.
-     * @param out The array that will receive the final hash output.
-     *
-     * This function completes the BLAKE2s hash computation by performing the following steps:
-     * 1. It adds any remaining unprocessed bytes in the buffer to the total byte count.
-     * 2. It calls the compress function one last time with the finalization flag set to true.
-     * 3. It converts the internal state from little-endian to big-endian format and stores
-     *    the result in the output array.
-     * 4. If the desired output length is not a multiple of 4 bytes, it properly pads the final
-     *    word in the output array to match the specified output length.
-     */
-    function finalize(
-        BLAKE2S_ctx memory ctx
-    ) internal view returns(bytes32 out) {
-        unchecked {
-            // Add any uncounted bytes
-            ctx.t += ctx.c;
-
-            // Compress with finalization flag
-            compress(ctx, true);
-
-            // Flip little to big endian and store in output buffer
-            for (uint i = 0; i < ctx.outlen / 4; i++) {
-                out |= bytes32(uint256(getWords32(ctx.h[i]))) << ((7 - i) * 32);
-            }
-        }
-    }
-
-    /**
-     * @dev Converts a 32-bit word from little-endian to big-endian format.
-     * @param a The 32-bit word in little-endian format.
-     * @return b The 32-bit word in big-endian format.
-     */
-    function getWords32(uint256 a) private pure returns (uint256 b) {
-        return
-            (a >> 24) |
-            ((a >> 8) & 0x0000FF00) |
-            ((a << 8) & 0x00FF0000) |
-            ((a << 24) & 0xFF000000);
-    }
+function blake2s(bytes memory input) pure returns (bytes32) {
+    return Blake2s.hash(Blake2s.newHasher(), input);
 }
