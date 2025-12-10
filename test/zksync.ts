@@ -7,12 +7,12 @@ async function main() {
 
     const rpcUrl = process.env.ZKSYNC_RPC_URL;
     console.log(`Using RPC URL: ${rpcUrl}`);
-    const provider = new ethers.providers.JsonRpcProvider(process.env.ZKSYNC_RPC_URL);
+    const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
 
     const latestBatch = await provider.send("zks_L1BatchNumber", []);
     console.log(`Latest batch: ${latestBatch}`);
 
-    const storageKeys = ["0xed71b28e74e0c345ccea429109d91e298de836bf32290bfda4210d76bb646cd7"];
+    const storageKeys = ["0x4d2f31e8578316b1eee225feb6442c49f42083864fa317ea81928e275ad2e366"];
         // "0x8af18107777760cbe302f71d4b1f34b4938de74d5846a5f397fde3446e33ec3a",
         // "0xc34095206a7e18c8ac745c8619f36b572ad998b82cb44029b9f154bb52e6baca",
         // "0x5651a358ee5a251ce5ae208d34a656d42ea2b2d2fc39c99585031a315c9e3bed",
@@ -43,11 +43,35 @@ async function main() {
         // "0x4550ab30af8c76557a74d051eb43a964889d383d6da343c6a4f4799595d86f9c"]
 
 
-    const storageProof = await provider.send("zks_getProof", ["0x0000000000000000000000000000000000008003", storageKeys, 0x46a7 - 150]);
+    const storageProof = await provider.send("zks_getProof", ["0x40F58Bd4616a6E76021F1481154DB829953BF01B", storageKeys, 0x48d0]);
+
+    const batchDetails = await provider.send("zks_getL1BatchDetails", [0x48d0]);
+
+
 
     console.log(storageProof);
 
     console.log(storageProof.storageProof[0].proof);
+
+    console.log(batchDetails);
+
+
+    console.log("================================================");
+    console.log("Gateway")
+
+    const gatewayStorageKeys = ["0x8c679509bce200e0a72120fb84bd8cf10205459bda331dcf9162a17e3ec81dd3"];
+
+    const newProvider = new ethers.providers.JsonRpcProvider("https://rpc.era-gateway-testnet.zksync.dev");
+
+    const storageProofGateway = await newProvider.send("zks_getProof", ["0x939f73bFD6809a9650aDb2707e44cC0f8aB0874F", gatewayStorageKeys, 43863]);
+    console.log(storageProofGateway);
+
+    console.log(storageProofGateway.storageProof[0].proof);
+
+
+    const l1BatchDetailsGateway = await newProvider.send("zks_getL1BatchDetails", [43863]);
+
+    console.log(l1BatchDetailsGateway);
 
 
     

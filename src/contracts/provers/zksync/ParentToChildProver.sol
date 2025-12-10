@@ -166,16 +166,9 @@ contract ParentToChildProver is IBlockHashProver {
         if(computedL2ToL1BatchHash != targetBlockHash){
             revert InvalidBatchHash();
         }
-
-
-
-
-
         account = l3ToL2Proof.account;
         slot = l3ToL2Proof.key;
         value = l3ToL2Proof.value;
-
-
     }
 
     function _hashStoredBatchInfo(StoredBatchInfo memory _storedBatchInfo) internal pure returns (bytes32) {
