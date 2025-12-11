@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {Blake2S} from "./Blake2S.sol";
+import {blake2s} from "./Blake2S.sol";
 
 // Solidity port of zksync-era's Sparse Merkle Tree implementation
 // https://github.com/matter-labs/zksync-era/blob/main/core/lib/merkle_tree/src/hasher/mod.rs
@@ -33,11 +33,10 @@ contract SparseMerkleTree {
         TreeEntry memory entry,
         address account
     ) public view returns (bytes32) {
-        Blake2S.BLAKE2S_ctx memory ctx;
-        uint256 keyHash = reverse(uint256(hashKey(ctx, account, entry.key)));
+        uint256 keyHash = reverse(uint256(hashKey(account, entry.key)));
 
         uint256 emptyLen = TREE_DEPTH - proof.length;
-        bytes32 result = hashLeaf(ctx, entry.leafIndex, entry.value);
+        bytes32 result = hashLeaf(entry.leafIndex, entry.value);
 
         uint256 i = 0;
 
@@ -52,44 +51,30 @@ contract SparseMerkleTree {
                 }
             }
             if ((keyHash >> i) & 1 == 1) {
-                result = hashBranch(ctx, adjacentHash, result);
+                result = hashBranch(adjacentHash, result);
             } else {
-                result = hashBranch(ctx, result, adjacentHash);
+                result = hashBranch(result, adjacentHash);
             }
         }
 
         for (; i < TREE_DEPTH; i++) {
             bytes32 adjacentHash = proof[TREE_DEPTH - i - 1];
             if ((keyHash >> i) & 1 == 1) {
-                result = hashBranch(ctx, adjacentHash, result);
+                result = hashBranch(adjacentHash, result);
             } else {
-                result = hashBranch(ctx, result, adjacentHash);
+                result = hashBranch(result, adjacentHash);
             }
         }
 
         return result;
     }
 
-    function hashBranch(bytes32 left, bytes32 right) public view returns (bytes32 result) {
-        Blake2S.BLAKE2S_ctx memory ctx;
-        return hashBranch(ctx, left, right);
-    }
-    
-    function hashBranch(Blake2S.BLAKE2S_ctx memory ctx, bytes32 left, bytes32 right) internal view returns (bytes32 result) {
-        uint256[2] memory DEFAULT_EMPTY_INPUT;
-        Blake2S.init(
-            ctx,
-            32,
-            "",
-            DEFAULT_EMPTY_INPUT,
-            DEFAULT_EMPTY_INPUT
-        );
-        Blake2S.update(ctx, abi.encodePacked(left, right));
-        return Blake2S.finalize(ctx);
+    function hashBranch(bytes32 left, bytes32 right) internal pure returns (bytes32) {
+        return blake2s(abi.encodePacked(left, right));
     }
 
     /// @notice Hashes the tree key
-    function hashKey(Blake2S.BLAKE2S_ctx memory ctx, address account, uint256 key) internal view returns (bytes32) {
+    function hashKey(address account, uint256 key) internal pure returns (bytes32) {
         bytes memory input = new bytes(64);
         assembly {
             // Store account starting at 12th byte
@@ -97,25 +82,11 @@ contract SparseMerkleTree {
             // Store key starting at 32th byte
             mstore(add(input, 0x40), key)
         }
-        uint256[2] memory DEFAULT_EMPTY_INPUT;
-        Blake2S.init(
-            ctx,
-            32,
-            "",
-            DEFAULT_EMPTY_INPUT,
-            DEFAULT_EMPTY_INPUT
-        );
-        Blake2S.update(ctx, input);
-        return Blake2S.finalize(ctx);
-    }
-
-    function hashLeaf(uint64 leafIndex, bytes32 value) public view returns (bytes32) {
-        Blake2S.BLAKE2S_ctx memory ctx;
-        return hashLeaf(ctx, leafIndex, value);
+        return blake2s(input);
     }
 
     /// @notice Hashes an individual leaf
-    function hashLeaf(Blake2S.BLAKE2S_ctx memory ctx, uint64 leafIndex, bytes32 value) internal view returns (bytes32) {
+    function hashLeaf(uint64 leafIndex, bytes32 value) internal pure returns (bytes32) {
         bytes memory input = new bytes(40);
         assembly {
             // Store leafIndex at first 8 bytes
@@ -123,25 +94,16 @@ contract SparseMerkleTree {
             // Store value at last 32 bytes
             mstore(add(input, 0x28), value)
         }
-        uint256[2] memory DEFAULT_EMPTY_INPUT;
-        Blake2S.init(
-            ctx,
-            32,
-            "",
-            DEFAULT_EMPTY_INPUT,
-            DEFAULT_EMPTY_INPUT
-        );
-        Blake2S.update(ctx, input);
-        return Blake2S.finalize(ctx);
+        return blake2s(input);
     }
 
     /// @notice Returns the bit at the given bitOffset
-    function bit(uint256 value, uint256 bitOffset) public pure returns (bool) {
+    function bit(uint256 value, uint256 bitOffset) internal pure returns (bool) {
         return (value >> bitOffset) & 1 == 1;
     }
 
     /// @notice Reverses the bits of a 256-bit integer
-    function reverse(uint256 input) public pure returns (uint256 v) {
+    function reverse(uint256 input) internal pure returns (uint256 v) {
         v = input;
 
         // swap bytes
