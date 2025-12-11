@@ -52,7 +52,7 @@ contract ZkSyncParentToChildProverTest is Test {
     }
 
     function test_verifyStorageSlot() public {
-        ParentToChildProver prover = new ParentToChildProver(IZkSyncDiamond(address(0)), sparce);
+        ParentToChildProver prover = new ParentToChildProver(IZkSyncDiamond(address(0)), sparce, 14);
 
         bytes32[] memory path = new bytes32[](24);
 

@@ -3,7 +3,7 @@ pragma solidity ^0.8.28;
 
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
 import {IBlockHashProver} from "../../interfaces/IBlockHashProver.sol";
-//import {SlotDerivation} from "openzeppelin/utils/SlotDerivation.sol";
+import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 
 import {SparseMerkleTree, TreeEntry} from "./helpers/SparseMerkleTree.sol";
 
@@ -20,8 +20,11 @@ contract ParentToChildProver is IBlockHashProver {
 
     IZkSyncDiamond immutable public zksyncDiamondAddress;
     SparseMerkleTree public smt;
+    uint256 private immutable storedBatchHashSlot;
 
     error InvalidBatchHash();
+    error TargetBlockHashNotFound();
+
 
     struct StoredBatchInfo {
         uint64 batchNumber;
@@ -67,9 +70,10 @@ contract ParentToChildProver is IBlockHashProver {
         StorageProof l3ToL2Proof;
     }
 
-    constructor(IZkSyncDiamond _zksyncDiamondAddress, SparseMerkleTree _smt) {
+    constructor(IZkSyncDiamond _zksyncDiamondAddress, SparseMerkleTree _smt, uint256 _storedBatchHashSlot) {
         zksyncDiamondAddress = _zksyncDiamondAddress;
         smt = _smt;
+        storedBatchHashSlot = _storedBatchHashSlot;
     }
 
     /// @notice Verify a target chain block hash given a home chain block hash and a proof.
@@ -80,15 +84,28 @@ contract ParentToChildProver is IBlockHashProver {
         view
         returns (bytes32 targetBlockHash)
     {
-        (StorageProof memory proof) = abi.decode(input, (StorageProof));
+         // decode the input
+        (bytes memory rlpBlockHeader, uint256 batchNumber, bytes memory accountProof, bytes memory storageProof) =
+            abi.decode(input, (bytes, uint256, bytes, bytes));
+
+        
+        uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(storedBatchHashSlot), batchNumber));
+
+        // verify proofs and get the block hash
+        targetBlockHash =
+            ProverUtils.getSlotFromBlockHeader(homeBlockHash, rlpBlockHeader, address(zksyncDiamondAddress), slot, accountProof, storageProof);
     }
 
-    /// @notice Get a target chain block hash given a target chain sendRoot
-    /// @param  input ABI encoded (bytes32 sendRoot)
+    /// @notice Get a target chain batch hash given a target chain batch number
+    /// @param  input ABI encoded (uint256 batchNumber)
     function getTargetBlockHash(bytes calldata input) external view returns (bytes32 targetBlockHash) {
         uint256 batchNumber = abi.decode(input, (uint256));
 
         targetBlockHash = zksyncDiamondAddress.storedBatchHash(batchNumber);
+
+        if(targetBlockHash == bytes32(0)) {
+            revert TargetBlockHashNotFound();
+        }
        
     }
 
