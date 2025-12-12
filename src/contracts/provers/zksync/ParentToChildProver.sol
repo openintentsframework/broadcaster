@@ -13,7 +13,7 @@ interface IZkSyncDiamond {
     function storedBatchHash(uint256) external view returns (bytes32);
 }
 
-/// @notice  Implementation of a parent to child IBlockHashProver.
+/// @notice  Implementation of a parent to child BlockHashProver for ZkSync
 /// @dev    verifyTargetBlockHash and getTargetBlockHash get block hashes from the zksync diamond.
 ///         verifyStorageSlot is implemented to work against any zksync diamond.
 contract ParentToChildProver is IBlockHashProver {
@@ -188,6 +188,9 @@ contract ParentToChildProver is IBlockHashProver {
         value = l3ToL2Proof.value;
     }
 
+    /// @notice Hash the stored batch info
+    /// @param _storedBatchInfo The stored batch info
+    /// @return batchHash The hash of the stored batch info
     function _hashStoredBatchInfo(StoredBatchInfo memory _storedBatchInfo) internal pure returns (bytes32) {
         return keccak256(abi.encode(_storedBatchInfo));
     }
