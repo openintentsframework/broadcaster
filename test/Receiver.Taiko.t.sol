@@ -27,8 +27,8 @@ contract ReceiverTaikoTest is Test {
     TaikoChildToParentProver public childToParentProver;
     BlockHashProverPointer public blockHashProverPointer;
 
-    uint256 public ethereumForkId;
-    uint256 public taikoL2ForkId;
+    // Note: We don't use forks anymore to avoid dependency on Taiko internal testnet
+    // which can be reset at any time. Instead, we use local mocks with vm.chainId().
 
     address public constant L1_SIGNAL_SERVICE = 0x53789e39E3310737E8C8cED483032AAc25B39ded;
     address public constant L2_SIGNAL_SERVICE = 0x1670010000000000000000000000000000000005;
@@ -39,12 +39,11 @@ contract ReceiverTaikoTest is Test {
     address owner = makeAddr("owner");
 
     function setUp() public {
-        ethereumForkId = vm.createFork("https://l1rpc.internal.taiko.xyz");
-        taikoL2ForkId = vm.createFork("https://rpc.internal.taiko.xyz");
+        // No fork setup needed - we use local chain with vm.chainId()
     }
 
     function test_verifyBroadcastMessage_from_TaikoL2_into_Ethereum() public {
-        vm.selectFork(ethereumForkId);
+        // Use local chain with L1 chain ID (no fork needed)
         vm.chainId(L1_CHAIN_ID);
 
         receiver = new Receiver();
@@ -70,9 +69,18 @@ contract ReceiverTaikoTest is Test {
         bytes32 expectedBlockHash = keccak256(rlpBlockHeader);
         assertEq(blockHash, expectedBlockHash, "block hash mismatch");
 
-        uint256 checkpointSlot = uint256(keccak256(abi.encode(uint48(blockNumber), CHECKPOINTS_SLOT)));
-        vm.store(L1_SIGNAL_SERVICE, bytes32(checkpointSlot), blockHash);
-        vm.store(L1_SIGNAL_SERVICE, bytes32(checkpointSlot + 1), stateRoot);
+        // Mock the SignalService.getCheckpoint call to return the expected checkpoint
+        // The checkpoint struct is: (uint48 blockNumber, bytes32 blockHash, bytes32 stateRoot)
+        ISignalService.Checkpoint memory checkpoint = ISignalService.Checkpoint({
+            blockNumber: uint48(blockNumber),
+            blockHash: blockHash,
+            stateRoot: stateRoot
+        });
+        vm.mockCall(
+            L1_SIGNAL_SERVICE,
+            abi.encodeWithSelector(ISignalService.getCheckpoint.selector, uint48(blockNumber)),
+            abi.encode(checkpoint)
+        );
 
         bytes memory storageProofInput = abi.encode(rlpBlockHeader, account, slot, rlpAccountProof, rlpStorageProof);
 
@@ -101,7 +109,7 @@ contract ReceiverTaikoTest is Test {
     }
 
     function test_verifyBroadcastMessage_from_TaikoL2_realMessage() public {
-        vm.selectFork(ethereumForkId);
+        // Use local chain with L1 chain ID (no fork needed)
         vm.chainId(L1_CHAIN_ID);
 
         receiver = new Receiver();
@@ -124,9 +132,17 @@ contract ReceiverTaikoTest is Test {
         bytes memory rlpAccountProof = proofJson.readBytes(".rlpAccountProof");
         bytes memory rlpStorageProof = proofJson.readBytes(".rlpStorageProof");
 
-        uint256 checkpointSlot = uint256(keccak256(abi.encode(uint48(blockNumber), CHECKPOINTS_SLOT)));
-        vm.store(L1_SIGNAL_SERVICE, bytes32(checkpointSlot), blockHash);
-        vm.store(L1_SIGNAL_SERVICE, bytes32(checkpointSlot + 1), stateRoot);
+        // Mock the SignalService.getCheckpoint call to return the expected checkpoint
+        ISignalService.Checkpoint memory checkpoint = ISignalService.Checkpoint({
+            blockNumber: uint48(blockNumber),
+            blockHash: blockHash,
+            stateRoot: stateRoot
+        });
+        vm.mockCall(
+            L1_SIGNAL_SERVICE,
+            abi.encodeWithSelector(ISignalService.getCheckpoint.selector, uint48(blockNumber)),
+            abi.encode(checkpoint)
+        );
 
         bytes memory storageProofInput = abi.encode(rlpBlockHeader, account, slot, rlpAccountProof, rlpStorageProof);
 
@@ -156,7 +172,7 @@ contract ReceiverTaikoTest is Test {
     }
 
     function test_verifyBroadcastMessage_from_Ethereum_into_TaikoL2() public {
-        vm.selectFork(taikoL2ForkId);
+        // Use local chain with L2 chain ID (no fork needed)
         vm.chainId(L2_CHAIN_ID);
 
         receiver = new Receiver();
@@ -182,9 +198,17 @@ contract ReceiverTaikoTest is Test {
         bytes32 expectedBlockHash = keccak256(rlpBlockHeader);
         assertEq(blockHash, expectedBlockHash, "block hash mismatch");
 
-        uint256 checkpointSlot = uint256(keccak256(abi.encode(uint48(blockNumber), CHECKPOINTS_SLOT)));
-        vm.store(L2_SIGNAL_SERVICE, bytes32(checkpointSlot), blockHash);
-        vm.store(L2_SIGNAL_SERVICE, bytes32(checkpointSlot + 1), stateRoot);
+        // Mock the SignalService.getCheckpoint call to return the expected checkpoint
+        ISignalService.Checkpoint memory checkpoint = ISignalService.Checkpoint({
+            blockNumber: uint48(blockNumber),
+            blockHash: blockHash,
+            stateRoot: stateRoot
+        });
+        vm.mockCall(
+            L2_SIGNAL_SERVICE,
+            abi.encodeWithSelector(ISignalService.getCheckpoint.selector, uint48(blockNumber)),
+            abi.encode(checkpoint)
+        );
 
         bytes memory storageProofInput = abi.encode(rlpBlockHeader, account, slot, rlpAccountProof, rlpStorageProof);
 
