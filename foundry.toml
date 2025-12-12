@@ -12,6 +12,7 @@ fs_permissions = [
   { access = 'read', path = './test/payloads/ethereum' },
   { access = 'read', path = './test/payloads/optimism' },
   { access = 'read', path = './test/payloads/taiko' },
+  { access = 'read', path = './test/payloads/linea' },
   { access = 'read', path = './test/payloads/scroll' },
   { access = 'read', path = './out' },
 ]
