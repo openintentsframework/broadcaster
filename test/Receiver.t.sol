@@ -17,12 +17,16 @@ import {ChildToParentProver as ArbChildToParentProver} from "../src/contracts/pr
 import {ParentToChildProver as ArbParentToChildProver} from "../src/contracts/provers/arbitrum/ParentToChildProver.sol";
 import {ChildToParentProver as OPChildToParentProver} from "../src/contracts/provers/optimism/ChildToParentProver.sol";
 import {ChildToParentProver as LineaChildToParentProver} from "../src/contracts/provers/linea/ChildToParentProver.sol";
+import {ParentToChildProver as LineaParentToChildProver} from "../src/contracts/provers/linea/ParentToChildProver.sol";
 import {
     ChildToParentProver as ZksyncChildToParentProver
 } from "../src/contracts/provers/zksync/ChildToParentProver.sol";
 import {
     ChildToParentProver as ScrollChildToParentProver
 } from "../src/contracts/provers/scroll/ChildToParentProver.sol";
+import {
+    ParentToChildProver as ScrollParentToChildProver
+} from "../src/contracts/provers/scroll/ParentToChildProver.sol";
 import {BlockHashProverPointer} from "../src/contracts/BlockHashProverPointer.sol";
 import {RLP} from "@openzeppelin/contracts/utils/RLP.sol";
 
@@ -1259,6 +1263,226 @@ contract ReceiverTest is Test {
 
         assertEq(broadcasterId, expectedBroadcasterId, "wrong broadcasterId");
         assertEq(timestamp, uint256(valueArbitrum), "wrong timestamp");
+    }
+
+    function test_verifyBroadcastMessage_from_Scroll_into_Ethereum() public {
+        vm.selectFork(ethereumForkId);
+
+        receiver = new Receiver();
+
+        // ScrollChain contract on Ethereum Sepolia
+        address scrollChain = 0x2D567EcE699Eabe5afCd141eDB7A4f2D0D6ce8a0;
+        // Storage slot for finalizedStateRoots mapping
+        uint256 finalizedStateRootsSlot = 158;
+        // L1 chain ID (Ethereum Sepolia)
+        uint256 homeChainId = 11155111;
+
+        ScrollParentToChildProver parentToChildProver =
+            new ScrollParentToChildProver(scrollChain, finalizedStateRootsSlot, homeChainId);
+
+        BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
+
+        vm.prank(owner);
+        blockHashProverPointer.setImplementationAddress(address(parentToChildProver));
+
+        // Load the E2E proof data
+        string memory path = "test/payloads/scroll/e2e-proof.json";
+        string memory json = vm.readFile(path);
+
+        bytes32 message = json.readBytes32(".message");
+        address publisher = json.readAddress(".publisher");
+        address account = json.readAddress(".broadcaster");
+        bytes32 stateRoot = json.readBytes32(".stateRoot");
+        uint256 storageSlot = json.readUint(".storageSlot");
+        bytes memory rlpAccountProof = json.readBytes(".rlpAccountProof");
+        bytes memory rlpStorageProof = json.readBytes(".rlpStorageProof");
+
+        uint256 expectedSlot = uint256(keccak256(abi.encode(message, publisher)));
+        assertEq(expectedSlot, storageSlot, "slot mismatch");
+
+        // For Scroll ParentToChildProver, we mock the state root directly
+        // since we're testing the verifyStorageSlot functionality
+        // The state root comes from the L2 block, not from ScrollChain's finalizedStateRoots
+
+        // Create the input for verifyStorageSlot
+        // Scroll's verifyStorageSlot takes: (address account, uint256 slot, bytes accountProof, bytes storageProof)
+        bytes memory storageProofInput = abi.encode(account, storageSlot, rlpAccountProof, rlpStorageProof);
+
+        // For this test, we'll directly test the prover's verifyStorageSlot function
+        // since we have the state root from the L2 block
+        (address returnedAccount, uint256 returnedSlot, bytes32 value) =
+            parentToChildProver.verifyStorageSlot(stateRoot, storageProofInput);
+
+        assertEq(returnedAccount, account, "wrong account");
+        assertEq(returnedSlot, storageSlot, "wrong slot");
+
+        // The value should be the timestamp (0x6939e42e = 1765401646)
+        uint256 expectedTimestamp = 0x6939e42e;
+        assertEq(uint256(value), expectedTimestamp, "wrong timestamp value");
+    }
+
+    function test_verifyBroadcastMessage_from_Scroll_into_Ethereum_full_flow() public {
+        vm.selectFork(ethereumForkId);
+
+        receiver = new Receiver();
+
+        // ScrollChain contract on Ethereum Sepolia
+        address scrollChain = 0x2D567EcE699Eabe5afCd141eDB7A4f2D0D6ce8a0;
+        // Storage slot for finalizedStateRoots mapping
+        uint256 finalizedStateRootsSlot = 158;
+        // L1 chain ID (Ethereum Sepolia)
+        uint256 homeChainId = 11155111;
+
+        ScrollParentToChildProver parentToChildProver =
+            new ScrollParentToChildProver(scrollChain, finalizedStateRootsSlot, homeChainId);
+
+        BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
+
+        vm.prank(owner);
+        blockHashProverPointer.setImplementationAddress(address(parentToChildProver));
+
+        // Load the E2E proof data
+        string memory path = "test/payloads/scroll/e2e-proof.json";
+        string memory json = vm.readFile(path);
+
+        bytes32 message = json.readBytes32(".message");
+        address publisher = json.readAddress(".publisher");
+        address account = json.readAddress(".broadcaster");
+        bytes32 stateRoot = json.readBytes32(".stateRoot");
+        uint256 storageSlot = json.readUint(".storageSlot");
+        uint256 batchIndex = json.readUint(".batchIndex");
+        bytes memory rlpAccountProof = json.readBytes(".rlpAccountProof");
+        bytes memory rlpStorageProof = json.readBytes(".rlpStorageProof");
+
+        uint256 expectedSlot = uint256(keccak256(abi.encode(message, publisher)));
+        assertEq(expectedSlot, storageSlot, "slot mismatch");
+
+        // Mock the ScrollChain contract to return the expected state root for the batch index
+        // This simulates the finalized state root being stored in ScrollChain
+        vm.mockCall(
+            scrollChain,
+            abi.encodeWithSignature("finalizedStateRoots(uint256)", batchIndex),
+            abi.encode(stateRoot)
+        );
+
+        // Create the input for verifyStorageSlot
+        // Scroll's verifyStorageSlot takes: (address account, uint256 slot, bytes accountProof, bytes storageProof)
+        bytes memory storageProofInput = abi.encode(account, storageSlot, rlpAccountProof, rlpStorageProof);
+
+        address[] memory route = new address[](1);
+        route[0] = address(blockHashProverPointer);
+
+        bytes[] memory bhpInputs = new bytes[](1);
+        bhpInputs[0] = abi.encode(batchIndex);
+
+        IReceiver.RemoteReadArgs memory remoteReadArgs =
+            IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofInput});
+
+        (bytes32 broadcasterId, uint256 timestamp) = receiver.verifyBroadcastMessage(remoteReadArgs, message, publisher);
+
+        assertEq(
+            broadcasterId,
+            keccak256(
+                abi.encode(
+                    keccak256(
+                        abi.encode(
+                            bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
+                            address(blockHashProverPointer)
+                        )
+                    ),
+                    account
+                )
+            ),
+            "wrong broadcasterId"
+        );
+
+        // The value should be the timestamp (0x6939e42e = 1765401646)
+        uint256 expectedTimestamp = 0x6939e42e;
+        assertEq(timestamp, expectedTimestamp, "wrong timestamp");
+    }
+
+    /// @notice Test verifying a message broadcasted on Linea L2 from Ethereum L1
+    /// @dev Uses Linea's Sparse Merkle Tree (SMT) proofs with MiMC hashing
+    function test_verifyBroadcastMessage_from_Linea_into_Ethereum() public {
+        vm.selectFork(ethereumForkId);
+
+        receiver = new Receiver();
+
+        // Linea Rollup on Sepolia
+        address lineaRollup = 0xB218f8A4Bc926cF1cA7b3423c154a0D627Bdb7E5;
+        uint256 stateRootHashesSlot = 282;
+        uint256 homeChainId = 11155111; // Sepolia
+
+        LineaParentToChildProver parentToChildProver =
+            new LineaParentToChildProver(lineaRollup, stateRootHashesSlot, homeChainId);
+
+        BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
+
+        vm.prank(owner);
+        blockHashProverPointer.setImplementationAddress(address(parentToChildProver));
+
+        // Read the SMT proof data
+        string memory path = "test/payloads/linea/lineaProofL2-smt.json";
+        string memory json = vm.readFile(path);
+
+        uint256 l2BlockNumber = json.readUint(".l2BlockNumber");
+        bytes32 zkStateRoot = json.readBytes32(".zkStateRoot");
+        address account = json.readAddress(".account");
+        bytes32 slot = json.readBytes32(".slot");
+        bytes32 value = bytes32(json.readUint(".slotValue"));
+
+        // Mock LineaRollup to return the zkStateRoot for this block
+        vm.mockCall(
+            lineaRollup,
+            abi.encodeWithSignature("stateRootHashes(uint256)", l2BlockNumber),
+            abi.encode(zkStateRoot)
+        );
+
+        // Read encoded SMT proof from file
+        string memory encodedProofHex = vm.readFile("test/payloads/linea/encoded-smt-proof.txt");
+        bytes memory smtProof = vm.parseBytes(encodedProofHex);
+
+        // Construct the route
+        address[] memory route = new address[](1);
+        route[0] = address(blockHashProverPointer);
+
+        bytes[] memory bhpInputs = new bytes[](1);
+        bhpInputs[0] = abi.encode(l2BlockNumber);
+
+        bytes memory storageProofToLastProver = smtProof;
+
+        IReceiver.RemoteReadArgs memory remoteReadArgs =
+            IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
+
+        // Calculate expected message hash from the slot
+        // The slot is keccak256(abi.encode(message, publisher))
+        // We need to find the message that produces this slot
+        // For this test, we use the known message from the broadcast
+        bytes32 message = 0x7ef698ac3d608dabceaf43d5d1df44247f7f339c28cde2f19ac25a79e2392673;
+        address publisher = 0x0d08bae6bAF232EFA1208A6CaC66a389D5c27981;
+
+        // Verify the slot matches
+        uint256 expectedSlot = uint256(keccak256(abi.encode(message, publisher)));
+        assertEq(expectedSlot, uint256(slot), "slot mismatch");
+
+        (bytes32 broadcasterId, uint256 timestamp) = receiver.verifyBroadcastMessage(remoteReadArgs, message, publisher);
+
+        assertEq(
+            broadcasterId,
+            keccak256(
+                abi.encode(
+                    keccak256(
+                        abi.encode(
+                            bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
+                            address(blockHashProverPointer)
+                        )
+                    ),
+                    account
+                )
+            ),
+            "wrong broadcasterId"
+        );
+        assertEq(timestamp, uint256(value), "wrong timestamp");
     }
 }
 
