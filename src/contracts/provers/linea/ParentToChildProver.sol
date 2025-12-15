@@ -39,6 +39,9 @@ contract ParentToChildProver is IBlockHashProver {
     error InvalidAccountProof();
     error InvalidStorageProof();
     error StorageValueMismatch();
+    error AccountKeyMismatch();
+    error AccountValueMismatch();
+    error StorageKeyMismatch();
 
     constructor(address _lineaRollup, uint256 _stateRootHashesSlot, uint256 _homeChainId) {
         lineaRollup = _lineaRollup;
@@ -112,6 +115,14 @@ contract ParentToChildProver is IBlockHashProver {
     ///      - storageProof: from storageProofs[0].proof.proofRelatedNodes (42 elements)
     ///      - storageValue: the claimed storage value (32 bytes, to verify)
     ///
+    ///      Security: This function verifies that:
+    ///      1. The account proof is valid against the state root
+    ///      2. The account proof corresponds to the claimed account address (hKey check)
+    ///      3. The account value matches the proven account leaf (hValue check)
+    ///      4. The storage proof is valid against the account's storage root
+    ///      5. The storage proof corresponds to the claimed slot (hKey check)
+    ///      6. The storage value matches the proof's hValue
+    ///
     /// @param targetBlockHash The L2 SMT state root (from getTargetBlockHash or verifyTargetBlockHash)
     /// @param input ABI encoded proof data from linea_getProof
     /// @return account The address of the account on L2
@@ -139,20 +150,43 @@ contract ParentToChildProver is IBlockHashProver {
             revert InvalidAccountProof();
         }
 
-        // Step 2: Extract storage root from the account value (192 bytes)
+        // Step 2: Verify the account proof corresponds to the claimed account address
+        // Extract the account leaf and verify its hKey matches the MiMC hash of the claimed address
+        SparseMerkleProof.Leaf memory accountLeaf =
+            SparseMerkleProof.getLeaf(accountProof[accountProof.length - 1]);
+        bytes32 expectedAccountHKey = SparseMerkleProof.hashAccountKey(account);
+        if (accountLeaf.hKey != expectedAccountHKey) {
+            revert AccountKeyMismatch();
+        }
+
+        // Step 3: Verify the account value matches the proven account leaf
+        // This binds the storageRoot to the proven account - without this check,
+        // an attacker could supply an arbitrary accountValue with a fake storageRoot
+        bytes32 expectedAccountHValue = SparseMerkleProof.hashAccountValue(accountValue);
+        if (accountLeaf.hValue != expectedAccountHValue) {
+            revert AccountValueMismatch();
+        }
+
+        // Step 4: Extract storage root from the account value (192 bytes)
+        // Now we can safely use the storageRoot since we verified accountValue matches the proof
         SparseMerkleProof.Account memory accountData = SparseMerkleProof.getAccount(accountValue);
 
-        // Step 3: Verify storage proof against account's storage root
+        // Step 5: Verify storage proof against account's storage root
         bool storageValid = SparseMerkleProof.verifyProof(storageProof, storageLeafIndex, accountData.storageRoot);
         if (!storageValid) {
             revert InvalidStorageProof();
         }
 
-        // Step 4: Verify the claimed storage value matches the proof
-        // Extract the storage leaf from the proof and check hValue matches hash of claimed value
+        // Step 6: Verify the storage proof corresponds to the claimed slot
+        // Extract the storage leaf and verify its hKey matches the MiMC hash of the claimed slot
         SparseMerkleProof.Leaf memory storageLeaf =
             SparseMerkleProof.getLeaf(storageProof[storageProof.length - 1]);
+        bytes32 expectedStorageHKey = SparseMerkleProof.hashStorageKey(bytes32(slot));
+        if (storageLeaf.hKey != expectedStorageHKey) {
+            revert StorageKeyMismatch();
+        }
 
+        // Step 7: Verify the claimed storage value matches the proof's hValue
         bytes32 expectedHValue = SparseMerkleProof.hashStorageValue(claimedStorageValue);
         if (storageLeaf.hValue != expectedHValue) {
             revert StorageValueMismatch();
@@ -163,6 +197,6 @@ contract ParentToChildProver is IBlockHashProver {
 
     /// @inheritdoc IBlockHashProver
     function version() external pure returns (uint256) {
-        return 2; // Version 2: SMT proof support
+        return 4; // Version 4: Added account/storage key verification AND account value verification (security fix)
     }
 }
