@@ -1,0 +1,20 @@
+{
+  "network": "linea-sepolia",
+  "broadcaster": "0x20728d202A12f8306d01D0E54aE99885AfA31d83",
+  "txBlockNumber": 21815734,
+  "transactionHash": "0xebd4bdd3487ce634e623fed093e55699bfd159079097784a0f9dc373bb8c282f",
+  "message": "0x7ef698ac3d608dabceaf43d5d1df44247f7f339c28cde2f19ac25a79e2392673",
+  "publisher": "0x0d08bae6bAF232EFA1208A6CaC66a389D5c27981",
+  "lineaRollup": "0xB218f8A4Bc926cF1cA7b3423c154a0D627Bdb7E5",
+  "timestamp": "2024-12-09T16:30:00Z",
+  "finalization": {
+    "batchBlockNumber": 21834331,
+    "zkStateRoot": "0x0b9797153d1cef2b38f6e87d2c225791b74107ae7ce28e60bf498b9d1c094f14",
+    "note": "Linea only stores state roots at batch boundaries. Use batchBlockNumber (not txBlockNumber) for getTargetBlockHash. Uses Sparse Merkle Tree proofs (linea_getProof)."
+  },
+  "storageSlot": {
+    "slot": "0xc7f3206d60205e1634924ee1e67de7607b9a5991744aaf3526fde997abcc5170",
+    "value": "0x6938964b",
+    "description": "keccak256(abi.encode(message, publisher)) stored in Broadcaster.hashMap"
+  }
+}
