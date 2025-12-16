@@ -1,0 +1,24 @@
+{
+  "contracts": {
+    "broadcaster": "0xC5CeBD005B1F43A8995D655BC4043cc9f13e60cc",
+    "receiver": "0x6688Bb0e09eE79c607f14DfAAdF0Ad4E177606a0"
+  },
+  "provers": {
+    "arbitrum-sepolia": {
+      "pointer": "0x78c6E9d58e1ED1517379FE25d1B24976E5C94225",
+      "prover": "0x87dbDc08F3152bE7A4B7676582BCcCAB07cfAA7A"
+    },
+    "linea-sepolia": {
+      "pointer": "0x8a52bA2FCc6Fd4C81dE3719Eb6CF4AbD38885d03",
+      "prover": "0xe19B2b1Abe26cE00C32ECc7357DD3936E83e3e33"
+    },
+    "optimism-sepolia": {
+      "pointer": "0x63019c84C180D6f1C251aAF53CA235053E4F9dc4",
+      "prover": "0xF5dD2286E67A92E9Ae296429a035C5d72a32f47c"
+    },
+    "scroll-sepolia": {
+      "pointer": "0x40fdB1E3b853AbE267353D7026A1D8fEA617F1Aa",
+      "prover": "0x0c9C4fAce0878eC45C8bcCB2e680119581796D10"
+    }
+  }
+}
