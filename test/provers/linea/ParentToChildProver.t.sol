@@ -16,7 +16,7 @@ contract MockLineaRollup {
     }
 }
 
-contract ParentToChildProverTest is Test {
+contract LineaParentToChildProverTest is Test {
     using stdJson for string;
 
     ParentToChildProver public prover;
