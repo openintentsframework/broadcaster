@@ -34,7 +34,7 @@ contract MockSignalService {
 ///      - getTargetBlockHash: Called on L1 to read L2 block hash from L1's SignalService
 ///      - verifyTargetBlockHash: Called on L2 to verify L2 block hash via storage proof
 ///      - verifyStorageSlot: Verifies storage slots against a trusted block hash
-contract ParentToChildProverTest is Test {
+contract TaikoParentToChildProverTest is Test {
     using stdJson for string;
 
     ParentToChildProver public prover;
