@@ -9,7 +9,7 @@ import {RLP} from "@openzeppelin/contracts/utils/RLP.sol";
 import {ArbitrumOutputMock} from "../../mocks/ArbitrumOutputMock.sol";
 import {BlockHeaders} from "../../utils/BlockHeaders.sol";
 
-contract ParentToChildProverTest is Test {
+contract ArbitrumParentToChildProverTest is Test {
     using stdJson for string;
     using RLP for RLP.Encoder;
 
