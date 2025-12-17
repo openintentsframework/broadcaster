@@ -89,7 +89,7 @@ contract ParentToChildProverTest is Test {
 
         // Test with the sendRoot from the proof data
         bytes32 sendRoot = 0x7995a5be000a0212a46f7f128e5ffd6f6a99fa9c72046d9e9b0668bd080712cd;
-        ParentToChildProver mockProver = new ParentToChildProver(address(mockOutbox), rootSlot);
+        ParentToChildProver mockProver = new ParentToChildProver(address(mockOutbox), rootSlot, block.chainid);
         bytes32 result = mockProver.getTargetBlockHash(abi.encode(sendRoot));
         bytes32 expectedTargetBlockHash = 0xa97ce065a04d2abfec36a459db323721847718d3159d51c4256d271ee3b37e42;
         assertEq(result, expectedTargetBlockHash, "getTargetBlockHash should return correct Arbitrum block hash");
@@ -97,7 +97,8 @@ contract ParentToChildProverTest is Test {
 
     function test_verifyTargetBlockHash() public {
         vm.selectFork(parentForkId);
-        ParentToChildProver prover = new ParentToChildProver(address(outbox), rootSlot);
+        uint256 proverHomeChainId = block.chainid;
+        ParentToChildProver prover = new ParentToChildProver(address(outbox), rootSlot, proverHomeChainId);
 
         // State root derived from the proof's root node in fixture JSON
         bytes32 stateRoot = keccak256(
@@ -114,13 +115,17 @@ contract ParentToChildProverTest is Test {
         bytes memory rlpStorageProof = _getStorageProof();
         bytes memory input = abi.encode(rlpBlockHeader, sendRoot, rlpAccountProof, rlpStorageProof);
         bytes32 expectedTargetBlockHash = 0xcb53c786e7e875d7e3b1d3a770adbe02877ee5daab2ebfa55b935798b3ee9d24;
+
+        // verifyTargetBlockHash MUST be called off the prover's home chain.
+        vm.chainId(proverHomeChainId + 1);
+
         bytes32 result = prover.verifyTargetBlockHash(homeBlockHash, input);
         assertEq(result, expectedTargetBlockHash, "verifyTargetBlockHash should return correct Arbitrum block hash");
     }
 
     function test_verifyStorageSlot() public {
         vm.selectFork(parentForkId);
-        ParentToChildProver prover = new ParentToChildProver(address(outbox), rootSlot);
+        ParentToChildProver prover = new ParentToChildProver(address(outbox), rootSlot, block.chainid);
 
         // Using the same proof.json data - verifying Outbox storage via verifyStorageSlot
         bytes32 stateRoot = keccak256(
@@ -178,7 +183,7 @@ contract ParentToChildProverTest is Test {
 
         bytes memory input = abi.encode(rlpBlockHeader, account, expectedSlot, rlpAccountProof, rlpStorageProof);
 
-        ParentToChildProver parentToChildProver = new ParentToChildProver(address(outbox), 3);
+        ParentToChildProver parentToChildProver = new ParentToChildProver(address(outbox), 3, block.chainid);
 
         (address actualAccount, uint256 actualSlot, bytes32 actualValue) =
             parentToChildProver.verifyStorageSlot(blockHash, input);
