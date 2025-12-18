@@ -1360,9 +1360,7 @@ contract ReceiverTest is Test {
         // Mock the ScrollChain contract to return the expected state root for the batch index
         // This simulates the finalized state root being stored in ScrollChain
         vm.mockCall(
-            scrollChain,
-            abi.encodeWithSignature("finalizedStateRoots(uint256)", batchIndex),
-            abi.encode(stateRoot)
+            scrollChain, abi.encodeWithSignature("finalizedStateRoots(uint256)", batchIndex), abi.encode(stateRoot)
         );
 
         // Create the input for verifyStorageSlot
@@ -1433,9 +1431,7 @@ contract ReceiverTest is Test {
 
         // Mock LineaRollup to return the zkStateRoot for this block
         vm.mockCall(
-            lineaRollup,
-            abi.encodeWithSignature("stateRootHashes(uint256)", l2BlockNumber),
-            abi.encode(zkStateRoot)
+            lineaRollup, abi.encodeWithSignature("stateRootHashes(uint256)", l2BlockNumber), abi.encode(zkStateRoot)
         );
 
         // Read encoded SMT proof from file
