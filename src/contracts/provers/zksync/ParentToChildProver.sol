@@ -8,6 +8,11 @@ import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 
 import {MessageHashing, ProofData} from "./libraries/MessageHashing.sol";
 
+
+interface IZkChain {
+    function l2LogsRootHash(uint256 _batchNumber) external view returns (bytes32);
+}
+
 struct L2Log {
     uint8 l2ShardId;
     bool isService;
@@ -35,29 +40,26 @@ struct ZkSyncProof {
     bytes32[] proof;
 }
 
-import {console} from "forge-std/console.sol";
-
-
-
 
 /// @notice Arbitrum implementation of a parent to child IBlockHashProver.
 /// @dev    verifyTargetBlockHash and getTargetBlockHash get block hashes from the child chain's Outbox contract.
 ///         verifyStorageSlot is implemented to work against any Arbitrum child chain with a standard Ethereum block header and state trie.
 contract ParentToChildProver is IBlockHashProver {
-    /// @dev Address of the child chain's Outbox contract
-    address public immutable outbox;
-    /// @dev Storage slot the Outbox contract uses to store roots.
-    ///      Should be set to 3 unless the outbox contract has been modified.
-    ///      See https://github.com/OffchainLabs/nitro-contracts/blob/9d0e90ef588f94a9d2ffa4dc22713d91a76f57d4/src/bridge/AbsOutbox.sol#L32
-    uint256 public immutable rootsSlot;
+
+
+    IZkChain public immutable zkChain;
+    
+    uint256 public immutable l2LogsRootHashSlot;
 
     uint256 public immutable childChainId;
 
-    error TargetBlockHashNotFound();
+    error L2LogsRootHashNotFound();
+    error NotInHomeChain();
+    error BatchSettlementRootMismatch();
 
-    constructor(address _outbox, uint256 _rootsSlot, uint256 _childChainId) {
-        outbox = _outbox;
-        rootsSlot = _rootsSlot;
+    constructor(address _zkChain, uint256 _l2LogsRootHashSlot, uint256 _childChainId) {
+        zkChain = IZkChain(_zkChain);
+        l2LogsRootHashSlot = _l2LogsRootHashSlot;
         childChainId = _childChainId;
     }
 
@@ -67,39 +69,37 @@ contract ParentToChildProver is IBlockHashProver {
     function verifyTargetBlockHash(bytes32 homeBlockHash, bytes calldata input)
         external
         view
-        returns (bytes32 targetBlockHash)
+        returns (bytes32 targetL2LogsRootHash)
     {
         
         // decode the input
-        (bytes memory rlpBlockHeader, bytes32 sendRoot, bytes memory accountProof, bytes memory storageProof) =
-            abi.decode(input, (bytes, bytes32, bytes, bytes));
+        (bytes memory rlpBlockHeader, uint256 batchNumber, bytes memory accountProof, bytes memory storageProof) =
+            abi.decode(input, (bytes, uint256, bytes, bytes));
 
-        // calculate the slot based on the provided send root
-        // see: https://github.com/OffchainLabs/nitro-contracts/blob/9d0e90ef588f94a9d2ffa4dc22713d91a76f57d4/src/bridge/AbsOutbox.sol#L32
-        uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(rootsSlot), sendRoot));
+        
+        uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(l2LogsRootHashSlot), batchNumber));
 
         // verify proofs and get the block hash
-        targetBlockHash =
-            ProverUtils.getSlotFromBlockHeader(homeBlockHash, rlpBlockHeader, outbox, slot, accountProof, storageProof);
+        targetL2LogsRootHash =
+            ProverUtils.getSlotFromBlockHeader(homeBlockHash, rlpBlockHeader, address(zkChain), slot, accountProof, storageProof);
     }
 
-    /// @notice Get a target chain block hash given a target chain sendRoot
-    /// @param  input ABI encoded (bytes32 sendRoot)
-    function getTargetBlockHash(bytes calldata input) external view returns (bytes32 targetBlockHash) {
-        // decode the input
-        bytes32 sendRoot = abi.decode(input, (bytes32));
-        // get the target block hash from the outbox
-        targetBlockHash = IOutbox(outbox).roots(sendRoot);
+    /// @notice Get a target chain L2 logs root hash given a batch number
+    /// @param  input ABI encoded (uint256 batchNumber)
+    function getTargetBlockHash(bytes calldata input) external view returns (bytes32 l2LogsRootHash) {
 
-        if(targetBlockHash == bytes32(0)) {
-            revert TargetBlockHashNotFound();
+        uint256 batchNumber = abi.decode(input, (uint256));
+        l2LogsRootHash = zkChain.l2LogsRootHash(batchNumber);
+
+        if(l2LogsRootHash == bytes32(0)) {
+            revert L2LogsRootHashNotFound();
         }
     }
 
     /// @notice Verify a storage slot given a target chain block hash and a proof.
-    /// @param  targetBlockHash The block hash of the target chain.
-    /// @param  input ABI encoded (bytes blockHeader, address account, uint256 slot, bytes accountProof, bytes storageProof)
-    function verifyStorageSlot(bytes32 targetBlockHash, bytes calldata input)
+    /// @param  targetL2LogRootHash The l2 logs root hash of the target chain.
+    /// @param  input ABI encoded (ZkSyncProof proof)
+    function verifyStorageSlot(bytes32 targetL2LogRootHash, bytes calldata input)
         external
         view
         returns (address account, uint256 slot, bytes32 value)
@@ -119,9 +119,9 @@ contract ParentToChildProver is IBlockHashProver {
             _leafProofMask: proof.index,
             _leaf: hashedLog,
             _proof: proof.proof,
-            _targetBatchRoot: targetBlockHash
+            _targetBatchRoot: targetL2LogRootHash
         })){
-            revert("Batch settlement root mismatch");
+            revert BatchSettlementRootMismatch();
         }
 
         (bytes32 messageSent, bytes32 timestamp) = abi.decode(proof.message.data, (bytes32, bytes32));
@@ -133,6 +133,14 @@ contract ParentToChildProver is IBlockHashProver {
         
     }
 
+    /// @notice Prove that an L2 leaf is included in a batch
+    /// @param _chainId The chain id of the L2 where the leaf comes from.
+    /// @param _blockOrBatchNumber The block or batch number.
+    /// @param _leafProofMask The leaf proof mask.
+    /// @param _leaf The leaf to be proven.
+    /// @param _proof The proof.
+    /// @param _targetBatchRoot The target batch root.
+    /// @return success True if the leaf is included in the batch, false otherwise.
     function _proveL2LeafInclusion(
         uint256 _chainId,
         uint256 _blockOrBatchNumber,
@@ -150,9 +158,7 @@ contract ParentToChildProver is IBlockHashProver {
             _proof: _proof
         });
 
-
         if (proofData.finalProofNode) {
-
             return _targetBatchRoot == proofData.batchSettlementRoot && _targetBatchRoot != bytes32(0);
         }
 
@@ -167,6 +173,9 @@ contract ParentToChildProver is IBlockHashProver {
 
     }
 
+    /// @notice Convert an L2 message to an L2 log
+    /// @param _message The L2 message.
+    /// @return log The L2 log.
     function _l2MessageToLog(L2Message memory _message) internal pure returns (L2Log memory) {
         return
             L2Log({

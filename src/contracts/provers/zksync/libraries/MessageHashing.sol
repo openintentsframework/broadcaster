@@ -3,7 +3,8 @@
 pragma solidity 0.8.28;
 
 import {Merkle} from "./Merkle.sol";
-import {UncheckedMath} from "./UncheckedMath.sol";
+
+import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 bytes32 constant BATCH_LEAF_PADDING = keccak256("zkSync:BatchLeaf");
 bytes32 constant CHAIN_ID_LEAF_PADDING = keccak256("zkSync:ChainIdLeaf");
@@ -27,8 +28,15 @@ struct ProofData {
     bool finalProofNode;
 }
 
+
 library MessageHashing {
-    using UncheckedMath for uint256;
+
+    struct ProofMetadata {
+        uint256 proofStartIndex;
+        uint256 logLeafProofLen;
+        uint256 batchLeafProofLen;
+        bool finalProofNode;
+    }
 
     error MerklePathEmpty();
     error HashedLogIsDefault();
@@ -47,13 +55,6 @@ library MessageHashing {
     /// @param chainId The id of the chain.
     function chainIdLeafHash(bytes32 chainIdRoot, uint256 chainId) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked(CHAIN_ID_LEAF_PADDING, chainIdRoot, chainId));
-    }
-
-    struct ProofMetadata {
-        uint256 proofStartIndex;
-        uint256 logLeafProofLen;
-        uint256 batchLeafProofLen;
-        bool finalProofNode;
     }
 
     /// @notice Parses the proof metadata.
@@ -196,7 +197,7 @@ library MessageHashing {
         uint256 _right
     ) internal pure returns (bytes32[] memory slice) {
         slice = new bytes32[](_right - _left);
-        for (uint256 i = _left; i < _right; i = i.uncheckedInc()) {
+        for (uint256 i = _left; i < _right; i++) {
             slice[i - _left] = _proof[i];
         }
     }
