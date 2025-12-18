@@ -157,7 +157,7 @@ contract ParentToChildProver is IBlockHashProver {
 
     /// @inheritdoc IBlockHashProver
     function version() external pure returns (uint256) {
-        return 2;
+        return 1;
     }
 
     /// @notice Extract the root claim from the game proxy code.

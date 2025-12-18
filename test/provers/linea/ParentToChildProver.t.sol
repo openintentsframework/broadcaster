@@ -199,8 +199,7 @@ contract ParentToChildProverTest is Test {
     // ═══════════════════════════════════════════════════════════════════════════
 
     function test_version() public view {
-        // Version 2: SMT proof support
-        assertEq(prover.version(), 2);
+        assertEq(prover.version(), 1);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════

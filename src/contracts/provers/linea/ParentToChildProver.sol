@@ -163,6 +163,6 @@ contract ParentToChildProver is IBlockHashProver {
 
     /// @inheritdoc IBlockHashProver
     function version() external pure returns (uint256) {
-        return 2; // Version 2: SMT proof support
+        return 1;
     }
 }
