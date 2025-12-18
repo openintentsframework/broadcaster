@@ -60,7 +60,29 @@ contract ReceiverTest is Test {
 
     IOutbox public outbox;
 
+    // On-chain deployed ArbParentToChildProver on Sepolia
+    address constant ON_CHAIN_ARB_PROVER = 0x9e8BA3Ce052f2139f824885a78240839749F3370;
+
     address owner = makeAddr("owner");
+
+    /// @dev Helper to get a copy of the on-chain ArbParentToChildProver with matching bytecode
+    function _getOnChainArbProverCopy() internal returns (ArbParentToChildProver) {
+        // Save current fork
+        uint256 currentFork = vm.activeFork();
+
+        // Switch to Ethereum to get the on-chain bytecode
+        vm.selectFork(ethereumForkId);
+        bytes memory proverBytecode = ON_CHAIN_ARB_PROVER.code;
+
+        // Switch back to original fork
+        vm.selectFork(currentFork);
+
+        // Deploy using vm.etch to get exact same bytecode/codehash
+        address proverCopy = makeAddr("arbProverCopy");
+        vm.etch(proverCopy, proverBytecode);
+
+        return ArbParentToChildProver(proverCopy);
+    }
 
     function setUp() public {
         ethereumForkId = vm.createFork(vm.envString("ETHEREUM_RPC_URL"));
@@ -157,7 +179,7 @@ contract ReceiverTest is Test {
         vm.selectFork(ethereumForkId);
 
         receiver = new Receiver();
-        ArbParentToChildProver parentToChildProver = new ArbParentToChildProver(address(outbox), 3, ethereumChainId);
+        ArbParentToChildProver parentToChildProver = _getOnChainArbProverCopy();
 
         BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
 
@@ -349,8 +371,7 @@ contract ReceiverTest is Test {
         IReceiver.RemoteReadArgs memory remoteReadArgs =
             IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
 
-        ArbParentToChildProver arbParentToChildProverCopy =
-            new ArbParentToChildProver(address(outbox), 3, ethereumChainId);
+        ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
         bytes32 bhpPointerId = receiver.updateBlockHashProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
@@ -423,8 +444,7 @@ contract ReceiverTest is Test {
         IReceiver.RemoteReadArgs memory remoteReadArgs =
             IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
 
-        ArbParentToChildProver arbParentToChildProverCopy =
-            new ArbParentToChildProver(address(outbox), 3, ethereumChainId);
+        ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
         vm.expectRevert(Receiver.DifferentCodeHash.selector);
         receiver.updateBlockHashProverCopy(remoteReadArgs, arbParentToChildProverCopy);
@@ -439,8 +459,7 @@ contract ReceiverTest is Test {
 
         BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
 
-        ArbParentToChildProver arbParentToChildProverCopy =
-            new ArbParentToChildProver(address(outbox), 3, ethereumChainId);
+        ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
         address arbParentToChildProverPointerAddress;
 
@@ -639,8 +658,7 @@ contract ReceiverTest is Test {
         IReceiver.RemoteReadArgs memory remoteReadArgs =
             IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
 
-        ArbParentToChildProver arbParentToChildProverCopy =
-            new ArbParentToChildProver(address(outbox), 3, ethereumChainId);
+        ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
         bytes32 bhpPointerId = receiver.updateBlockHashProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
@@ -673,8 +691,7 @@ contract ReceiverTest is Test {
 
         BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
 
-        ArbParentToChildProver arbParentToChildProverCopy =
-            new ArbParentToChildProver(address(outbox), 3, ethereumChainId);
+        ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
         address arbParentToChildProverPointerAddress;
 
@@ -869,8 +886,7 @@ contract ReceiverTest is Test {
         IReceiver.RemoteReadArgs memory remoteReadArgs =
             IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
 
-        ArbParentToChildProver arbParentToChildProverCopy =
-            new ArbParentToChildProver(address(outbox), 3, ethereumChainId);
+        ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
         bytes32 bhpPointerId = receiver.updateBlockHashProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
@@ -903,8 +919,7 @@ contract ReceiverTest is Test {
 
         BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
 
-        ArbParentToChildProver arbParentToChildProverCopy =
-            new ArbParentToChildProver(address(outbox), 3, ethereumChainId);
+        ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
         address arbParentToChildProverPointerAddress;
 
@@ -1099,8 +1114,7 @@ contract ReceiverTest is Test {
         IReceiver.RemoteReadArgs memory remoteReadArgs =
             IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
 
-        ArbParentToChildProver arbParentToChildProverCopy =
-            new ArbParentToChildProver(address(outbox), 3, ethereumChainId);
+        ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
         bytes32 bhpPointerId = receiver.updateBlockHashProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
@@ -1133,8 +1147,7 @@ contract ReceiverTest is Test {
 
         BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
 
-        ArbParentToChildProver arbParentToChildProverCopy =
-            new ArbParentToChildProver(address(outbox), 3, ethereumChainId);
+        ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
         address arbParentToChildProverPointerAddress;
 
