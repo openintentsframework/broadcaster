@@ -51,6 +51,7 @@ contract ReceiverTest is Test {
     Receiver public receiver;
 
     uint256 public ethereumForkId;
+    uint256 public ethereumChainId;
     uint256 public arbitrumForkId;
     uint256 public optimismForkId;
     uint256 public lineaForkId;
@@ -68,6 +69,9 @@ contract ReceiverTest is Test {
         lineaForkId = vm.createFork(vm.envString("LINEA_RPC_URL"));
         zksyncForkId = vm.createFork(vm.envString("ZKSYNC_RPC_URL"));
         scrollForkId = vm.createFork(vm.envString("SCROLL_RPC_URL"));
+
+        vm.selectFork(ethereumForkId);
+        ethereumChainId = block.chainid;
 
         vm.selectFork(arbitrumForkId);
         outbox = IOutbox(0x65f07C7D521164a4d5DaC6eB8Fac8DA067A3B78F);
@@ -153,7 +157,7 @@ contract ReceiverTest is Test {
         vm.selectFork(ethereumForkId);
 
         receiver = new Receiver();
-        ArbParentToChildProver parentToChildProver = new ArbParentToChildProver(address(outbox), 3);
+        ArbParentToChildProver parentToChildProver = new ArbParentToChildProver(address(outbox), 3, ethereumChainId);
 
         BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
 
@@ -345,7 +349,8 @@ contract ReceiverTest is Test {
         IReceiver.RemoteReadArgs memory remoteReadArgs =
             IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
 
-        ArbParentToChildProver arbParentToChildProverCopy = new ArbParentToChildProver(address(outbox), 3);
+        ArbParentToChildProver arbParentToChildProverCopy =
+            new ArbParentToChildProver(address(outbox), 3, ethereumChainId);
 
         bytes32 bhpPointerId = receiver.updateBlockHashProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
@@ -418,7 +423,8 @@ contract ReceiverTest is Test {
         IReceiver.RemoteReadArgs memory remoteReadArgs =
             IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
 
-        ArbParentToChildProver arbParentToChildProverCopy = new ArbParentToChildProver(address(outbox), 3);
+        ArbParentToChildProver arbParentToChildProverCopy =
+            new ArbParentToChildProver(address(outbox), 3, ethereumChainId);
 
         vm.expectRevert(Receiver.DifferentCodeHash.selector);
         receiver.updateBlockHashProverCopy(remoteReadArgs, arbParentToChildProverCopy);
@@ -433,7 +439,8 @@ contract ReceiverTest is Test {
 
         BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
 
-        ArbParentToChildProver arbParentToChildProverCopy = new ArbParentToChildProver(address(outbox), 3);
+        ArbParentToChildProver arbParentToChildProverCopy =
+            new ArbParentToChildProver(address(outbox), 3, ethereumChainId);
 
         address arbParentToChildProverPointerAddress;
 
@@ -632,7 +639,8 @@ contract ReceiverTest is Test {
         IReceiver.RemoteReadArgs memory remoteReadArgs =
             IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
 
-        ArbParentToChildProver arbParentToChildProverCopy = new ArbParentToChildProver(address(outbox), 3);
+        ArbParentToChildProver arbParentToChildProverCopy =
+            new ArbParentToChildProver(address(outbox), 3, ethereumChainId);
 
         bytes32 bhpPointerId = receiver.updateBlockHashProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
@@ -665,7 +673,8 @@ contract ReceiverTest is Test {
 
         BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
 
-        ArbParentToChildProver arbParentToChildProverCopy = new ArbParentToChildProver(address(outbox), 3);
+        ArbParentToChildProver arbParentToChildProverCopy =
+            new ArbParentToChildProver(address(outbox), 3, ethereumChainId);
 
         address arbParentToChildProverPointerAddress;
 
@@ -860,7 +869,8 @@ contract ReceiverTest is Test {
         IReceiver.RemoteReadArgs memory remoteReadArgs =
             IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
 
-        ArbParentToChildProver arbParentToChildProverCopy = new ArbParentToChildProver(address(outbox), 3);
+        ArbParentToChildProver arbParentToChildProverCopy =
+            new ArbParentToChildProver(address(outbox), 3, ethereumChainId);
 
         bytes32 bhpPointerId = receiver.updateBlockHashProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
@@ -893,7 +903,8 @@ contract ReceiverTest is Test {
 
         BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
 
-        ArbParentToChildProver arbParentToChildProverCopy = new ArbParentToChildProver(address(outbox), 3);
+        ArbParentToChildProver arbParentToChildProverCopy =
+            new ArbParentToChildProver(address(outbox), 3, ethereumChainId);
 
         address arbParentToChildProverPointerAddress;
 
@@ -1088,7 +1099,8 @@ contract ReceiverTest is Test {
         IReceiver.RemoteReadArgs memory remoteReadArgs =
             IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
 
-        ArbParentToChildProver arbParentToChildProverCopy = new ArbParentToChildProver(address(outbox), 3);
+        ArbParentToChildProver arbParentToChildProverCopy =
+            new ArbParentToChildProver(address(outbox), 3, ethereumChainId);
 
         bytes32 bhpPointerId = receiver.updateBlockHashProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
@@ -1121,7 +1133,8 @@ contract ReceiverTest is Test {
 
         BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
 
-        ArbParentToChildProver arbParentToChildProverCopy = new ArbParentToChildProver(address(outbox), 3);
+        ArbParentToChildProver arbParentToChildProverCopy =
+            new ArbParentToChildProver(address(outbox), 3, ethereumChainId);
 
         address arbParentToChildProverPointerAddress;
 
@@ -1485,4 +1498,3 @@ contract ReceiverTest is Test {
         assertEq(timestamp, uint256(value), "wrong timestamp");
     }
 }
-
