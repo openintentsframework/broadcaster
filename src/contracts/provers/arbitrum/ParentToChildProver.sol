@@ -17,11 +17,17 @@ contract ParentToChildProver is IBlockHashProver {
     ///      See https://github.com/OffchainLabs/nitro-contracts/blob/9d0e90ef588f94a9d2ffa4dc22713d91a76f57d4/src/bridge/AbsOutbox.sol#L32
     uint256 public immutable rootsSlot;
 
+    /// @dev The chain ID of the home chain (where this prover reads from).
+    uint256 public immutable homeChainId;
+
+    error CallNotOnHomeChain();
+    error CallOnHomeChain();
     error TargetBlockHashNotFound();
 
-    constructor(address _outbox, uint256 _rootsSlot) {
+    constructor(address _outbox, uint256 _rootsSlot, uint256 _homeChainId) {
         outbox = _outbox;
         rootsSlot = _rootsSlot;
+        homeChainId = _homeChainId;
     }
 
     /// @notice Verify a target chain block hash given a home chain block hash and a proof.
@@ -32,7 +38,10 @@ contract ParentToChildProver is IBlockHashProver {
         view
         returns (bytes32 targetBlockHash)
     {
-        
+        if (block.chainid == homeChainId) {
+            revert CallOnHomeChain();
+        }
+
         // decode the input
         (bytes memory rlpBlockHeader, bytes32 sendRoot, bytes memory accountProof, bytes memory storageProof) =
             abi.decode(input, (bytes, bytes32, bytes, bytes));
@@ -44,11 +53,19 @@ contract ParentToChildProver is IBlockHashProver {
         // verify proofs and get the block hash
         targetBlockHash =
             ProverUtils.getSlotFromBlockHeader(homeBlockHash, rlpBlockHeader, outbox, slot, accountProof, storageProof);
+
+        if (targetBlockHash == bytes32(0)) {
+            revert TargetBlockHashNotFound();
+        }
     }
 
     /// @notice Get a target chain block hash given a target chain sendRoot
     /// @param  input ABI encoded (bytes32 sendRoot)
     function getTargetBlockHash(bytes calldata input) external view returns (bytes32 targetBlockHash) {
+        if (block.chainid != homeChainId) {
+            revert CallNotOnHomeChain();
+        }
+
         // decode the input
         bytes32 sendRoot = abi.decode(input, (bytes32));
         // get the target block hash from the outbox
