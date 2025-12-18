@@ -312,7 +312,7 @@ contract ReceiverTest is Test {
 
         uint256 expectedSlot = uint256(keccak256("eip7888.pointer.slot")) - 1;
 
-        string memory path = "test/payloads/ethereum/arb_pointer_proof_block_9747805.json";
+        string memory path = "test/payloads/ethereum/arb_pointer_proof_block_9868604.json";
 
         string memory json = vm.readFile(path);
         uint256 blockNumber = json.readUint(".blockNumber");
@@ -450,7 +450,7 @@ contract ReceiverTest is Test {
         {
             uint256 expectedSlot = uint256(keccak256("eip7888.pointer.slot")) - 1;
 
-            string memory path = "test/payloads/ethereum/arb_pointer_proof_block_9747805.json";
+            string memory path = "test/payloads/ethereum/arb_pointer_proof_block_9868604.json";
 
             string memory json = vm.readFile(path);
             uint256 blockNumber = json.readUint(".blockNumber");
@@ -604,7 +604,7 @@ contract ReceiverTest is Test {
 
         uint256 expectedSlot = uint256(keccak256("eip7888.pointer.slot")) - 1;
 
-        string memory path = "test/payloads/ethereum/arb_pointer_proof_block_9747805.json";
+        string memory path = "test/payloads/ethereum/arb_pointer_proof_block_9868604.json";
 
         string memory json = vm.readFile(path);
         uint256 blockNumber = json.readUint(".blockNumber");
@@ -684,7 +684,7 @@ contract ReceiverTest is Test {
         {
             uint256 expectedSlot = uint256(keccak256("eip7888.pointer.slot")) - 1;
 
-            string memory path = "test/payloads/ethereum/arb_pointer_proof_block_9747805.json";
+            string memory path = "test/payloads/ethereum/arb_pointer_proof_block_9868604.json";
 
             string memory json = vm.readFile(path);
             uint256 blockNumber = json.readUint(".blockNumber");
@@ -834,7 +834,7 @@ contract ReceiverTest is Test {
 
         uint256 expectedSlot = uint256(keccak256("eip7888.pointer.slot")) - 1;
 
-        string memory path = "test/payloads/ethereum/arb_pointer_proof_block_9747805.json";
+        string memory path = "test/payloads/ethereum/arb_pointer_proof_block_9868604.json";
 
         string memory json = vm.readFile(path);
         uint256 blockNumber = json.readUint(".blockNumber");
@@ -914,7 +914,7 @@ contract ReceiverTest is Test {
         {
             uint256 expectedSlot = uint256(keccak256("eip7888.pointer.slot")) - 1;
 
-            string memory path = "test/payloads/ethereum/arb_pointer_proof_block_9747805.json";
+            string memory path = "test/payloads/ethereum/arb_pointer_proof_block_9868604.json";
 
             string memory json = vm.readFile(path);
             uint256 blockNumber = json.readUint(".blockNumber");
@@ -1064,7 +1064,7 @@ contract ReceiverTest is Test {
 
         uint256 expectedSlot = uint256(keccak256("eip7888.pointer.slot")) - 1;
 
-        string memory path = "test/payloads/ethereum/arb_pointer_proof_block_9747805.json";
+        string memory path = "test/payloads/ethereum/arb_pointer_proof_block_9868604.json";
 
         string memory json = vm.readFile(path);
         uint256 blockNumber = json.readUint(".blockNumber");
@@ -1144,7 +1144,7 @@ contract ReceiverTest is Test {
         {
             uint256 expectedSlot = uint256(keccak256("eip7888.pointer.slot")) - 1;
 
-            string memory path = "test/payloads/ethereum/arb_pointer_proof_block_9747805.json";
+            string memory path = "test/payloads/ethereum/arb_pointer_proof_block_9868604.json";
 
             string memory json = vm.readFile(path);
             uint256 blockNumber = json.readUint(".blockNumber");
