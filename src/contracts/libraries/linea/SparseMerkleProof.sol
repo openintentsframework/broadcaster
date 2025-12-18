@@ -112,6 +112,32 @@ library SparseMerkleProof {
         return Mimc.hash(abi.encodePacked(lsb, msb));
     }
 
+    /**
+     * @notice Compute the hKey for an account address
+     * @dev In Linea's SMT, account keys are hashed as: MiMC(address padded to 32 bytes)
+     *      The address is left-padded with zeros to 32 bytes before hashing
+     * @param _account The account address
+     * @return bytes32 The hKey (MiMC hash of the address)
+     */
+    function hashAccountKey(address _account) internal pure returns (bytes32) {
+        // Address is 20 bytes, pad to 32 bytes (left-padded with zeros via abi.encode)
+        return Mimc.hash(abi.encode(_account));
+    }
+
+    /**
+     * @notice Compute the hKey for a storage slot
+     * @dev In Linea's SMT, storage keys are hashed as: MiMC(lsb || msb)
+     *      The 32-byte slot is split into two 16-byte parts, reordered as lsb||msb,
+     *      each padded to 32 bytes, then MiMC hashed
+     * @param _slot The storage slot
+     * @return bytes32 The hKey (MiMC hash of the reordered slot)
+     */
+    function hashStorageKey(bytes32 _slot) internal pure returns (bytes32) {
+        (bytes32 msb, bytes32 lsb) = _splitBytes32(_slot);
+        // Linea writes storage keys as lsb || msb (each in a 32-byte block)
+        return Mimc.hash(abi.encodePacked(lsb, msb));
+    }
+
     function _parseLeaf(bytes memory _encodedLeaf) private pure returns (Leaf memory) {
         if (_encodedLeaf.length != 128) {
             revert WrongBytesLength(128, _encodedLeaf.length);
