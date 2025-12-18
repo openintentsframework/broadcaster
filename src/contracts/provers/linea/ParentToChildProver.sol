@@ -197,6 +197,6 @@ contract ParentToChildProver is IBlockHashProver {
 
     /// @inheritdoc IBlockHashProver
     function version() external pure returns (uint256) {
-        return 4; // Version 4: Added account/storage key verification AND account value verification (security fix)
+        return 1;
     }
 }

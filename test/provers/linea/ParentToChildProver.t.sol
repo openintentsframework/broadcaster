@@ -199,8 +199,7 @@ contract ParentToChildProverTest is Test {
     // ═══════════════════════════════════════════════════════════════════════════
 
     function test_version() public view {
-        // Version 4: Added account/storage key verification AND account value verification (security fix)
-        assertEq(prover.version(), 4);
+        assertEq(prover.version(), 1);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
