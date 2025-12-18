@@ -173,5 +173,44 @@ contract ReceiverTest is Test {
         );
         assertEq(timestamp, uint256(expectedValue), "wrong timestamp");
     }
+
+    function test_verifyBroadcastMessage_from_ZkSync_into_Ethereum_wrong_message() public {
+        vm.selectFork(ethereumForkId);
+
+        MockZkChain mockZkChain = new MockZkChain();
+        mockZkChain.setL2LogsRootHash(43984, 0x4cbeceb2a95a01369ab104ec6a305e37cb22d3717abb91da6880e038c3160470);
+
+        receiver = new Receiver();
+        ZksyncParentToChildProver parentToChildProver = new ZksyncParentToChildProver(address(mockZkChain), 0, 300, 32657, block.chainid);
+
+        BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
+
+        vm.prank(owner);
+        blockHashProverPointer.setImplementationAddress(address(parentToChildProver));
+
+        bytes32 message = 0x0000000000000000000000000000000000000000000000000000000000000000;
+        address publisher = 0xAb23DF3fd78F45E54466d08926c3A886211aC5A1;
+
+        uint256 expectedSlot = uint256(keccak256(abi.encode(message, publisher)));
+
+        ZkSyncProof memory proof = getZkSyncProof();
+
+        bytes memory input = abi.encode(proof);
+
+
+        address[] memory route = new address[](1);
+        route[0] = address(blockHashProverPointer);
+
+        bytes[] memory bhpInputs = new bytes[](1);
+        bhpInputs[0] = abi.encode(43984);
+
+        bytes memory storageProofToLastProver = input;
+
+        IReceiver.RemoteReadArgs memory remoteReadArgs =
+            IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
+
+        vm.expectRevert(Receiver.WrongMessageSlot.selector);
+        receiver.verifyBroadcastMessage(remoteReadArgs, message, publisher);
+    }
 }
 

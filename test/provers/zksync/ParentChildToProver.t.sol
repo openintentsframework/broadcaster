@@ -104,7 +104,7 @@ contract ZkSyncParentToChildProverTest is Test {
 
         
         address expectedAccount = proof.message.sender;
-        uint256 expectedSlot = uint256(keccak256(abi.encode(expectedAccount, messageSent)));
+        uint256 expectedSlot = uint256(keccak256(abi.encode(messageSent, expectedAccount)));
         bytes32 expectedValue = timestamp;
 
         assertEq(account, expectedAccount, "account mismatch");
