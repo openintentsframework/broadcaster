@@ -18,7 +18,11 @@ import {ParentToChildProver as ArbParentToChildProver} from "../src/contracts/pr
 import {ChildToParentProver as OPChildToParentProver} from "../src/contracts/provers/optimism/ChildToParentProver.sol";
 import {ChildToParentProver as LineaChildToParentProver} from "../src/contracts/provers/linea/ChildToParentProver.sol";
 import {ParentToChildProver as LineaParentToChildProver} from "../src/contracts/provers/linea/ParentToChildProver.sol";
-import {ParentToChildProver as ZksyncParentToChildProver, ZkSyncProof, L2Message} from "../src/contracts/provers/zksync/ParentToChildProver.sol";
+import {
+    ParentToChildProver as ZksyncParentToChildProver,
+    ZkSyncProof,
+    L2Message
+} from "../src/contracts/provers/zksync/ParentToChildProver.sol";
 import {
     ChildToParentProver as ZksyncChildToParentProver
 } from "../src/contracts/provers/zksync/ChildToParentProver.sol";
@@ -122,7 +126,8 @@ contract ReceiverTest is Test {
         mockZkChain.setL2LogsRootHash(43984, 0x4cbeceb2a95a01369ab104ec6a305e37cb22d3717abb91da6880e038c3160470);
 
         receiver = new Receiver();
-        ZksyncParentToChildProver parentToChildProver = new ZksyncParentToChildProver(address(mockZkChain), 0, 300, 32657, block.chainid);
+        ZksyncParentToChildProver parentToChildProver =
+            new ZksyncParentToChildProver(address(mockZkChain), 0, 300, 32657, block.chainid);
 
         BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
 
@@ -137,7 +142,6 @@ contract ReceiverTest is Test {
         ZkSyncProof memory proof = getZkSyncProof();
 
         bytes memory input = abi.encode(proof);
-
 
         address[] memory route = new address[](1);
         route[0] = address(blockHashProverPointer);
@@ -181,7 +185,8 @@ contract ReceiverTest is Test {
         mockZkChain.setL2LogsRootHash(43984, 0x4cbeceb2a95a01369ab104ec6a305e37cb22d3717abb91da6880e038c3160470);
 
         receiver = new Receiver();
-        ZksyncParentToChildProver parentToChildProver = new ZksyncParentToChildProver(address(mockZkChain), 0, 300, 32657, block.chainid);
+        ZksyncParentToChildProver parentToChildProver =
+            new ZksyncParentToChildProver(address(mockZkChain), 0, 300, 32657, block.chainid);
 
         BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
 
@@ -196,7 +201,6 @@ contract ReceiverTest is Test {
         ZkSyncProof memory proof = getZkSyncProof();
 
         bytes memory input = abi.encode(proof);
-
 
         address[] memory route = new address[](1);
         route[0] = address(blockHashProverPointer);
