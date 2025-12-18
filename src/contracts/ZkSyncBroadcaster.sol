@@ -96,8 +96,4 @@ contract ZkSyncBroadcaster is IBroadcaster {
     function _computeMessageSlot(bytes32 message, address publisher) internal pure returns (bytes32) {
         return keccak256(abi.encode(message, publisher));
     }
-
-    function l1Messenger() public view returns(IL1Messenger){
-        return _l1Messenger;
-    }
 }
