@@ -190,8 +190,9 @@ contract ParentToChildProver is IBlockHashProver {
 
         (bytes32 messageSent, bytes32 timestamp) = abi.decode(proof.message.data, (bytes32, bytes32));
 
+
         account = proof.message.sender;
-        slot = uint256(keccak256(abi.encode(account, messageSent)));
+        slot = uint256(keccak256(abi.encode(messageSent, account)));
         value = timestamp;
     }
 
