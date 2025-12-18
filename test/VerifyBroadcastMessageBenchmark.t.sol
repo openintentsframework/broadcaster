@@ -117,9 +117,7 @@ contract VerifyBroadcastMessageBenchmark is Test {
 
         // Mock ScrollChain state root
         vm.mockCall(
-            SCROLL_CHAIN,
-            abi.encodeWithSignature("finalizedStateRoots(uint256)", batchIndex),
-            abi.encode(stateRoot)
+            SCROLL_CHAIN, abi.encodeWithSignature("finalizedStateRoots(uint256)", batchIndex), abi.encode(stateRoot)
         );
 
         bytes memory storageProof = abi.encode(account, storageSlot, rlpAccountProof, rlpStorageProof);
@@ -162,9 +160,7 @@ contract VerifyBroadcastMessageBenchmark is Test {
 
         // Mock LineaRollup state root
         vm.mockCall(
-            LINEA_ROLLUP,
-            abi.encodeWithSignature("stateRootHashes(uint256)", l2BlockNumber),
-            abi.encode(zkStateRoot)
+            LINEA_ROLLUP, abi.encodeWithSignature("stateRootHashes(uint256)", l2BlockNumber), abi.encode(zkStateRoot)
         );
 
         // Load encoded SMT proof
@@ -363,7 +359,8 @@ contract VerifyBroadcastMessageBenchmark is Test {
         );
 
         // For L2→L2, we measure the combined cost by calling both verifications
-        bytes memory scrollStorageProof = abi.encode(scrollBroadcaster, scrollStorageSlot, scrollRlpAccountProof, scrollRlpStorageProof);
+        bytes memory scrollStorageProof =
+            abi.encode(scrollBroadcaster, scrollStorageSlot, scrollRlpAccountProof, scrollRlpStorageProof);
 
         // Use startSnapshotGas/stopSnapshotGas to capture combined gas of both operations
         vm.startSnapshotGas("verifyBroadcastMessage", "ScrollToOptimism");

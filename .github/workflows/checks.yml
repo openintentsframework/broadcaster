@@ -29,6 +29,10 @@ jobs:
         
       - name: Set up environment
         uses: ./.github/actions/setup
+        
+      - name: Run forge fmt
+        run: forge fmt --check
 
       - name: Run tests
         run: forge test -vv
+

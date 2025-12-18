@@ -3,8 +3,7 @@ pragma solidity ^0.8.28;
 
 import {Test} from "forge-std/Test.sol";
 import {console} from "forge-std/console.sol";
-import {ParentToChildProver, ILineaRollup} from
-    "../../../src/contracts/provers/linea/ParentToChildProver.sol";
+import {ParentToChildProver, ILineaRollup} from "../../../src/contracts/provers/linea/ParentToChildProver.sol";
 import {stdJson} from "forge-std/StdJson.sol";
 
 /// @notice Mock LineaRollup contract for testing
@@ -46,11 +45,7 @@ contract LineaParentToChildProverTest is Test {
         mockLineaRollup = new MockLineaRollup();
 
         // Deploy prover with mock LineaRollup, pointing to L1 (home chain)
-        prover = new ParentToChildProver(
-            address(mockLineaRollup),
-            STATE_ROOT_HASHES_SLOT,
-            ETH_MAINNET_CHAIN_ID
-        );
+        prover = new ParentToChildProver(address(mockLineaRollup), STATE_ROOT_HASHES_SLOT, ETH_MAINNET_CHAIN_ID);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -64,26 +59,14 @@ contract LineaParentToChildProverTest is Test {
     }
 
     function test_constructor_differentParameters() public {
-        ParentToChildProver newProver = new ParentToChildProver(
-            address(0x123),
-            99,
-            12345
-        );
+        ParentToChildProver newProver = new ParentToChildProver(address(0x123), 99, 12345);
         assertEq(newProver.lineaRollup(), address(0x123));
         assertEq(newProver.stateRootHashesSlot(), 99);
         assertEq(newProver.homeChainId(), 12345);
     }
 
-    function testFuzz_constructor_acceptsAnyParameters(
-        address _lineaRollup,
-        uint256 _slot,
-        uint256 _chainId
-    ) public {
-        ParentToChildProver newProver = new ParentToChildProver(
-            _lineaRollup,
-            _slot,
-            _chainId
-        );
+    function testFuzz_constructor_acceptsAnyParameters(address _lineaRollup, uint256 _slot, uint256 _chainId) public {
+        ParentToChildProver newProver = new ParentToChildProver(_lineaRollup, _slot, _chainId);
         assertEq(newProver.lineaRollup(), _lineaRollup);
         assertEq(newProver.stateRootHashesSlot(), _slot);
         assertEq(newProver.homeChainId(), _chainId);
@@ -361,12 +344,12 @@ contract LineaParentToChildProverTest is Test {
             // Create a FORGED accountValue with a fake storageRoot
             // Account struct: nonce, balance, storageRoot, mimcCodeHash, keccakCodeHash, codeSize
             bytes memory forgedAccountValue = abi.encode(
-                uint64(1),                    // nonce
-                uint256(0),                   // balance
-                bytes32(uint256(0xBAD)),      // FORGED: fake storageRoot!
-                bytes32(0),                   // mimcCodeHash
-                bytes32(0),                   // keccakCodeHash
-                uint64(0)                     // codeSize
+                uint64(1), // nonce
+                uint256(0), // balance
+                bytes32(uint256(0xBAD)), // FORGED: fake storageRoot!
+                bytes32(0), // mimcCodeHash
+                bytes32(0), // keccakCodeHash
+                uint64(0) // codeSize
             );
 
             bytes memory forgedInput = abi.encode(

@@ -71,11 +71,8 @@ contract ReceiverTaikoTest is Test {
 
         // Mock the SignalService.getCheckpoint call to return the expected checkpoint
         // The checkpoint struct is: (uint48 blockNumber, bytes32 blockHash, bytes32 stateRoot)
-        ISignalService.Checkpoint memory checkpoint = ISignalService.Checkpoint({
-            blockNumber: uint48(blockNumber),
-            blockHash: blockHash,
-            stateRoot: stateRoot
-        });
+        ISignalService.Checkpoint memory checkpoint =
+            ISignalService.Checkpoint({blockNumber: uint48(blockNumber), blockHash: blockHash, stateRoot: stateRoot});
         vm.mockCall(
             L1_SIGNAL_SERVICE,
             abi.encodeWithSelector(ISignalService.getCheckpoint.selector, uint48(blockNumber)),
@@ -133,11 +130,8 @@ contract ReceiverTaikoTest is Test {
         bytes memory rlpStorageProof = proofJson.readBytes(".rlpStorageProof");
 
         // Mock the SignalService.getCheckpoint call to return the expected checkpoint
-        ISignalService.Checkpoint memory checkpoint = ISignalService.Checkpoint({
-            blockNumber: uint48(blockNumber),
-            blockHash: blockHash,
-            stateRoot: stateRoot
-        });
+        ISignalService.Checkpoint memory checkpoint =
+            ISignalService.Checkpoint({blockNumber: uint48(blockNumber), blockHash: blockHash, stateRoot: stateRoot});
         vm.mockCall(
             L1_SIGNAL_SERVICE,
             abi.encodeWithSelector(ISignalService.getCheckpoint.selector, uint48(blockNumber)),
@@ -199,11 +193,8 @@ contract ReceiverTaikoTest is Test {
         assertEq(blockHash, expectedBlockHash, "block hash mismatch");
 
         // Mock the SignalService.getCheckpoint call to return the expected checkpoint
-        ISignalService.Checkpoint memory checkpoint = ISignalService.Checkpoint({
-            blockNumber: uint48(blockNumber),
-            blockHash: blockHash,
-            stateRoot: stateRoot
-        });
+        ISignalService.Checkpoint memory checkpoint =
+            ISignalService.Checkpoint({blockNumber: uint48(blockNumber), blockHash: blockHash, stateRoot: stateRoot});
         vm.mockCall(
             L2_SIGNAL_SERVICE,
             abi.encodeWithSelector(ISignalService.getCheckpoint.selector, uint48(blockNumber)),
