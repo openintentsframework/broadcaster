@@ -39,8 +39,16 @@
   "scripts": {
     "build": "hardhat compile && wagmi generate && tsc",
     "clean": "hardhat clean && rm -rf wagmi && rm -rf dist",
+    "lint": "forge fmt --check",
+    "lint:fix": "forge fmt",
     "test": "yarn build && hardhat test"
   },
   "dependencies": {
+    "husky": "^9.1.7"
+  },
+  "lint-staged": {
+    "**/*.sol": [
+      "forge fmt --check"
+    ]
   }
 }

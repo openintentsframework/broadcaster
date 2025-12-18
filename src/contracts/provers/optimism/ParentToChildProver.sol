@@ -35,8 +35,15 @@ contract ParentToChildProver is IBlockHashProver {
     /// @notice The target chain's AnchorStateRegistry address.
     address public immutable anchorStateRegistry;
 
-    constructor(address _anchorStateRegistry) {
+    /// @dev The chain ID of the home chain (where this prover reads from).
+    uint256 public immutable homeChainId;
+
+    error CallNotOnHomeChain();
+    error CallOnHomeChain();
+
+    constructor(address _anchorStateRegistry, uint256 _homeChainId) {
         anchorStateRegistry = _anchorStateRegistry;
+        homeChainId = _homeChainId;
     }
 
     /// @notice Verify the latest available target block hash given a home chain block hash, a storage proof of the AnchorStateRegistry, the anchor game proxy code and a root claim preimage.
@@ -57,6 +64,10 @@ contract ParentToChildProver is IBlockHashProver {
         view
         returns (bytes32 targetBlockHash)
     {
+        if (block.chainid == homeChainId) {
+            revert CallOnHomeChain();
+        }
+
         // decode the input
         (
             bytes memory rlpBlockHeader,
@@ -107,6 +118,10 @@ contract ParentToChildProver is IBlockHashProver {
     ///         3. Return the latest block hash from the root claim preimage.
     /// @param  input ABI encoded (address gameProxy, OutputRootProof rootClaimPreimage)
     function getTargetBlockHash(bytes calldata input) external view returns (bytes32 targetBlockHash) {
+        if (block.chainid != homeChainId) {
+            revert CallNotOnHomeChain();
+        }
+
         // decode the input
         (address gameProxy, OutputRootProof memory rootClaimPreimage) = abi.decode(input, (address, OutputRootProof));
 
