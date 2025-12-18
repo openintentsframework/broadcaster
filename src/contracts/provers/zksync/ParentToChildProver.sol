@@ -8,7 +8,6 @@ import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 
 import {MessageHashing, ProofData} from "./libraries/MessageHashing.sol";
 
-
 /// @notice Interface for interacting with ZkChain contracts to retrieve L2 logs root hashes.
 interface IZkChain {
     /// @notice Retrieves the L2 logs root hash for a given batch number.
@@ -76,6 +75,9 @@ contract ParentToChildProver is IBlockHashProver {
     /// @notice The chain ID of the gateway chain (settlement layer) that bridges between parent and child chains.
     uint256 public immutable gatewayChainId;
 
+    /// @notice The chain ID of the home chain (L1) where this prover is deployed.
+    uint256 public immutable homeChainId;
+
     /// @notice Error thrown when the requested L2 logs root hash is not found (returns zero).
     error L2LogsRootHashNotFound();
 
@@ -88,11 +90,18 @@ contract ParentToChildProver is IBlockHashProver {
     /// @notice Error thrown when the settlement layer chain ID does not match the expected gateway chain ID.
     error ChainIdMismatch();
 
-    constructor(address _gatewayZkChain, uint256 _l2LogsRootHashSlot, uint256 _childChainId, uint256 _gatewayChainId) {
+    constructor(
+        address _gatewayZkChain,
+        uint256 _l2LogsRootHashSlot,
+        uint256 _childChainId,
+        uint256 _gatewayChainId,
+        uint256 _homeChainId
+    ) {
         gatewayZkChain = IZkChain(_gatewayZkChain);
         l2LogsRootHashSlot = _l2LogsRootHashSlot;
         childChainId = _childChainId;
         gatewayChainId = _gatewayChainId;
+        homeChainId = _homeChainId;
     }
 
     /// @notice Verify a target chain L2 logs root hash given a home chain block hash and a proof.
@@ -109,17 +118,16 @@ contract ParentToChildProver is IBlockHashProver {
         view
         returns (bytes32 targetL2LogsRootHash)
     {
-        
         // decode the input
         (bytes memory rlpBlockHeader, uint256 batchNumber, bytes memory accountProof, bytes memory storageProof) =
             abi.decode(input, (bytes, uint256, bytes, bytes));
 
-        
         uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(l2LogsRootHashSlot), batchNumber));
 
         // verify proofs and get the block hash
-        targetL2LogsRootHash =
-            ProverUtils.getSlotFromBlockHeader(homeBlockHash, rlpBlockHeader, address(gatewayZkChain), slot, accountProof, storageProof);
+        targetL2LogsRootHash = ProverUtils.getSlotFromBlockHeader(
+            homeBlockHash, rlpBlockHeader, address(gatewayZkChain), slot, accountProof, storageProof
+        );
     }
 
     /// @notice Get a target chain L2 logs root hash given a batch number.
@@ -129,11 +137,14 @@ contract ParentToChildProver is IBlockHashProver {
     /// @return l2LogsRootHash The L2 logs root hash for the specified batch number.
     /// @custom:reverts L2LogsRootHashNotFound if the L2 logs root hash is not found (returns zero).
     function getTargetBlockHash(bytes calldata input) external view returns (bytes32 l2LogsRootHash) {
+        if (block.chainid != homeChainId) {
+            revert NotInHomeChain();
+        }
 
         uint256 batchNumber = abi.decode(input, (uint256));
         l2LogsRootHash = gatewayZkChain.l2LogsRootHash(batchNumber);
 
-        if(l2LogsRootHash == bytes32(0)) {
+        if (l2LogsRootHash == bytes32(0)) {
             revert L2LogsRootHashNotFound();
         }
     }
@@ -166,24 +177,22 @@ contract ParentToChildProver is IBlockHashProver {
             abi.encodePacked(log.l2ShardId, log.isService, log.txNumberInBatch, log.sender, log.key, log.value)
         );
 
-        if(!_proveL2LeafInclusion({
-            _chainId: childChainId,
-            _blockOrBatchNumber: proof.batchNumber,
-            _leafProofMask: proof.index,
-            _leaf: hashedLog,
-            _proof: proof.proof,
-            _targetBatchRoot: targetL2LogRootHash
-        })){
+        if (!_proveL2LeafInclusion({
+                _chainId: childChainId,
+                _blockOrBatchNumber: proof.batchNumber,
+                _leafProofMask: proof.index,
+                _leaf: hashedLog,
+                _proof: proof.proof,
+                _targetBatchRoot: targetL2LogRootHash
+            })) {
             revert BatchSettlementRootMismatch();
         }
 
         (bytes32 messageSent, bytes32 timestamp) = abi.decode(proof.message.data, (bytes32, bytes32));
 
-        
         account = proof.message.sender;
         slot = uint256(keccak256(abi.encode(account, messageSent)));
         value = timestamp;
-        
     }
 
     /// @notice Prove that an L2 leaf is included in a batch.
@@ -203,10 +212,9 @@ contract ParentToChildProver is IBlockHashProver {
         uint256 _blockOrBatchNumber,
         uint256 _leafProofMask,
         bytes32 _leaf,
-        bytes32[] memory _proof, 
+        bytes32[] memory _proof,
         bytes32 _targetBatchRoot
-    ) internal view returns (bool){
-
+    ) internal view returns (bool) {
         ProofData memory proofData = MessageHashing._getProofData({
             _chainId: _chainId,
             _batchNumber: _blockOrBatchNumber,
@@ -231,7 +239,6 @@ contract ParentToChildProver is IBlockHashProver {
             _proof: MessageHashing.extractSliceUntilEnd(_proof, proofData.ptr),
             _targetBatchRoot: _targetBatchRoot
         });
-
     }
 
     /// @notice Convert an L2 message to an L2 log structure.
@@ -242,15 +249,14 @@ contract ParentToChildProver is IBlockHashProver {
     /// @param _message The L2 message to convert.
     /// @return log The L2 log structure corresponding to the message.
     function _l2MessageToLog(L2Message memory _message) internal pure returns (L2Log memory) {
-        return
-            L2Log({
-                l2ShardId: 0,
-                isService: true,
-                txNumberInBatch: _message.txNumberInBatch,
-                sender: 0x0000000000000000000000000000000000008008,
-                key: bytes32(uint256(uint160(_message.sender))),
-                value: keccak256(_message.data)
-            });
+        return L2Log({
+            l2ShardId: 0,
+            isService: true,
+            txNumberInBatch: _message.txNumberInBatch,
+            sender: 0x0000000000000000000000000000000000008008,
+            key: bytes32(uint256(uint160(_message.sender))),
+            value: keccak256(_message.data)
+        });
     }
 
     /// @notice Returns the version of this block hash prover implementation.

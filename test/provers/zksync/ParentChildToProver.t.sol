@@ -5,15 +5,39 @@ import {Test, console} from "forge-std/Test.sol";
 import {
     ParentToChildProver,
     ZkSyncProof,
-    L2Message
+    L2Message,
+    IZkChain
 } from "../../../src/contracts/provers/zksync/ParentToChildProver.sol";
 
+contract MockZkChain is IZkChain {
+
+    mapping(uint256 => bytes32) public l2LogsRootHashes;
+
+    function setL2LogsRootHash(uint256 _batchNumber, bytes32 _l2LogsRootHash) external {
+        l2LogsRootHashes[_batchNumber] = _l2LogsRootHash;
+    }
+
+
+    function l2LogsRootHash(uint256 _batchNumber) external view returns (bytes32) {
+        return l2LogsRootHashes[_batchNumber];
+    }
+}
+
 contract ZkSyncParentToChildProverTest is Test {
-    function setUp() public {}
 
-    function test_verifyStorageSlot() public {
-        ParentToChildProver prover = new ParentToChildProver(address(0), 0, 300);
+    uint256 public parentForkId;
+    uint256 public parentChainId;
 
+
+    function setUp() public {
+        parentForkId = vm.createFork(vm.envString("ETHEREUM_RPC_URL"));
+
+        
+        parentChainId = 11155111;
+    }
+
+
+    function getZkSyncProof() public pure returns (ZkSyncProof memory) {
         // transaction hash: 0x6ae69e72d45d219609f24e4e7c7711245ac61b7b0fdd872aae39c0d167ee4ed7
 
         bytes32[] memory logProof = new bytes32[](36);
@@ -64,7 +88,71 @@ contract ZkSyncParentToChildProverTest is Test {
             }),
             proof: logProof
         });
+        return proof;
+    }
 
-        prover.verifyStorageSlot(0x4cbeceb2a95a01369ab104ec6a305e37cb22d3717abb91da6880e038c3160470, abi.encode(proof));
+    function test_verifyStorageSlot() public {
+        ParentToChildProver prover = new ParentToChildProver(address(0), 0, 300, 32657, parentChainId);
+
+        bytes32 expectedL2LogsRootHash = 0x4cbeceb2a95a01369ab104ec6a305e37cb22d3717abb91da6880e038c3160470;
+
+        ZkSyncProof memory proof = getZkSyncProof();
+
+        (address account, uint256 slot, bytes32 value) = prover.verifyStorageSlot(expectedL2LogsRootHash, abi.encode(proof));
+
+        (bytes32 messageSent, bytes32 timestamp) = abi.decode(proof.message.data, (bytes32, bytes32));
+
+        
+        address expectedAccount = proof.message.sender;
+        uint256 expectedSlot = uint256(keccak256(abi.encode(expectedAccount, messageSent)));
+        bytes32 expectedValue = timestamp;
+
+        assertEq(account, expectedAccount, "account mismatch");
+        assertEq(uint256(slot), expectedSlot, "slot mismatch");
+        assertEq(value, expectedValue, "value mismatch");
+    }
+
+    function test_verifyStorageSlot_revertsWithWrongGatewayChainId() public {
+        ParentToChildProver prover = new ParentToChildProver(address(0), 0, 300, 32657, parentChainId);
+
+        bytes32 expectedL2LogsRootHash = 0x4cbeceb2a95a01369ab104ec6a305e37cb22d3717abb91da6880e038c3160470;
+
+        ZkSyncProof memory proof = getZkSyncProof();
+
+        proof.proof[30] = bytes32(uint256(123)); // change the settlement layer chain id
+
+        vm.expectRevert(ParentToChildProver.ChainIdMismatch.selector);
+        prover.verifyStorageSlot(expectedL2LogsRootHash, abi.encode(proof));
+    }
+
+    function test_getTargetBlockHash() public {
+        vm.selectFork(parentForkId);
+
+        MockZkChain mockZkChain = new MockZkChain();
+        mockZkChain.setL2LogsRootHash(43984, 0x4cbeceb2a95a01369ab104ec6a305e37cb22d3717abb91da6880e038c3160470);
+
+        ParentToChildProver prover = new ParentToChildProver(address(mockZkChain), 0, 300, 32657, parentChainId);
+
+        bytes32 targetL2LogsRootHash = prover.getTargetBlockHash(abi.encode(43984));
+        assertEq(targetL2LogsRootHash, 0x4cbeceb2a95a01369ab104ec6a305e37cb22d3717abb91da6880e038c3160470, "targetL2LogsRootHash mismatch");
+    }
+
+    function test_getTargetBlockHash_revertsWithNotFound() public {
+        vm.selectFork(parentForkId);
+        MockZkChain mockZkChain = new MockZkChain();
+
+        ParentToChildProver prover = new ParentToChildProver(address(mockZkChain), 0, 300, 32657, parentChainId);
+
+        vm.expectRevert(ParentToChildProver.L2LogsRootHashNotFound.selector);
+        prover.getTargetBlockHash(abi.encode(43985));
+    }
+
+    function test_getTargetBlockHash_revertsWithNotInHomeChain() public {
+        MockZkChain mockZkChain = new MockZkChain();
+
+        ParentToChildProver prover = new ParentToChildProver(address(mockZkChain), 0, 300, 32657, parentChainId);
+
+        vm.expectRevert(ParentToChildProver.NotInHomeChain.selector);
+        prover.getTargetBlockHash(abi.encode(43985));
     }
 }
