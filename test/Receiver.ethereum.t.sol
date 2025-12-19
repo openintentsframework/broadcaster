@@ -35,7 +35,7 @@ import {
 import {BlockHashProverPointer} from "../src/contracts/BlockHashProverPointer.sol";
 import {RLP} from "@openzeppelin/contracts/utils/RLP.sol";
 
-import {ZkSyncParentToChildProverTest, MockZkChain} from "./provers/zksync/ParentChildToProver.t.sol";
+import {MockZkChain} from "./provers/zksync/ParentChildToProver.t.sol";
 
 contract ReceiverTest is Test {
     using stdJson for string;
