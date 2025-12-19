@@ -2,6 +2,9 @@
 // We use a floating point pragma here so it can be used within other projects that interact with the ZKsync ecosystem without using our exact pragma version.
 pragma solidity ^0.8.21;
 
+// Source: matter-labs/era-contracts
+// https://github.com/matter-labs/era-contracts/blob/7c3f3b886a3b07f065e4b3065ccf1d3f586c42f3/l1-contracts/contracts/common/libraries/Merkle.sol
+
 /// @author Matter Labs
 /// @custom:security-contact security@matterlabs.dev
 library Merkle {
