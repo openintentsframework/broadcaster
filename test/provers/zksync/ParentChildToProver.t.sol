@@ -95,10 +95,10 @@ contract ZkSyncParentToChildProverTest is Test {
         (address account, uint256 slot, bytes32 value) =
             prover.verifyStorageSlot(expectedL2LogsRootHash, abi.encode(proof));
 
-        (bytes32 messageSent, bytes32 timestamp) = abi.decode(proof.message.data, (bytes32, bytes32));
+        (uint256 messageSent, bytes32 timestamp) = abi.decode(proof.message.data, (uint256, bytes32));
 
-        address expectedAccount = proof.message.sender;
-        uint256 expectedSlot = uint256(keccak256(abi.encode(messageSent, expectedAccount)));
+        address expectedAccount = 0x9a56fFd72F4B526c523C733F1F74197A51c495E1; // publisher
+        uint256 expectedSlot = messageSent;
         bytes32 expectedValue = timestamp;
 
         assertEq(account, expectedAccount, "account mismatch");

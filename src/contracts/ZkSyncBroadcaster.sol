@@ -54,7 +54,7 @@ contract ZkSyncBroadcaster is IBroadcaster {
         _writeStorageSlot(slot, block.timestamp);
 
         // send the message and timestamp to L1 via ZkSync's L1Messenger
-        _l1Messenger.sendToL1(abi.encode(message, block.timestamp));
+        _l1Messenger.sendToL1(abi.encode(slot, uint256(block.timestamp)));
 
         // emit the event
         emit MessageBroadcast(message, msg.sender);

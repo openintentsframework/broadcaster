@@ -260,7 +260,7 @@ contract VerifyBroadcastMessageBenchmark is Test {
         blockHashProverPointer.setImplementationAddress(address(parentToChildProver));
 
         bytes32 message = 0x0000000000000000000000000000000000000000000000000000000068fa57d8; // "test"
-        address publisher = 0xAb23DF3fd78F45E54466d08926c3A886211aC5A1;
+        address publisher = 0x9a56fFd72F4B526c523C733F1F74197A51c495E1;
 
         uint256 expectedSlot = uint256(keccak256(abi.encode(message, publisher)));
 
