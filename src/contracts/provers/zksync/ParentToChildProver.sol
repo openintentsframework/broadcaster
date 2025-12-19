@@ -89,6 +89,9 @@ contract ParentToChildProver is IBlockHashProver {
     /// @notice Error thrown when the settlement layer chain ID does not match the expected gateway chain ID.
     error ChainIdMismatch();
 
+    /// @notice Error thrown when an operation is attempted on the home chain.
+    error CallOnHomeChain();
+
     constructor(
         address _gatewayZkChain,
         uint256 _l2LogsRootHashSlot,
@@ -117,6 +120,9 @@ contract ParentToChildProver is IBlockHashProver {
         view
         returns (bytes32 targetL2LogsRootHash)
     {
+        if (block.chainid == homeChainId) {
+            revert CallOnHomeChain();
+        }
         // decode the input
         (bytes memory rlpBlockHeader, uint256 batchNumber, bytes memory accountProof, bytes memory storageProof) =
             abi.decode(input, (bytes, uint256, bytes, bytes));
