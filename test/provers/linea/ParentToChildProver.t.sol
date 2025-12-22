@@ -3,8 +3,7 @@ pragma solidity ^0.8.28;
 
 import {Test} from "forge-std/Test.sol";
 import {console} from "forge-std/console.sol";
-import {ParentToChildProver, ILineaRollup} from
-    "../../../src/contracts/provers/linea/ParentToChildProver.sol";
+import {ParentToChildProver, ILineaRollup} from "../../../src/contracts/provers/linea/ParentToChildProver.sol";
 import {stdJson} from "forge-std/StdJson.sol";
 
 /// @notice Mock LineaRollup contract for testing
@@ -16,7 +15,7 @@ contract MockLineaRollup {
     }
 }
 
-contract ParentToChildProverTest is Test {
+contract LineaParentToChildProverTest is Test {
     using stdJson for string;
 
     ParentToChildProver public prover;
@@ -46,11 +45,7 @@ contract ParentToChildProverTest is Test {
         mockLineaRollup = new MockLineaRollup();
 
         // Deploy prover with mock LineaRollup, pointing to L1 (home chain)
-        prover = new ParentToChildProver(
-            address(mockLineaRollup),
-            STATE_ROOT_HASHES_SLOT,
-            ETH_MAINNET_CHAIN_ID
-        );
+        prover = new ParentToChildProver(address(mockLineaRollup), STATE_ROOT_HASHES_SLOT, ETH_MAINNET_CHAIN_ID);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -64,26 +59,14 @@ contract ParentToChildProverTest is Test {
     }
 
     function test_constructor_differentParameters() public {
-        ParentToChildProver newProver = new ParentToChildProver(
-            address(0x123),
-            99,
-            12345
-        );
+        ParentToChildProver newProver = new ParentToChildProver(address(0x123), 99, 12345);
         assertEq(newProver.lineaRollup(), address(0x123));
         assertEq(newProver.stateRootHashesSlot(), 99);
         assertEq(newProver.homeChainId(), 12345);
     }
 
-    function testFuzz_constructor_acceptsAnyParameters(
-        address _lineaRollup,
-        uint256 _slot,
-        uint256 _chainId
-    ) public {
-        ParentToChildProver newProver = new ParentToChildProver(
-            _lineaRollup,
-            _slot,
-            _chainId
-        );
+    function testFuzz_constructor_acceptsAnyParameters(address _lineaRollup, uint256 _slot, uint256 _chainId) public {
+        ParentToChildProver newProver = new ParentToChildProver(_lineaRollup, _slot, _chainId);
         assertEq(newProver.lineaRollup(), _lineaRollup);
         assertEq(newProver.stateRootHashesSlot(), _slot);
         assertEq(newProver.homeChainId(), _chainId);
@@ -199,8 +182,7 @@ contract ParentToChildProverTest is Test {
     // ═══════════════════════════════════════════════════════════════════════════
 
     function test_version() public view {
-        // Version 2: SMT proof support
-        assertEq(prover.version(), 2);
+        assertEq(prover.version(), 1);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -248,6 +230,196 @@ contract ParentToChildProverTest is Test {
             console.log("Generate proof using: node scripts/linea/encode-smt-proof.js");
         }
     }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Security Tests - Verify that forged proofs are rejected
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// @notice Test that a valid proof with wrong account address is rejected
+    /// @dev This tests the fix for Finding 2: Account address must match proof's hKey
+    function test_security_rejectsWrongAccountAddress() public {
+        string memory proofPath = "test/payloads/linea/encoded-smt-proof.txt";
+        try vm.readFile(proofPath) returns (string memory encodedProofHex) {
+            bytes32 zkStateRoot = 0x0b9797153d1cef2b38f6e87d2c225791b74107ae7ce28e60bf498b9d1c094f14;
+            bytes memory encodedProof = vm.parseBytes(encodedProofHex);
+
+            // Decode the original proof
+            (
+                address originalAccount,
+                uint256 slot,
+                uint256 accountLeafIndex,
+                bytes[] memory accountProof,
+                bytes memory accountValue,
+                uint256 storageLeafIndex,
+                bytes[] memory storageProof,
+                bytes32 claimedStorageValue
+            ) = abi.decode(encodedProof, (address, uint256, uint256, bytes[], bytes, uint256, bytes[], bytes32));
+
+            // Re-encode with a DIFFERENT account address (attacker tries to claim different account)
+            address fakeAccount = address(0xDeaDBeeF);
+            bytes memory forgedInput = abi.encode(
+                fakeAccount, // FORGED: different account
+                slot,
+                accountLeafIndex,
+                accountProof,
+                accountValue,
+                storageLeafIndex,
+                storageProof,
+                claimedStorageValue
+            );
+
+            // Should revert with AccountKeyMismatch because the proof's hKey won't match the fake account
+            vm.expectRevert(ParentToChildProver.AccountKeyMismatch.selector);
+            prover.verifyStorageSlot(zkStateRoot, forgedInput);
+
+            console.log("Security test PASSED: Wrong account address rejected");
+        } catch {
+            console.log("Skipping security test - proof file not found");
+        }
+    }
+
+    /// @notice Test that a valid proof with wrong storage slot is rejected
+    /// @dev This tests the fix for Finding 1: Storage slot must match proof's hKey
+    function test_security_rejectsWrongStorageSlot() public {
+        string memory proofPath = "test/payloads/linea/encoded-smt-proof.txt";
+        try vm.readFile(proofPath) returns (string memory encodedProofHex) {
+            bytes32 zkStateRoot = 0x0b9797153d1cef2b38f6e87d2c225791b74107ae7ce28e60bf498b9d1c094f14;
+            bytes memory encodedProof = vm.parseBytes(encodedProofHex);
+
+            // Decode the original proof
+            (
+                address account,
+                uint256 originalSlot,
+                uint256 accountLeafIndex,
+                bytes[] memory accountProof,
+                bytes memory accountValue,
+                uint256 storageLeafIndex,
+                bytes[] memory storageProof,
+                bytes32 claimedStorageValue
+            ) = abi.decode(encodedProof, (address, uint256, uint256, bytes[], bytes, uint256, bytes[], bytes32));
+
+            // Re-encode with a DIFFERENT storage slot (attacker tries to claim different slot)
+            uint256 fakeSlot = 0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef;
+            bytes memory forgedInput = abi.encode(
+                account,
+                fakeSlot, // FORGED: different slot
+                accountLeafIndex,
+                accountProof,
+                accountValue,
+                storageLeafIndex,
+                storageProof,
+                claimedStorageValue
+            );
+
+            // Should revert with StorageKeyMismatch because the proof's hKey won't match the fake slot
+            vm.expectRevert(ParentToChildProver.StorageKeyMismatch.selector);
+            prover.verifyStorageSlot(zkStateRoot, forgedInput);
+
+            console.log("Security test PASSED: Wrong storage slot rejected");
+        } catch {
+            console.log("Skipping security test - proof file not found");
+        }
+    }
+
+    /// @notice Test that a valid proof with forged accountValue (fake storageRoot) is rejected
+    /// @dev This tests the fix for Finding 3: Account value must match proof's hValue
+    function test_security_rejectsFakeStorageRoot() public {
+        string memory proofPath = "test/payloads/linea/encoded-smt-proof.txt";
+        try vm.readFile(proofPath) returns (string memory encodedProofHex) {
+            bytes32 zkStateRoot = 0x0b9797153d1cef2b38f6e87d2c225791b74107ae7ce28e60bf498b9d1c094f14;
+            bytes memory encodedProof = vm.parseBytes(encodedProofHex);
+
+            // Decode the original proof
+            (
+                address account,
+                uint256 slot,
+                uint256 accountLeafIndex,
+                bytes[] memory accountProof,
+                bytes memory originalAccountValue,
+                uint256 storageLeafIndex,
+                bytes[] memory storageProof,
+                bytes32 claimedStorageValue
+            ) = abi.decode(encodedProof, (address, uint256, uint256, bytes[], bytes, uint256, bytes[], bytes32));
+
+            // Create a FORGED accountValue with a fake storageRoot
+            // Account struct: nonce, balance, storageRoot, mimcCodeHash, keccakCodeHash, codeSize
+            bytes memory forgedAccountValue = abi.encode(
+                uint64(1), // nonce
+                uint256(0), // balance
+                bytes32(uint256(0xBAD)), // FORGED: fake storageRoot!
+                bytes32(0), // mimcCodeHash
+                bytes32(0), // keccakCodeHash
+                uint64(0) // codeSize
+            );
+
+            bytes memory forgedInput = abi.encode(
+                account,
+                slot,
+                accountLeafIndex,
+                accountProof,
+                forgedAccountValue, // FORGED: fake account value with attacker-controlled storageRoot
+                storageLeafIndex,
+                storageProof,
+                claimedStorageValue
+            );
+
+            // Should revert with AccountValueMismatch because the forged accountValue
+            // won't hash to the same hValue as in the proven leaf
+            vm.expectRevert(ParentToChildProver.AccountValueMismatch.selector);
+            prover.verifyStorageSlot(zkStateRoot, forgedInput);
+
+            console.log("Security test PASSED: Fake storage root rejected");
+        } catch {
+            console.log("Skipping security test - proof file not found");
+        }
+    }
+
+    /// @notice Test that a valid proof with wrong claimed storage value is rejected
+    /// @dev This verifies existing protection: storage value must match proof's hValue
+    function test_security_rejectsWrongStorageValue() public {
+        string memory proofPath = "test/payloads/linea/encoded-smt-proof.txt";
+        try vm.readFile(proofPath) returns (string memory encodedProofHex) {
+            bytes32 zkStateRoot = 0x0b9797153d1cef2b38f6e87d2c225791b74107ae7ce28e60bf498b9d1c094f14;
+            bytes memory encodedProof = vm.parseBytes(encodedProofHex);
+
+            // Decode the original proof
+            (
+                address account,
+                uint256 slot,
+                uint256 accountLeafIndex,
+                bytes[] memory accountProof,
+                bytes memory accountValue,
+                uint256 storageLeafIndex,
+                bytes[] memory storageProof,
+                bytes32 originalStorageValue
+            ) = abi.decode(encodedProof, (address, uint256, uint256, bytes[], bytes, uint256, bytes[], bytes32));
+
+            // Re-encode with a DIFFERENT storage value
+            bytes32 fakeStorageValue = bytes32(uint256(0x999999));
+            bytes memory forgedInput = abi.encode(
+                account,
+                slot,
+                accountLeafIndex,
+                accountProof,
+                accountValue,
+                storageLeafIndex,
+                storageProof,
+                fakeStorageValue // FORGED: different value
+            );
+
+            // Should revert with StorageValueMismatch
+            vm.expectRevert(ParentToChildProver.StorageValueMismatch.selector);
+            prover.verifyStorageSlot(zkStateRoot, forgedInput);
+
+            console.log("Security test PASSED: Wrong storage value rejected");
+        } catch {
+            console.log("Skipping security test - proof file not found");
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Legacy Tests
+    // ═══════════════════════════════════════════════════════════════════════════
 
     /// @notice Legacy test that documents the old MPT format is no longer supported
     /// @dev Linea uses SMT (Sparse Merkle Tree), not MPT (Merkle-Patricia Trie)
