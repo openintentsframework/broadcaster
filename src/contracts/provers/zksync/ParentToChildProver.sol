@@ -92,6 +92,9 @@ contract ParentToChildProver is IBlockHashProver {
     /// @notice Error thrown when an operation is attempted on the home chain.
     error CallOnHomeChain();
 
+    /// @notice Error thrown when the slot does not match the expected slot.
+    error SlotMismatch();
+
     constructor(
         address _gatewayZkChain,
         uint256 _l2LogsRootHashSlot,
@@ -173,7 +176,9 @@ contract ParentToChildProver is IBlockHashProver {
         view
         returns (address account, uint256 slot, bytes32 value)
     {
-        ZkSyncProof memory proof = abi.decode(input, (ZkSyncProof));
+        (ZkSyncProof memory proof, address senderAccount, bytes32 message) = abi.decode(input, (ZkSyncProof, address, bytes32));
+
+        account = senderAccount;
 
         L2Log memory log = _l2MessageToLog(proof.message);
 
@@ -193,11 +198,15 @@ contract ParentToChildProver is IBlockHashProver {
             revert BatchSettlementRootMismatch();
         }
 
-        (bytes32 messageSent, bytes32 timestamp) = abi.decode(proof.message.data, (bytes32, bytes32));
+        (bytes32 slotSent, bytes32 timestamp) = abi.decode(proof.message.data, (bytes32, bytes32));
 
+        bytes32 expectedSlot = keccak256(abi.encode(message, account));
 
-        account = proof.message.sender;
-        slot = uint256(keccak256(abi.encode(messageSent, account)));
+        if(slotSent != expectedSlot) {
+            revert SlotMismatch();
+        }
+
+        slot = uint256(slotSent);
         value = timestamp;
     }
 
