@@ -3,9 +3,8 @@ pragma solidity 0.8.28;
 
 import {BasePusher} from "../BasePusher.sol";
 
-
 contract ZkSyncBuffer is BaseBuffer {
-    constructor(address _zkSyncDiamond){
+    constructor(address _zkSyncDiamond) {
         zkSyncDiamond = _zkSyncDiamond;
     }
 

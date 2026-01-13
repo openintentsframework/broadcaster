@@ -5,7 +5,6 @@ import {IBuffer} from "./interfaces/IBuffer.sol";
 import {AddressAliasHelper} from "@arbitrum/nitro-contracts/src/libraries/AddressAliasHelper.sol";
 
 contract BaseBuffer is IBuffer {
-
     uint256 private immutable _bufferSize = 393168;
 
     uint64 private _newestBlockNumber;

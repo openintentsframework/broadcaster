@@ -5,7 +5,6 @@ import {IPusher} from "./interfaces/IPusher.sol";
 import {Blockhash} from "@openzeppelin/contracts/utils/Blockhash.sol";
 
 abstract contract BasePusher is IPusher {
-
     /// @dev Build an array of the last 256 block hashes
     function _buildBlockHashArray(uint256 batchSize)
         internal
@@ -18,11 +17,9 @@ abstract contract BasePusher is IPusher {
 
         blockHashes = new bytes32[](batchSize);
 
-        
         firstBlockNumber = block.number - batchSize;
         for (uint256 i = 0; i < batchSize; i++) {
             blockHashes[i] = Blockhash.blockHash(firstBlockNumber + i);
         }
     }
-    
 }

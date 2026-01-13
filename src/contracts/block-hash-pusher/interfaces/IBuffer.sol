@@ -6,7 +6,6 @@ pragma solidity ^0.8.28;
 ///         Once a block X is included in the buffer, it will remain available
 ///         until another block X+M*bufferSize is pushed, where M is a positive integer.
 interface IBuffer {
-
     /// @notice Emitted when the buffer is pushed to.
     /// @param  firstBlockNumber The block number of the first block in the batch.
     /// @param  lastBlockNumber The block number of the last block in the batch.
@@ -38,7 +37,7 @@ interface IBuffer {
 
     /// @dev A system address that is authorized to push hashes to the buffer.
     function pusher() external view returns (address);
-    
+
     /// @dev Maps block numbers to their hashes. This is a mapping of block number to block hash.
     ///      Block hashes are deleted from the mapping when they are overwritten in the ring buffer.
     function blockHashMapping(uint256) external view returns (bytes32);
