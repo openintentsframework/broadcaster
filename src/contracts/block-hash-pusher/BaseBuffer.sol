@@ -6,6 +6,12 @@ import {AddressAliasHelper} from "@arbitrum/nitro-contracts/src/libraries/Addres
 
 contract BaseBuffer is IBuffer {
 
+    uint256 private immutable _bufferSize = 393168;
+
+    uint64 private _newestBlockNumber;
+
+    uint256[_bufferSize] private _blockNumberBuffer;
+
     /// @inheritdoc IBuffer
     function parentChainBlockHash(uint256 parentChainBlockNumber) external view returns (bytes32) {
         bytes32 _parentChainBlockHash = blockHashMapping[parentChainBlockNumber];
@@ -22,7 +28,7 @@ contract BaseBuffer is IBuffer {
         for (uint256 i = 0; i < blockHashes.length; i++) {
             uint256 blockNumber = firstBlockNumber + i;
             uint256 bufferIndex = blockNumber % bufferSize;
-            uint256 existingBlockNumber = blockNumberBuffer[bufferIndex];
+            uint256 existingBlockNumber = _blockNumberBuffer[bufferIndex];
             if (blockNumber <= existingBlockNumber) {
                 // noop
                 continue;
@@ -33,16 +39,28 @@ contract BaseBuffer is IBuffer {
             }
             // store the new block hash
             blockHashMapping[blockNumber] = blockHashes[i];
-            blockNumberBuffer[bufferIndex] = blockNumber;
+            _blockNumberBuffer[bufferIndex] = blockNumber;
         }
 
         uint256 lastBlockNumber = firstBlockNumber + blockHashes.length - 1;
 
-        if (lastBlockNumber > newestBlockNumber) {
+        if (lastBlockNumber > _newestBlockNumber) {
             // update the newest block number
-            newestBlockNumber = uint64(lastBlockNumber);
+            _newestBlockNumber = uint64(lastBlockNumber);
         }
 
         emit BlockHashesPushed(firstBlockNumber, lastBlockNumber);
+    }
+
+    function bufferSize() public view returns (uint256) {
+        return _bufferSize;
+    }
+
+    function newestBlockNumber() public view returns (uint64) {
+        return _newestBlockNumber;
+    }
+
+    function blockNumberBuffer(uint256 _index) public view returns (uint256) {
+        return _blockNumberBuffer[_index];
     }
 }

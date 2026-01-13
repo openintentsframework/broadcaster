@@ -22,6 +22,8 @@ contract ZkSyncPusher is BasePusher {
 
     address private immutable zkSyncDiamond;
 
+    error FailedToPushHashes();
+
 
     struct L2Transaction {
         uint256 l2GasLimit;
@@ -52,6 +54,10 @@ contract ZkSyncPusher is BasePusher {
             new bytes(0),
             l2Transaction.refundRecipient != address(0) ? l2Transaction.refundRecipient : msg.sender
        );
+
+        if (canonicalTxHash == bytes32(0)) {
+            revert FailedToPushHashes();
+        }
 
         emit BlockHashesPushed(firstBlockNumber, firstBlockNumber + batchSize - 1);
 
