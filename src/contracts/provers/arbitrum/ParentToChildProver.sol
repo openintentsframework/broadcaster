@@ -71,7 +71,7 @@ contract ParentToChildProver is IBlockHashProver {
         // get the target block hash from the outbox
         targetBlockHash = IOutbox(outbox).roots(sendRoot);
 
-        if(targetBlockHash == bytes32(0)) {
+        if (targetBlockHash == bytes32(0)) {
             revert TargetBlockHashNotFound();
         }
     }

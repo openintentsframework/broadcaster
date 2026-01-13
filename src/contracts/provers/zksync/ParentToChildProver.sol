@@ -176,7 +176,8 @@ contract ParentToChildProver is IBlockHashProver {
         view
         returns (address account, uint256 slot, bytes32 value)
     {
-        (ZkSyncProof memory proof, address senderAccount, bytes32 message) = abi.decode(input, (ZkSyncProof, address, bytes32));
+        (ZkSyncProof memory proof, address senderAccount, bytes32 message) =
+            abi.decode(input, (ZkSyncProof, address, bytes32));
 
         account = senderAccount;
 
@@ -202,7 +203,7 @@ contract ParentToChildProver is IBlockHashProver {
 
         bytes32 expectedSlot = keccak256(abi.encode(message, account));
 
-        if(slotSent != expectedSlot) {
+        if (slotSent != expectedSlot) {
             revert SlotMismatch();
         }
 

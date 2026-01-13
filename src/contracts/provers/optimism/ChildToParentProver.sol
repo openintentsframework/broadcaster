@@ -18,7 +18,7 @@ interface IL1Block {
 ///         Operational difference from Arbitrum: proofs must be generated just-in-time rather than pre-cached.
 contract ChildToParentProver is IBlockHashProver {
     address public constant l1BlockPredeploy = 0x4200000000000000000000000000000000000015;
-    uint256 public constant l1BlockHashSlot = 2;  // hash is at slot 2
+    uint256 public constant l1BlockHashSlot = 2; // hash is at slot 2
 
     /// @dev The chain ID of the home chain (Optimism L2)
     uint256 public immutable homeChainId;
