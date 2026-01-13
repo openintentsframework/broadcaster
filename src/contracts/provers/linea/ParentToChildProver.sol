@@ -141,8 +141,16 @@ contract ParentToChildProver is IBlockHashProver {
         bytes[] memory storageProof;
         bytes32 claimedStorageValue;
 
-        (account, slot, accountLeafIndex, accountProof, accountValue, storageLeafIndex, storageProof, claimedStorageValue)
-        = abi.decode(input, (address, uint256, uint256, bytes[], bytes, uint256, bytes[], bytes32));
+        (
+            account,
+            slot,
+            accountLeafIndex,
+            accountProof,
+            accountValue,
+            storageLeafIndex,
+            storageProof,
+            claimedStorageValue
+        ) = abi.decode(input, (address, uint256, uint256, bytes[], bytes, uint256, bytes[], bytes32));
 
         // Step 1: Verify account proof against L2 state root (SMT)
         bool accountValid = SparseMerkleProof.verifyProof(accountProof, accountLeafIndex, targetBlockHash);
@@ -152,8 +160,7 @@ contract ParentToChildProver is IBlockHashProver {
 
         // Step 2: Verify the account proof corresponds to the claimed account address
         // Extract the account leaf and verify its hKey matches the MiMC hash of the claimed address
-        SparseMerkleProof.Leaf memory accountLeaf =
-            SparseMerkleProof.getLeaf(accountProof[accountProof.length - 1]);
+        SparseMerkleProof.Leaf memory accountLeaf = SparseMerkleProof.getLeaf(accountProof[accountProof.length - 1]);
         bytes32 expectedAccountHKey = SparseMerkleProof.hashAccountKey(account);
         if (accountLeaf.hKey != expectedAccountHKey) {
             revert AccountKeyMismatch();
@@ -179,8 +186,7 @@ contract ParentToChildProver is IBlockHashProver {
 
         // Step 6: Verify the storage proof corresponds to the claimed slot
         // Extract the storage leaf and verify its hKey matches the MiMC hash of the claimed slot
-        SparseMerkleProof.Leaf memory storageLeaf =
-            SparseMerkleProof.getLeaf(storageProof[storageProof.length - 1]);
+        SparseMerkleProof.Leaf memory storageLeaf = SparseMerkleProof.getLeaf(storageProof[storageProof.length - 1]);
         bytes32 expectedStorageHKey = SparseMerkleProof.hashStorageKey(bytes32(slot));
         if (storageLeaf.hKey != expectedStorageHKey) {
             revert StorageKeyMismatch();

@@ -8,7 +8,6 @@ pragma solidity ^0.8.21;
 /// @author Matter Labs
 /// @custom:security-contact security@matterlabs.dev
 library Merkle {
-
     error MerkleIndexOrHeightMismatch();
     error MerkleIndexOutOfBounds();
     error MerkleNothingToProve();
@@ -23,19 +22,18 @@ library Merkle {
     /// @param _index Leaf index in the tree
     /// @param _itemHash Hash of leaf content
     /// @return The Merkle root
-    function calculateRoot(
-        bytes32[] calldata _path,
-        uint256 _index,
-        bytes32 _itemHash
-    ) internal pure returns (bytes32) {
+    function calculateRoot(bytes32[] calldata _path, uint256 _index, bytes32 _itemHash)
+        internal
+        pure
+        returns (bytes32)
+    {
         uint256 pathLength = _path.length;
         _validatePathLengthForSingleProof(_index, pathLength);
 
         bytes32 currentHash = _itemHash;
         for (uint256 i; i < pathLength; i++) {
-            currentHash = (_index % 2 == 0)
-                ? efficientHash(currentHash, _path[i])
-                : efficientHash(_path[i], currentHash);
+            currentHash =
+                (_index % 2 == 0) ? efficientHash(currentHash, _path[i]) : efficientHash(_path[i], currentHash);
             _index /= 2;
         }
 
@@ -49,19 +47,18 @@ library Merkle {
     /// @dev NOTE the tree can be joined. In this case the second tree's leaves indexes increase by the number of leaves in the first tree.
     /// @param _itemHash Hash of leaf content
     /// @return The Merkle root
-    function calculateRootMemory(
-        bytes32[] memory _path,
-        uint256 _index,
-        bytes32 _itemHash
-    ) internal pure returns (bytes32) {
+    function calculateRootMemory(bytes32[] memory _path, uint256 _index, bytes32 _itemHash)
+        internal
+        pure
+        returns (bytes32)
+    {
         uint256 pathLength = _path.length;
         _validatePathLengthForSingleProof(_index, pathLength);
 
         bytes32 currentHash = _itemHash;
         for (uint256 i; i < pathLength; i++) {
-            currentHash = (_index % 2 == 0)
-                ? efficientHash(currentHash, _path[i])
-                : efficientHash(_path[i], currentHash);
+            currentHash =
+                (_index % 2 == 0) ? efficientHash(currentHash, _path[i]) : efficientHash(_path[i], currentHash);
             _index /= 2;
         }
 

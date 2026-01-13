@@ -73,7 +73,7 @@ library ProverUtils {
         bytes memory rlpStorageProof
     ) internal pure returns (bytes32 value) {
         // verify the block header
-        if(blockHash != keccak256(rlpBlockHeader)) {
+        if (blockHash != keccak256(rlpBlockHeader)) {
             revert BlockHashDoesNotMatch();
         }
 
@@ -95,7 +95,6 @@ library ProverUtils {
         pure
         returns (bool accountExists, bytes memory accountData)
     {
-
         (accountExists, accountData) = Lib_SecureMerkleTrie.get(abi.encodePacked(account), rlpAccountProof, stateRoot);
     }
 
@@ -119,15 +118,13 @@ library ProverUtils {
         // verify the proof
         (bool accountExists, bytes memory accountValue) =
             getAccountDataFromStateRoot(stateRoot, rlpAccountProof, account);
-    
 
-        if(!accountExists) {
+        if (!accountExists) {
             revert AccountDoesNotExist();
         }
 
         (bool slotExists, bytes memory slotValue) =
             Lib_SecureMerkleTrie.get(abi.encode(slot), rlpStorageProof, extractStorageRootFromAccountData(accountValue));
-    
 
         // decode the slot value
         if (slotExists) value = slotValue.asSlice().readBytes32();
