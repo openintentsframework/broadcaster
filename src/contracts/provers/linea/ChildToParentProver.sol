@@ -6,9 +6,7 @@ import {IBlockHashProver} from "../../interfaces/IBlockHashProver.sol";
 import {IBuffer} from "block-hash-pusher/contracts/interfaces/IBuffer.sol";
 import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 
-
 contract ChildToParentProver is IBlockHashProver {
-
     address public immutable blockHashBuffer;
     /// @dev Storage slot the buffer contract uses to store block hashes.
     ///      See https://github.com/OffchainLabs/block-hash-pusher/blob/a1e26f2e42e6306d1e7f03c5d20fa6aa64ff7a12/contracts/Buffer.sol#L32
@@ -19,13 +17,10 @@ contract ChildToParentProver is IBlockHashProver {
     error CallNotOnHomeChain();
     error CallOnHomeChain();
 
-
-    constructor(address _blockHashBuffer, uint256 _homeChainId){
+    constructor(address _blockHashBuffer, uint256 _homeChainId) {
         blockHashBuffer = _blockHashBuffer;
         homeChainId = _homeChainId;
-
     }
-    
 
     /// @notice Get a parent chain block hash from the buffer at `blockHashBuffer` using a storage proof
     /// @param  homeBlockHash The block hash of the home chain.
@@ -35,7 +30,7 @@ contract ChildToParentProver is IBlockHashProver {
         view
         returns (bytes32 targetBlockHash)
     {
-        if(block.chainid == homeChainId) {
+        if (block.chainid == homeChainId) {
             revert CallOnHomeChain();
         }
         // decode the input
@@ -55,8 +50,7 @@ contract ChildToParentProver is IBlockHashProver {
     /// @notice Get a parent chain block hash from the buffer at `blockHashBuffer`.
     /// @param  input ABI encoded (uint256 targetBlockNumber)
     function getTargetBlockHash(bytes calldata input) external view returns (bytes32 targetBlockHash) {
-
-        if(block.chainid != homeChainId) {
+        if (block.chainid != homeChainId) {
             revert CallNotOnHomeChain();
         }
         //decode the input

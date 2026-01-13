@@ -40,11 +40,12 @@ contract BlockHashProverPointer is IBlockHashProverPointer, Ownable {
     /// @param _newImplementationAddress The address of the new BlockHashProver implementation
     /// @custom:throws NonIncreasingVersion if the new version is not greater than the current version
     function setImplementationAddress(address _newImplementationAddress) external onlyOwner {
-        if(_newImplementationAddress == address(0)) {
+        if (_newImplementationAddress == address(0)) {
             revert InvalidImplementationAddress();
         }
 
-        (bool success, bytes memory returnData) = _newImplementationAddress.staticcall(abi.encodeWithSelector(IBlockHashProver.version.selector));
+        (bool success, bytes memory returnData) =
+            _newImplementationAddress.staticcall(abi.encodeWithSelector(IBlockHashProver.version.selector));
         if (!success || returnData.length != 32) {
             revert InvalidImplementationAddress();
         }
@@ -52,7 +53,7 @@ contract BlockHashProverPointer is IBlockHashProverPointer, Ownable {
         uint256 newVersion = abi.decode(returnData, (uint256));
 
         address currentImplementationAddress = implementationAddress();
-        if(currentImplementationAddress !=  address(0)) {
+        if (currentImplementationAddress != address(0)) {
             uint256 oldVersion = IBlockHashProver(currentImplementationAddress).version();
             if (newVersion <= oldVersion) {
                 revert NonIncreasingVersion(newVersion, oldVersion);

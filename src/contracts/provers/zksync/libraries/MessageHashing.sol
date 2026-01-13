@@ -29,9 +29,7 @@ struct ProofData {
     bool finalProofNode;
 }
 
-
 library MessageHashing {
-
     struct ProofMetadata {
         uint256 proofStartIndex;
         uint256 logLeafProofLen;
@@ -134,9 +132,7 @@ library MessageHashing {
 
         {
             bytes32 batchSettlementRoot = Merkle.calculateRootMemory(
-                extractSlice(_proof, result.ptr, result.ptr + proofMetadata.logLeafProofLen),
-                _leafProofMask,
-                _leaf
+                extractSlice(_proof, result.ptr, result.ptr + proofMetadata.logLeafProofLen), _leafProofMask, _leaf
             );
             result.ptr += proofMetadata.logLeafProofLen;
             result.batchSettlementRoot = batchSettlementRoot;
@@ -192,11 +188,11 @@ library MessageHashing {
     /// @param _left The left index.
     /// @param _right The right index.
     /// @return slice The slice.
-    function extractSlice(
-        bytes32[] memory _proof,
-        uint256 _left,
-        uint256 _right
-    ) internal pure returns (bytes32[] memory slice) {
+    function extractSlice(bytes32[] memory _proof, uint256 _left, uint256 _right)
+        internal
+        pure
+        returns (bytes32[] memory slice)
+    {
         slice = new bytes32[](_right - _left);
         for (uint256 i = _left; i < _right; i++) {
             slice[i - _left] = _proof[i];
@@ -205,10 +201,11 @@ library MessageHashing {
 
     /// @notice Extracts slice until the end of the array.
     /// @dev It is used in one place in order to circumvent the stack too deep error.
-    function extractSliceUntilEnd(
-        bytes32[] memory _proof,
-        uint256 _start
-    ) internal pure returns (bytes32[] memory slice) {
+    function extractSliceUntilEnd(bytes32[] memory _proof, uint256 _start)
+        internal
+        pure
+        returns (bytes32[] memory slice)
+    {
         slice = extractSlice(_proof, _start, _proof.length);
     }
 }

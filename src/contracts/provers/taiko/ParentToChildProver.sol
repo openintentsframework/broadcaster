@@ -66,8 +66,9 @@ contract ParentToChildProver is IBlockHashProver {
 
         // Verify proofs and get the L2 block hash from L1's SignalService
         // CheckpointRecord.blockHash is stored at the base slot
-        targetBlockHash =
-            ProverUtils.getSlotFromBlockHeader(homeBlockHash, rlpBlockHeader, signalService, slot, accountProof, storageProof);
+        targetBlockHash = ProverUtils.getSlotFromBlockHeader(
+            homeBlockHash, rlpBlockHeader, signalService, slot, accountProof, storageProof
+        );
 
         if (targetBlockHash == bytes32(0)) {
             revert TargetBlockHashNotFound();
