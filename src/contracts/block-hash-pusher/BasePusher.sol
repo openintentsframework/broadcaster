@@ -9,6 +9,7 @@ import {Blockhash} from "@openzeppelin/contracts/utils/Blockhash.sol";
 /// @dev This contract provides the core functionality for building arrays of recent block hashes
 ///      that can be pushed to a buffer contract on a child chain. Concrete implementations should
 ///      override `pushHashes` to implement chain-specific cross-chain messaging mechanisms.
+/// @notice Inspired by: https://github.com/OffchainLabs/block-hash-pusher/blob/main/contracts/Pusher.sol
 abstract contract BasePusher is IPusher {
     /// @notice The max allowable number of hashes to push per call to pushHashes.
     uint256 public constant MAX_BATCH_SIZE = 8191; // EIP-2935 history storage window

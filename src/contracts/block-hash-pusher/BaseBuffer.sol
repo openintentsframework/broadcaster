@@ -11,6 +11,7 @@ import {AddressAliasHelper} from "@arbitrum/nitro-contracts/src/libraries/Addres
 ///      a different block number, the old hash is evicted. This allows for efficient storage of
 ///      a sliding window of block hashes without requiring contiguous block numbers.
 /// @dev Concrete implementations should override `receiveHashes` to add chain-specific access control.
+/// @notice Inspired by: https://github.com/OffchainLabs/block-hash-pusher/blob/main/contracts/Buffer.sol
 abstract contract BaseBuffer is IBuffer {
     /// @dev The size of the circular buffer.
     /// @dev For a parent chain with a block time of 12s (Ethereum), this is equivalent to roughly 54 days of history.
