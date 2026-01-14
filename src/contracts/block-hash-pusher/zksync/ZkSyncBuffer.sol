@@ -20,6 +20,9 @@ contract ZkSyncBuffer is BaseBuffer, Ownable {
     /// @notice Thrown when attempting to receive hashes before the pusher address has been set.
     error PusherAddressNotSet();
 
+    /// @notice Thrown when attempting to set an invalid pusher address.
+    error InvalidPusherAddress();
+
     /// @notice Emitted when the pusher address is set and ownership is renounced.
     /// @param pusherAddress The address of the pusher contract on L1.
     event PusherAddressSet(address pusherAddress);
@@ -30,11 +33,15 @@ contract ZkSyncBuffer is BaseBuffer, Ownable {
     /// @dev This function can only be called once by the owner. After setting the pusher address,
     ///      ownership is renounced to prevent further modifications. The pusher address is used to
     ///      derive the aliased pusher address that will be authorized to push hashes.
-    /// @param pusherAddress_ The address of the ZkSyncPusher contract on L1.
-    function setPusherAddress(address pusherAddress_) external onlyOwner {
-        _pusherAddress = pusherAddress_;
+    /// @param newPusherAddress The address of the ZkSyncPusher contract on L1.
+    function setPusherAddress(address newPusherAddress) external onlyOwner {
+        if (newPusherAddress == address(0)) {
+            revert InvalidPusherAddress();
+        }
 
-        emit PusherAddressSet(pusherAddress_);
+        _pusherAddress = newPusherAddress;
+
+        emit PusherAddressSet(newPusherAddress);
         renounceOwnership();
     }
 

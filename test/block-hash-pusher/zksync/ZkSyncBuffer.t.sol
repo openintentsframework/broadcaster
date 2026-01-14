@@ -86,4 +86,12 @@ contract ZkSyncBufferTest is Test {
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, notOwner));
         buffer.setPusherAddress(pusher);
     }
+
+    function test_setPusherAddress_reverts_if_pusher_address_is_invalid() public {
+        ZkSyncBuffer buffer = new ZkSyncBuffer(owner);
+
+        vm.prank(owner);
+        vm.expectRevert(abi.encodeWithSelector(ZkSyncBuffer.InvalidPusherAddress.selector));
+        buffer.setPusherAddress(address(0));
+    }
 }
