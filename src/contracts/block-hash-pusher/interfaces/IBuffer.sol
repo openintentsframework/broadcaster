@@ -7,6 +7,9 @@ pragma solidity ^0.8.28;
 ///         until another block X+M*bufferSize is pushed, where M is a positive integer.
 /// @notice Inspired by: https://github.com/OffchainLabs/block-hash-pusher/blob/main/contracts/interfaces/IBuffer.sol
 interface IBuffer {
+    /// @notice Thrown when the block hashes array is empty.
+    error EmptyBlockHashes();
+
     /// @notice Emitted when the buffer is pushed to.
     /// @param  firstBlockNumber The block number of the first block in the batch.
     /// @param  lastBlockNumber The block number of the last block in the batch.

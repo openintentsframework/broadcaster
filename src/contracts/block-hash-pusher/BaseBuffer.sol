@@ -44,6 +44,10 @@ abstract contract BaseBuffer is IBuffer {
     /// @param firstBlockNumber The block number of the first block in the batch.
     /// @param blockHashes Array of block hashes to store, assumed to be in contiguous order.
     function _receiveHashes(uint256 firstBlockNumber, bytes32[] calldata blockHashes) internal {
+        if (blockHashes.length == 0) {
+            revert EmptyBlockHashes();
+        }
+
         // write the hashes to the buffer, evicting old hashes as necessary
         for (uint256 i = 0; i < blockHashes.length; i++) {
             uint256 blockNumber = firstBlockNumber + i;
