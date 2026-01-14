@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.28;
 
+/// @notice Interface for pusher contracts that push parent chain block hashes to a buffer on a child chain.
+/// @dev    Pusher contracts are deployed on the parent chain (L1) and are responsible for:
+///         - Building arrays of recent block hashes from the parent chain
+///         - Sending these hashes to a buffer contract on the child chain via chain-specific cross-chain messaging
+/// @notice Inspired by: https://github.com/OffchainLabs/block-hash-pusher/blob/main/contracts/interfaces/IPusher.sol
 interface IPusher {
     /// @notice Emitted when block hashes are pushed to the buffer.
     /// @param  firstBlockNumber The block number of the first block in the batch.
