@@ -11,7 +11,7 @@ abstract contract BaseBuffer is IBuffer {
 
     uint256[_bufferSize] private _blockNumberBuffer;
 
-    mapping(uint256 => bytes32) private _parentChainBlockHashes;
+    mapping(uint256 blockNumber => bytes32 blockHash) private _parentChainBlockHashes;
 
     /// @inheritdoc IBuffer
     function parentChainBlockHash(uint256 parentChainBlockNumber) external view returns (bytes32) {
