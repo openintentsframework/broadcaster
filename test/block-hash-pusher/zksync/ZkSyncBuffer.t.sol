@@ -43,13 +43,14 @@ contract ZkSyncBufferTest is Test {
 
     function testFuzz_receiveHashes_reverts_if_not_pusher(address notPusher) public {
         vm.assume(notPusher != pusher);
+        address aliasedPusher = AddressAliasHelper.applyL1ToL2Alias(pusher);
+        vm.assume(notPusher != aliasedPusher);
 
         ZkSyncBuffer buffer = new ZkSyncBuffer(owner);
 
         vm.prank(owner);
         buffer.setPusherAddress(pusher);
 
-        address aliasedPusher = AddressAliasHelper.applyL1ToL2Alias(pusher);
         assertEq(buffer.pusher(), pusher);
         assertEq(buffer.aliasedPusher(), aliasedPusher);
 
