@@ -3,7 +3,9 @@ pragma solidity 0.8.28;
 
 import {BasePusher} from "../BasePusher.sol";
 import {IBuffer} from "../interfaces/IBuffer.sol";
+import {IPusher} from "../interfaces/IPusher.sol";
 
+/// @notice Interface for the ZkSync Mailbox contract used to send L1->L2 messages.
 interface IMailbox {
     function requestL2Transaction(
         address _contractL2,
@@ -16,13 +18,25 @@ interface IMailbox {
     ) external payable returns (bytes32 canonicalTxHash);
 }
 
+/// @title ZkSyncPusher
+/// @notice Implementation of BasePusher for pushing block hashes to ZkSync Era L2.
+/// @dev This contract sends block hashes from Ethereum L1 to a ZkSyncBuffer contract on ZkSync Era L2
+///      via the ZkSync Mailbox's `requestL2Transaction` function. The pusher must be configured
+///      with the correct ZkSync Diamond proxy address and buffer contract address.
 contract ZkSyncPusher is BasePusher {
+    /// @dev The address of the ZkSync Diamond proxy contract on L1.
     address private immutable _zkSyncDiamond;
 
+    /// @dev The address of the ZkSyncBuffer contract on L2.
     address private immutable _bufferAddress;
 
+    /// @notice Thrown when the L2 transaction request fails.
     error FailedToPushHashes();
 
+    /// @notice Parameters for the L2 transaction that will be executed on ZkSync.
+    /// @param l2GasLimit The gas limit for the L2 transaction.
+    /// @param l2GasPerPubdataByteLimit The gas per pubdata byte limit.
+    /// @param refundRecipient The address to receive any refunds.
     struct L2Transaction {
         uint256 l2GasLimit;
         uint256 l2GasPerPubdataByteLimit;
@@ -34,12 +48,15 @@ contract ZkSyncPusher is BasePusher {
         _bufferAddress = bufferAddress_;
     }
 
+    /// @inheritdoc IPusher
     function pushHashes(uint256 batchSize, bytes memory l2TransactionData) external payable {
         (uint256 firstBlockNumber, bytes32[] memory blockHashes) = _buildBlockHashArray(batchSize);
         bytes memory l2Calldata = abi.encodeCall(IBuffer.receiveHashes, (firstBlockNumber, blockHashes));
 
         L2Transaction memory l2Transaction = abi.decode(l2TransactionData, (L2Transaction));
 
+        /// In the current behavior of the ZkSync Mailbox, the `l2GasPerPubdataByteLimit` value must be equal to the `REQUIRED_L2_GAS_PRICE_PER_PUBDATA` value,
+        /// which is a constant defined by ZkSync. The current value is 800. However, since this might change in the future, the value must be passed in as a parameter.
         bytes32 canonicalTxHash = IMailbox(zkSyncDiamond()).requestL2Transaction{value: msg.value}(
             bufferAddress(),
             0,
@@ -57,10 +74,13 @@ contract ZkSyncPusher is BasePusher {
         emit BlockHashesPushed(firstBlockNumber, firstBlockNumber + batchSize - 1);
     }
 
+    /// @inheritdoc IPusher
     function bufferAddress() public view returns (address) {
         return _bufferAddress;
     }
 
+    /// @notice The address of the ZkSync Diamond proxy contract on L1.
+    /// @return The address of the ZkSync Diamond proxy contract on L1.
     function zkSyncDiamond() public view returns (address) {
         return _zkSyncDiamond;
     }
