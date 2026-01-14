@@ -38,10 +38,6 @@ interface IBuffer {
     /// @dev A system address that is authorized to push hashes to the buffer.
     function pusher() external view returns (address);
 
-    /// @dev Maps block numbers to their hashes. This is a mapping of block number to block hash.
-    ///      Block hashes are deleted from the mapping when they are overwritten in the ring buffer.
-    function blockHashMapping(uint256) external view returns (bytes32);
-
     /// @dev A buffer of block numbers whose hashes are stored in the `blockHashes` mapping.
     ///      Should be the last storage variable declared to maintain flexibility in resizing the buffer.
     function blockNumberBuffer(uint256) external view returns (uint256);

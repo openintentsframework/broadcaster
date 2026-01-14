@@ -4,16 +4,18 @@ pragma solidity 0.8.28;
 import {IBuffer} from "./interfaces/IBuffer.sol";
 import {AddressAliasHelper} from "@arbitrum/nitro-contracts/src/libraries/AddressAliasHelper.sol";
 
-contract BaseBuffer is IBuffer {
-    uint256 private immutable _bufferSize = 393168;
+abstract contract BaseBuffer is IBuffer {
+    uint256 private constant _bufferSize = 393168;
 
     uint64 private _newestBlockNumber;
 
     uint256[_bufferSize] private _blockNumberBuffer;
 
+    mapping(uint256 => bytes32) private _parentChainBlockHashes;
+
     /// @inheritdoc IBuffer
     function parentChainBlockHash(uint256 parentChainBlockNumber) external view returns (bytes32) {
-        bytes32 _parentChainBlockHash = blockHashMapping[parentChainBlockNumber];
+        bytes32 _parentChainBlockHash = _parentChainBlockHashes[parentChainBlockNumber];
 
         if (_parentChainBlockHash == 0) {
             revert UnknownParentChainBlockHash(parentChainBlockNumber);
@@ -26,7 +28,7 @@ contract BaseBuffer is IBuffer {
         // write the hashes to the buffer, evicting old hashes as necessary
         for (uint256 i = 0; i < blockHashes.length; i++) {
             uint256 blockNumber = firstBlockNumber + i;
-            uint256 bufferIndex = blockNumber % bufferSize;
+            uint256 bufferIndex = blockNumber % _bufferSize;
             uint256 existingBlockNumber = _blockNumberBuffer[bufferIndex];
             if (blockNumber <= existingBlockNumber) {
                 // noop
@@ -34,10 +36,10 @@ contract BaseBuffer is IBuffer {
             }
             if (existingBlockNumber != 0) {
                 // evict the old block hash
-                blockHashMapping[existingBlockNumber] = 0;
+                _parentChainBlockHashes[existingBlockNumber] = 0;
             }
             // store the new block hash
-            blockHashMapping[blockNumber] = blockHashes[i];
+            _parentChainBlockHashes[blockNumber] = blockHashes[i];
             _blockNumberBuffer[bufferIndex] = blockNumber;
         }
 
@@ -51,7 +53,7 @@ contract BaseBuffer is IBuffer {
         emit BlockHashesPushed(firstBlockNumber, lastBlockNumber);
     }
 
-    function bufferSize() public view returns (uint256) {
+    function bufferSize() public pure returns (uint256) {
         return _bufferSize;
     }
 

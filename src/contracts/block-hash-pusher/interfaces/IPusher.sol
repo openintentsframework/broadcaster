@@ -18,9 +18,6 @@ interface IPusher {
     /// @param l2TransactionData The data of the L2 transaction.
     function pushHashes(uint256 batchSize, bytes memory l2TransactionData) external payable;
 
-    /// @notice The max allowable number of hashes to push per call to pushHashes.
-    function MAX_BATCH_SIZE() external view returns (uint256);
-
     /// @notice The address of the buffer contract on the child chain.
     function bufferAddress() external view returns (address);
 }

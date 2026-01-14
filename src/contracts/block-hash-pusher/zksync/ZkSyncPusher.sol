@@ -40,13 +40,13 @@ contract ZkSyncPusher is BasePusher {
 
         L2Transaction memory l2Transaction = abi.decode(l2TransactionData, (L2Transaction));
 
-        bytes32 canonicalTxHash = IMailbox(_zkSyncDiamond).requestL2Transaction{value: msg.value}(
+        bytes32 canonicalTxHash = IMailbox(zkSyncDiamond()).requestL2Transaction{value: msg.value}(
             bufferAddress(),
             0,
             l2Calldata,
             l2Transaction.l2GasLimit,
             l2Transaction.l2GasPerPubdataByteLimit,
-            new bytes(0),
+            new bytes[](0),
             l2Transaction.refundRecipient != address(0) ? l2Transaction.refundRecipient : msg.sender
         );
 
