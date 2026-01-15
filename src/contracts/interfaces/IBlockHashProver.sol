@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 /// @notice The IBlockHashProver is responsible for retrieving the block hash of its target chain given its home chain's state.
 ///         The home chain's state is given either by a block hash and proof, or by the BlockHashProver executing on the home chain.

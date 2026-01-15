@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 /// @notice Interface for pusher contracts that push parent chain block hashes to a buffer on a child chain.
 /// @dev    Pusher contracts are deployed on the parent chain (L1) and are responsible for:
