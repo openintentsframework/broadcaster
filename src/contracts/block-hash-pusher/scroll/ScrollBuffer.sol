@@ -71,7 +71,7 @@ contract ScrollBuffer is BaseBuffer, Ownable {
         if (msg.sender != address(l2ScrollMessengerCached)) {
             revert InvalidSender();
         }
-        if (_pusherAddress == 0 || l2ScrollMessengerCached.xDomainMessageSender() != _pusherAddress) {
+        if (_pusherAddress == address(0) || l2ScrollMessengerCached.xDomainMessageSender() != _pusherAddress) {
             revert DomainMessageSenderMismatch();
         }
 

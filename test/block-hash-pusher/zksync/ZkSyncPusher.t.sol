@@ -26,7 +26,7 @@ contract ZkSyncPusherTest is Test {
         ZkSyncPusher zkSyncPusher = new ZkSyncPusher(zkSyncMailBoxAddress, buffer);
 
         bytes memory l2TransactionData = abi.encode(
-            ZkSyncPusher.L2Transaction({
+            ZkSyncPusher.ZkSyncL2Transaction({
                 l2GasLimit: 357901,
                 l2GasPerPubdataByteLimit: REQUIRED_L2_GAS_PRICE_PER_PUBDATA,
                 refundRecipient: address(0)
@@ -46,7 +46,7 @@ contract ZkSyncPusherTest is Test {
         ZkSyncPusher zkSyncPusher = new ZkSyncPusher(zkSyncMailBoxAddress, buffer);
 
         bytes memory l2TransactionData = abi.encode(
-            ZkSyncPusher.L2Transaction({
+            ZkSyncPusher.ZkSyncL2Transaction({
                 l2GasLimit: 357901,
                 l2GasPerPubdataByteLimit: REQUIRED_L2_GAS_PRICE_PER_PUBDATA + 1,
                 refundRecipient: address(0)
@@ -64,7 +64,7 @@ contract ZkSyncPusherTest is Test {
         ZkSyncPusher zkSyncPusher = new ZkSyncPusher(mockZkSyncMailbox, buffer);
 
         bytes memory l2TransactionData = abi.encode(
-            ZkSyncPusher.L2Transaction({
+            ZkSyncPusher.ZkSyncL2Transaction({
                 l2GasLimit: 1000000,
                 l2GasPerPubdataByteLimit: REQUIRED_L2_GAS_PRICE_PER_PUBDATA,
                 refundRecipient: address(0)
@@ -82,7 +82,7 @@ contract ZkSyncPusherTest is Test {
         ZkSyncPusher zkSyncPusher = new ZkSyncPusher(mockZkSyncMailbox, buffer);
 
         bytes memory l2TransactionData = abi.encode(
-            ZkSyncPusher.L2Transaction({
+            ZkSyncPusher.ZkSyncL2Transaction({
                 l2GasLimit: 1000000,
                 l2GasPerPubdataByteLimit: REQUIRED_L2_GAS_PRICE_PER_PUBDATA,
                 refundRecipient: address(0)
