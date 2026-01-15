@@ -3,7 +3,6 @@ pragma solidity 0.8.28;
 
 import {BaseBuffer} from "../BaseBuffer.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {AddressAliasHelper} from "@arbitrum/nitro-contracts/src/libraries/AddressAliasHelper.sol";
 import {IBuffer} from "../interfaces/IBuffer.sol";
 import {IL2ScrollMessenger} from "@scroll-tech/scroll-contracts/L2/IL2ScrollMessenger.sol";
 
@@ -50,9 +49,8 @@ contract ScrollBuffer is BaseBuffer, Ownable {
 
     /// @notice Sets the pusher address and renounces ownership.
     /// @dev This function can only be called once by the owner. After setting the pusher address,
-    ///      ownership is renounced to prevent further modifications. The pusher address is used to
-    ///      derive the aliased pusher address that will be authorized to push hashes.
-    /// @param newPusherAddress The address of the ZkSyncPusher contract on L1.
+    ///      ownership is renounced to prevent further modifications.
+    /// @param newPusherAddress The address of the ScrollPusher contract on L1.
     function setPusherAddress(address newPusherAddress) external onlyOwner {
         if (newPusherAddress == address(0)) {
             revert InvalidPusherAddress();
@@ -71,7 +69,10 @@ contract ScrollBuffer is BaseBuffer, Ownable {
         if (msg.sender != address(l2ScrollMessengerCached)) {
             revert InvalidSender();
         }
-        if (_pusherAddress == address(0) || l2ScrollMessengerCached.xDomainMessageSender() != _pusherAddress) {
+        if (_pusherAddress == address(0)) {
+            revert PusherAddressNotSet();
+        }
+        if (l2ScrollMessengerCached.xDomainMessageSender() != _pusherAddress) {
             revert DomainMessageSenderMismatch();
         }
 

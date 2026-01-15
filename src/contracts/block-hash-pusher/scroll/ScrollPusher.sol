@@ -18,9 +18,6 @@ contract ScrollPusher is BasePusher {
     /// @dev The address of the ScrollBuffer contract on L2.
     address private immutable _bufferAddress;
 
-    /// @notice Thrown when the L2 transaction request fails.
-    error FailedToPushHashes();
-
     /// @notice Parameters for the L2 transaction that will be executed on Scroll.
     /// @param gasLimit The gas limit for the L2 transaction.
     /// @param refundAddress The address to receive any refunds.
