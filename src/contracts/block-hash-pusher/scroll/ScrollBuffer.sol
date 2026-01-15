@@ -5,15 +5,19 @@ import {BaseBuffer} from "../BaseBuffer.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {AddressAliasHelper} from "@arbitrum/nitro-contracts/src/libraries/AddressAliasHelper.sol";
 import {IBuffer} from "../interfaces/IBuffer.sol";
+import {IL2ScrollMessenger} from "@scroll-tech/scroll-contracts/L2/IL2ScrollMessenger.sol";
 
 /// @title ScrollBuffer
 /// @notice Implementation of BaseBuffer for storing Ethereum L1 block hashes on Scroll L2.
 /// @dev This contract extends BaseBuffer with access control specific to Scroll's L1->L2 messaging.
 ///      The pusher address on L1 must send the message via L1ScrollMessenger to the buffer address on L2.
-///      The ScrollL2Messenger is responsible for relaying the message to the buffer contract on L2.
+///      The L2ScrollMessenger contract on L2 is responsible for relaying the message to the buffer contract on L2.
 /// @notice The contract is `Ownable` but the ownership is renounced after the pusher address is set.
 ///         This ensures that the pusher address is set only once and cannot be changed.
 contract ScrollBuffer is BaseBuffer, Ownable {
+    /// @dev The address of the L2ScrollMessenger contract on L2.
+    address private _l2ScrollMessenger;
+
     /// @dev The address of the pusher contract on L1.
     address private _pusherAddress;
 
@@ -23,11 +27,19 @@ contract ScrollBuffer is BaseBuffer, Ownable {
     /// @notice Thrown when attempting to set an invalid pusher address.
     error InvalidPusherAddress();
 
+    /// @notice Thrown when the domain message sender does not match the pusher address.
+    error DomainMessageSenderMismatch();
+
+    /// @notice Thrown when the sender is not the L2ScrollMessenger contract.
+    error InvalidSender();
+
     /// @notice Emitted when the pusher address is set and ownership is renounced.
     /// @param pusherAddress The address of the pusher contract on L1.
     event PusherAddressSet(address pusherAddress);
 
-    constructor(address initialOwner_) Ownable(initialOwner_) {}
+    constructor(address l2ScrollMessenger_, address initialOwner_) Ownable(initialOwner_) {
+        _l2ScrollMessenger = l2ScrollMessenger_;
+    }
 
     /// @notice Sets the pusher address and renounces ownership.
     /// @dev This function can only be called once by the owner. After setting the pusher address,
@@ -47,12 +59,13 @@ contract ScrollBuffer is BaseBuffer, Ownable {
 
     /// @inheritdoc IBuffer
     function receiveHashes(uint256 firstBlockNumber, bytes32[] calldata blockHashes) external {
-        if (_pusherAddress == address(0)) {
-            revert PusherAddressNotSet();
-        }
+        IL2ScrollMessenger l2ScrollMessengerCached = IL2ScrollMessenger(l2ScrollMessenger());
 
-        if (msg.sender != aliasedPusher()) {
-            revert NotPusher();
+        if (msg.sender != address(l2ScrollMessengerCached)) {
+            revert InvalidSender();
+        }
+        if (_pusherAddress == 0 || l2ScrollMessengerCached.xDomainMessageSender() != _pusherAddress) {
+            revert DomainMessageSenderMismatch();
         }
 
         _receiveHashes(firstBlockNumber, blockHashes);
@@ -63,11 +76,9 @@ contract ScrollBuffer is BaseBuffer, Ownable {
         return _pusherAddress;
     }
 
-    /// @notice The aliased address of the pusher contract on L2.
-    function aliasedPusher() public view returns (address) {
-        if (_pusherAddress == address(0)) {
-            revert PusherAddressNotSet();
-        }
-        return AddressAliasHelper.applyL1ToL2Alias(_pusherAddress);
+    /// @notice The address of the L2ScrollMessenger contract on L2.
+    /// @return The address of the L2ScrollMessenger contract on L2.
+    function l2ScrollMessenger() public view returns (address) {
+        return _l2ScrollMessenger;
     }
 }

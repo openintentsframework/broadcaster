@@ -4,12 +4,7 @@ pragma solidity 0.8.28;
 import {BasePusher} from "../BasePusher.sol";
 import {IBuffer} from "../interfaces/IBuffer.sol";
 import {IPusher} from "../interfaces/IPusher.sol";
-
-interface IL1ScrollMessenger {
-    function sendMessage(address _to, uint256 _value, bytes memory _message, uint256 _gasLimit, address _refundAddress)
-        external
-        payable;
-}
+import {IL1ScrollMessenger} from "@scroll-tech/scroll-contracts/L1/IL1ScrollMessenger.sol";
 
 /// @title ScrollPusher
 /// @notice Implementation of BasePusher for pushing block hashes to Scroll L2.
