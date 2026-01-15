@@ -24,6 +24,9 @@ contract ScrollBuffer is BaseBuffer, Ownable {
     /// @notice Thrown when attempting to receive hashes before the pusher address has been set.
     error PusherAddressNotSet();
 
+    /// @notice Thrown when attempting to set an invalid L2ScrollMessenger address.
+    error InvalidL2ScrollMessengerAddress();
+
     /// @notice Thrown when attempting to set an invalid pusher address.
     error InvalidPusherAddress();
 
@@ -39,6 +42,10 @@ contract ScrollBuffer is BaseBuffer, Ownable {
 
     constructor(address l2ScrollMessenger_, address initialOwner_) Ownable(initialOwner_) {
         _l2ScrollMessenger = l2ScrollMessenger_;
+
+        if (l2ScrollMessenger_ == address(0)) {
+            revert InvalidL2ScrollMessengerAddress();
+        }
     }
 
     /// @notice Sets the pusher address and renounces ownership.
