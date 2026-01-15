@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 import {IL1ScrollMessenger} from "@scroll-tech/scroll-contracts/L1/IL1ScrollMessenger.sol";
 
