@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 // Source: matter-labs/era-contracts
 // https://github.com/matter-labs/era-contracts/blob/7c3f3b886a3b07f065e4b3065ccf1d3f586c42f3/l1-contracts/contracts/common/libraries/MessageHashing.sol
