@@ -31,7 +31,13 @@ contract MockL2ScrollMessenger is IL2ScrollMessenger {
     function relayMessage(address from, address to, uint256 value, uint256 nonce, bytes calldata message) external {
         _xDomainMessageSender = from;
 
-        to.call{value: value}(message);
+        (bool success,) = to.call{value: value}(message);
+
+        if (success) {
+            emit RelayedMessage(keccak256(message));
+        } else {
+            emit FailedRelayedMessage(keccak256(message));
+        }
 
         _xDomainMessageSender = address(0);
     }
