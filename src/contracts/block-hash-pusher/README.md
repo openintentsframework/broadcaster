@@ -67,6 +67,22 @@ Concrete implementations must override `receiveHashes` to add chain-specific acc
 - The pusher address is set once during initialization, after which ownership is renounced
 - Uses `AddressAliasHelper.applyL1ToL2Alias()` to verify the sender matches the expected aliased pusher address
 
+### Scroll
+
+**ScrollPusher** (`scroll/ScrollPusher.sol`):
+- Deployed on Ethereum L1
+- Uses Scroll's L1ScrollMessenger contract (`sendMessage`) to send L1→L2 messages
+- Requires L2 transaction parameters: gas limit and refund address (optional, defaults to `msg.sender` if not provided)
+- The pusher must be configured with the correct L1ScrollMessenger address and buffer contract address
+
+**ScrollBuffer** (`scroll/ScrollBuffer.sol`):
+- Deployed on Scroll L2
+- Uses Scroll's cross-domain messaging for access control: only accepts messages relayed by the L2ScrollMessenger contract
+- Verifies that `msg.sender` is the L2ScrollMessenger and that `xDomainMessageSender()` matches the pusher address
+- The pusher address is set once during initialization via `setPusherAddress()`, after which ownership is renounced
+- Requires the L2ScrollMessenger address to be set during construction
+
+
 ## Usage Flow
 
 1. **Initialization**: Deploy the buffer on L2 and set the pusher address (if required by the implementation)
