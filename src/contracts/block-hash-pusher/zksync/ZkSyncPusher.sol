@@ -37,7 +37,7 @@ contract ZkSyncPusher is BasePusher {
     /// @param l2GasLimit The gas limit for the L2 transaction.
     /// @param l2GasPerPubdataByteLimit The gas per pubdata byte limit.
     /// @param refundRecipient The address to receive any refunds.
-    struct L2Transaction {
+    struct ZkSyncL2Transaction {
         uint256 l2GasLimit;
         uint256 l2GasPerPubdataByteLimit;
         address refundRecipient;
@@ -53,7 +53,7 @@ contract ZkSyncPusher is BasePusher {
         (uint256 firstBlockNumber, bytes32[] memory blockHashes) = _buildBlockHashArray(batchSize);
         bytes memory l2Calldata = abi.encodeCall(IBuffer.receiveHashes, (firstBlockNumber, blockHashes));
 
-        L2Transaction memory l2Transaction = abi.decode(l2TransactionData, (L2Transaction));
+        ZkSyncL2Transaction memory l2Transaction = abi.decode(l2TransactionData, ( ZkSyncL2Transaction ));
 
         /// In the current behavior of the ZkSync Mailbox, the `l2GasPerPubdataByteLimit` value must be equal to the `REQUIRED_L2_GAS_PRICE_PER_PUBDATA` value,
         /// which is a constant defined by ZkSync. The current value is 800. However, since this might change in the future, the value must be passed in as a parameter.
