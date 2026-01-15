@@ -6,14 +6,9 @@ import {IBuffer} from "../interfaces/IBuffer.sol";
 import {IPusher} from "../interfaces/IPusher.sol";
 
 interface IL1ScrollMessenger {
-    function sendMessage(
-        address _to,
-        uint256 _value,
-        bytes memory _message,
-        uint256 _gasLimit,
-        address _refundAddress
-    ) external payable;
-
+    function sendMessage(address _to, uint256 _value, bytes memory _message, uint256 _gasLimit, address _refundAddress)
+        external
+        payable;
 }
 
 /// @title ScrollPusher
@@ -49,7 +44,7 @@ contract ScrollPusher is BasePusher {
         (uint256 firstBlockNumber, bytes32[] memory blockHashes) = _buildBlockHashArray(batchSize);
         bytes memory l2Calldata = abi.encodeCall(IBuffer.receiveHashes, (firstBlockNumber, blockHashes));
 
-        ScrollL2Transaction memory l2Transaction = abi.decode(l2TransactionData, ( ScrollL2Transaction ));
+        ScrollL2Transaction memory l2Transaction = abi.decode(l2TransactionData, (ScrollL2Transaction));
 
         IL1ScrollMessenger(l1ScrollMessenger()).sendMessage{value: msg.value}(
             bufferAddress(),
