@@ -82,6 +82,22 @@ Concrete implementations must override `receiveHashes` to add chain-specific acc
 - The pusher address is set once during initialization via `setPusherAddress()`, after which ownership is renounced
 - Requires the L2ScrollMessenger address to be set during construction
 
+### Linea
+
+**LineaPusher** (`linea/LineaPusher.sol`):
+- Deployed on Ethereum L1
+- Uses Linea's Rollup contract (`sendMessage`) to send L1→L2 messages
+- Requires L2 transaction parameters: fee (paid to the postman for claiming the message on L2)
+- The pusher must be configured with the correct Linea Rollup address and buffer contract address
+- The `msg.value` sent must be at least equal to the fee specified in the transaction data
+
+**LineaBuffer** (`linea/LineaBuffer.sol`):
+- Deployed on Linea L2
+- Uses Linea's cross-chain messaging for access control: only accepts messages relayed by the L2MessageService contract
+- Verifies that `msg.sender` is the L2MessageService and that `sender()` matches the pusher address
+- The pusher address is set once during initialization via `setPusherAddress()`, after which ownership is renounced
+- Requires the L2MessageService address to be set during construction
+- Messages must be claimed on L2 by a postman (Linea runs a postman service) or by users for more expensive messages
 
 ## Usage Flow
 
