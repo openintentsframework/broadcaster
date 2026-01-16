@@ -5,10 +5,24 @@ import {IMessageService} from "@linea-contracts/messaging/interfaces/IMessageSer
 import {IClaimMessageV1} from "@linea-contracts/messaging/interfaces/IClaimMessageV1.sol";
 
 contract MockLineaMessageService is IMessageService, IClaimMessageV1 {
+    error ZeroAddressNotAllowed();
+
     address transient TRANSIENT_MESSAGE_SENDER;
 
     function sendMessage(address _to, uint256 _fee, bytes calldata _calldata) external payable {
-        // TODO: Implement
+        if (_to == address(0)) {
+            revert ZeroAddressNotAllowed();
+        }
+
+        if (_fee > msg.value) {
+            revert ValueSentTooLow();
+        }
+
+        bytes32 messageHash = keccak256(abi.encode(msg.sender, _to, _fee, msg.value - _fee, 0, _calldata));
+
+        emit MessageSent(msg.sender, _to, _fee, msg.value - _fee, 0, _calldata, messageHash);
+
+        // no-op
     }
 
     function sender() external view returns (address) {
@@ -24,6 +38,8 @@ contract MockLineaMessageService is IMessageService, IClaimMessageV1 {
         bytes calldata _calldata,
         uint256 _nonce
     ) external {
+        TRANSIENT_MESSAGE_SENDER = _from;
+
         (bool callSuccess, bytes memory returnData) = _to.call{value: _value}(_calldata);
         if (!callSuccess) {
             if (returnData.length > 0) {
@@ -37,6 +53,8 @@ contract MockLineaMessageService is IMessageService, IClaimMessageV1 {
         }
 
         TRANSIENT_MESSAGE_SENDER = address(0);
+
+        bytes32 messageHash = keccak256(abi.encode(_from, _to, _fee, _value, _nonce, _calldata));
 
         emit MessageClaimed(messageHash);
     }
