@@ -13,7 +13,7 @@ import {IMessageService} from "@linea-contracts/messaging/interfaces/IMessageSer
 ///      with the correct rollup address and buffer contract address.
 contract LineaPusher is BasePusher {
     /// @dev The address of the Linea Rollup contract on L1.
-    address private immutable _rollup;
+    address private immutable _lineaRollup;
 
     /// @dev The address of the LineaBuffer contract on L2.
     address private immutable _bufferAddress;
@@ -25,7 +25,7 @@ contract LineaPusher is BasePusher {
     }
 
     constructor(address rollup_, address bufferAddress_) {
-        _rollup = rollup_;
+        _lineaRollup = rollup_;
         _bufferAddress = bufferAddress_;
     }
 
@@ -49,6 +49,6 @@ contract LineaPusher is BasePusher {
     /// @notice The address of the Linea Rollup contract on L1.
     /// @return The address of the Linea Rollup contract on L1.
     function lineaRollup() public view returns (address) {
-        return _rollup;
+        return _lineaRollup;
     }
 }
