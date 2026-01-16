@@ -19,7 +19,7 @@ contract LineaPusher is BasePusher {
     address private immutable _bufferAddress;
 
     /// @notice Parameters for the L2 transaction that will be executed on Linea.
-    /// @param _fee The fee paid for the postman to claim the message on L2 (Linea runs a postman service that sets fees to 0 when gas is less than 250,000)
+    /// @param _fee The fee paid for the postman to claim the message on L2
     struct LineaL2Transaction {
         uint256 _fee;
     }
