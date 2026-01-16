@@ -54,7 +54,7 @@ contract MockLineaMessageService is IMessageService, IClaimMessageV1 {
 
         TRANSIENT_MESSAGE_SENDER = address(0);
 
-        bytes32 messageHash = keccak256(abi.encode(_calldata));
+        bytes32 messageHash = keccak256(_calldata);
 
         emit MessageClaimed(messageHash);
     }
