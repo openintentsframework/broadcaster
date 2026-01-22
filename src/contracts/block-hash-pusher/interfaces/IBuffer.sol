@@ -25,7 +25,7 @@ interface IBuffer {
     ///      The last block in the buffer must be less than the last block being pushed.
     /// @param firstBlockNumber The block number of the first block in the batch.
     /// @param blockHashes The hashes of the blocks to be pushed. These are assumed to be in contiguous order.
-    function receiveHashes(uint256 firstBlockNumber, bytes32[] memory blockHashes) external;
+    function receiveHashes(uint256 firstBlockNumber, bytes32[] calldata blockHashes) external;
 
     /// @notice Get a parent chain block hash given parent chain block number.
     /// @param  parentChainBlockNumber The block number of the parent chain block.

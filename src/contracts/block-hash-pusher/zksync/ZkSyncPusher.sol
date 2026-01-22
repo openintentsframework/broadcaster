@@ -49,7 +49,10 @@ contract ZkSyncPusher is BlockHashArrayBuilder, IPusher {
     }
 
     /// @inheritdoc IPusher
-    function pushHashes(uint256 firstBlockNumber, uint256 batchSize, bytes memory l2TransactionData) external payable {
+    function pushHashes(uint256 firstBlockNumber, uint256 batchSize, bytes calldata l2TransactionData)
+        external
+        payable
+    {
         bytes32[] memory blockHashes = _buildBlockHashArray(firstBlockNumber, batchSize);
         bytes memory l2Calldata = abi.encodeCall(IBuffer.receiveHashes, (firstBlockNumber, blockHashes));
 
