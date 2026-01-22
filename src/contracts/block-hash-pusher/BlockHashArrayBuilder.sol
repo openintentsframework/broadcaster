@@ -11,6 +11,8 @@ import {Blockhash} from "@openzeppelin/contracts/utils/Blockhash.sol";
 ///      override `pushHashes` to implement chain-specific cross-chain messaging mechanisms.
 /// @notice Inspired by: https://github.com/OffchainLabs/block-hash-pusher/blob/main/contracts/Pusher.sol
 abstract contract BlockHashArrayBuilder {
+    error InvalidBlockNumber(uint256 blockNumber);
+
     /// @notice Builds an array of block hashes for the most recent blocks.
     /// @dev Retrieves block hashes starting from `block.number - batchSize` up to `block.number - 1`.
     ///      The block hashes are retrieved using OpenZeppelin's Blockhash utility, which handles
@@ -19,18 +21,21 @@ abstract contract BlockHashArrayBuilder {
     /// @param batchSize The number of block hashes to retrieve. Must be between 1 and MAX_BATCH_SIZE.
     /// @return firstBlockNumber The block number of the first block in the array.
     /// @return blockHashes Array of block hashes, ordered from oldest to newest.
-    function _buildBlockHashArray(uint256 batchSize)
+    function _buildBlockHashArray(uint256 firstBlockNumber, uint256 batchSize)
         internal
         view
-        returns (uint256 firstBlockNumber, bytes32[] memory blockHashes)
+        returns (bytes32[] memory blockHashes)
     {
         if (batchSize == 0 || batchSize > MAX_BATCH_SIZE()) {
             revert IPusher.InvalidBatchSize(batchSize);
         }
 
+        if (firstBlockNumber + batchSize > block.number) {
+            revert InvalidBlockNumber(firstBlockNumber + batchSize, block.number);
+        }
+
         blockHashes = new bytes32[](batchSize);
 
-        firstBlockNumber = block.number - batchSize;
         for (uint256 i = 0; i < batchSize; i++) {
             blockHashes[i] = _blockHash(firstBlockNumber + i);
         }
@@ -41,7 +46,11 @@ abstract contract BlockHashArrayBuilder {
     /// @return The block hash.
     function _blockHash(uint256 blockNumber) internal view virtual returns (bytes32) {
         // Note that this library is only supported on chains that support EIP-2935.
-        return Blockhash.blockHash(blockNumber);
+        bytes32 blockHash = Blockhash.blockHash(blockNumber);
+        if (blockHash == 0) {
+            revert InvalidBlockNumber(blockNumber);
+        }
+        return blockHash;
     }
 
     /// @notice The max allowable number of hashes to push per call to pushHashes.
