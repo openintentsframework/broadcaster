@@ -18,9 +18,8 @@ abstract contract BlockHashArrayBuilder {
     /// @dev Retrieves block hashes starting from `block.number - batchSize` up to `block.number - 1`.
     ///      The block hashes are retrieved using OpenZeppelin's Blockhash utility, which handles
     ///      the EIP-2935 history storage window limitations.
-    /// @notice This contract assumes that is deployed in a chain that supports EIP-2935. If the chain does not support it, the batch size MUST be limited to 256.
+    /// @param firstBlockNumber The block number of the first block in the array.
     /// @param batchSize The number of block hashes to retrieve. Must be between 1 and MAX_BATCH_SIZE.
-    /// @return firstBlockNumber The block number of the first block in the array.
     /// @return blockHashes Array of block hashes, ordered from oldest to newest.
     function _buildBlockHashArray(uint256 firstBlockNumber, uint256 batchSize)
         internal

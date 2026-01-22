@@ -90,7 +90,7 @@ contract ZkSyncPusherTest is Test {
         );
 
         vm.prank(user);
-        vm.expectRevert(abi.encodeWithSelector(IPusher.InvalidBatchSize.selector, batchSize));
+        vm.expectRevert(abi.encodeWithSelector(IPusher.InvalidBatch.selector, block.number - batchSize, batchSize));
         zkSyncPusher.pushHashes(block.number - batchSize, batchSize, l2TransactionData);
     }
 
