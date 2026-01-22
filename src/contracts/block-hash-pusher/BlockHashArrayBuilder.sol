@@ -11,9 +11,6 @@ import {Blockhash} from "@openzeppelin/contracts/utils/Blockhash.sol";
 ///      override `pushHashes` to implement chain-specific cross-chain messaging mechanisms.
 /// @notice Inspired by: https://github.com/OffchainLabs/block-hash-pusher/blob/main/contracts/Pusher.sol
 abstract contract BlockHashArrayBuilder {
-    /// @notice The max allowable number of hashes to push per call to pushHashes.
-    uint256 public constant MAX_BATCH_SIZE = 8191; // EIP-2935 history storage window
-
     /// @notice Builds an array of block hashes for the most recent blocks.
     /// @dev Retrieves block hashes starting from `block.number - batchSize` up to `block.number - 1`.
     ///      The block hashes are retrieved using OpenZeppelin's Blockhash utility, which handles
@@ -27,7 +24,7 @@ abstract contract BlockHashArrayBuilder {
         view
         returns (uint256 firstBlockNumber, bytes32[] memory blockHashes)
     {
-        if (batchSize == 0 || batchSize > MAX_BATCH_SIZE) {
+        if (batchSize == 0 || batchSize > MAX_BATCH_SIZE()) {
             revert IPusher.InvalidBatchSize(batchSize);
         }
 
@@ -35,7 +32,22 @@ abstract contract BlockHashArrayBuilder {
 
         firstBlockNumber = block.number - batchSize;
         for (uint256 i = 0; i < batchSize; i++) {
-            blockHashes[i] = Blockhash.blockHash(firstBlockNumber + i);
+            blockHashes[i] = _blockHash(firstBlockNumber + i);
         }
+    }
+
+    /// @notice Retrieves the block hash for a given block number.
+    /// @param blockNumber The block number to retrieve the hash for.
+    /// @return The block hash.
+    function _blockHash(uint256 blockNumber) internal view virtual returns (bytes32) {
+        // Note that this library is only supported on chains that support EIP-2935.
+        return Blockhash.blockHash(blockNumber);
+    }
+
+    /// @notice The max allowable number of hashes to push per call to pushHashes.
+    /// @return the max batch size
+    function MAX_BATCH_SIZE() public pure virtual returns (uint256) {
+        // EIP-2935 history storage window is 8191 blocks
+        return 8191;
     }
 }
