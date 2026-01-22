@@ -47,10 +47,6 @@ contract ZkSyncBuffer is BaseBuffer, Ownable {
 
     /// @inheritdoc IBuffer
     function receiveHashes(uint256 firstBlockNumber, bytes32[] calldata blockHashes) external {
-        if (_pusherAddress == address(0)) {
-            revert PusherAddressNotSet();
-        }
-
         if (msg.sender != aliasedPusher()) {
             revert NotPusher();
         }
