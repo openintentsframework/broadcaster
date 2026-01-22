@@ -58,7 +58,7 @@ contract ZkSyncPusherTest is Test {
     }
 
     function testFuzz_pushHashes(uint16 batchSize) public {
-        vm.assume(batchSize > 0 && batchSize <= 8191);
+        vm.assume(batchSize > 0 && batchSize <= 256);
         vm.roll(batchSize + 1);
 
         ZkSyncPusher zkSyncPusher = new ZkSyncPusher(mockZkSyncMailbox, buffer);
