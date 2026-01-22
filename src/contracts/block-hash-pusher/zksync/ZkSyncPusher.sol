@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.30;
 
-import {BasePusher} from "../BasePusher.sol";
+import {BlockHashArrayBuilder} from "../BlockHashArrayBuilder.sol";
 import {IBuffer} from "../interfaces/IBuffer.sol";
 import {IPusher} from "../interfaces/IPusher.sol";
 
@@ -19,11 +19,11 @@ interface IMailbox {
 }
 
 /// @title ZkSyncPusher
-/// @notice Implementation of BasePusher for pushing block hashes to ZkSync Era L2.
+/// @notice Implementation of IPusher for pushing block hashes to ZkSync Era L2.
 /// @dev This contract sends block hashes from Ethereum L1 to a ZkSyncBuffer contract on ZkSync Era L2
 ///      via the ZkSync Mailbox's `requestL2Transaction` function. The pusher must be configured
 ///      with the correct ZkSync Diamond proxy address and buffer contract address.
-contract ZkSyncPusher is BasePusher {
+contract ZkSyncPusher is BlockHashArrayBuilder, IPusher {
     /// @dev The address of the ZkSync Diamond proxy contract on L1.
     address private immutable _zkSyncDiamond;
 

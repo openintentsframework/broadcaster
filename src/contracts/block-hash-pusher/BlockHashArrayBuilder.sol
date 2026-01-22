@@ -4,13 +4,13 @@ pragma solidity 0.8.30;
 import {IPusher} from "./interfaces/IPusher.sol";
 import {Blockhash} from "@openzeppelin/contracts/utils/Blockhash.sol";
 
-/// @title BasePusher
-/// @notice Abstract base contract for pushing parent chain block hashes to a child chain buffer.
+/// @title BlockHashArrayBuilder
+/// @notice Contract for pushing parent chain block hashes to a child chain buffer.
 /// @dev This contract provides the core functionality for building arrays of recent block hashes
 ///      that can be pushed to a buffer contract on a child chain. Concrete implementations should
 ///      override `pushHashes` to implement chain-specific cross-chain messaging mechanisms.
 /// @notice Inspired by: https://github.com/OffchainLabs/block-hash-pusher/blob/main/contracts/Pusher.sol
-abstract contract BasePusher is IPusher {
+abstract contract BlockHashArrayBuilder {
     /// @notice The max allowable number of hashes to push per call to pushHashes.
     uint256 public constant MAX_BATCH_SIZE = 8191; // EIP-2935 history storage window
 
@@ -28,7 +28,7 @@ abstract contract BasePusher is IPusher {
         returns (uint256 firstBlockNumber, bytes32[] memory blockHashes)
     {
         if (batchSize == 0 || batchSize > MAX_BATCH_SIZE) {
-            revert InvalidBatchSize(batchSize);
+            revert IPusher.InvalidBatchSize(batchSize);
         }
 
         blockHashes = new bytes32[](batchSize);
