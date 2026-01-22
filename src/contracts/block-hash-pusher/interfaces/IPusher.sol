@@ -15,8 +15,8 @@ interface IPusher {
     /// @notice Thrown when incorrect msg.value is provided
     error IncorrectMsgValue(uint256 expected, uint256 provided);
 
-    /// @notice Thrown when the batch size is invalid.
-    error InvalidBatchSize(uint256 batchSize);
+    /// @notice Thrown when the batch is invalid.
+    error InvalidBatch(uint256 firstBlockNumber, uint256 batchSize);
 
     /// @notice Push some hashes of previous blocks to the buffer on the child chain
     /// @param firstBlockNumber The first block number to push.

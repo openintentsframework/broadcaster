@@ -11,6 +11,7 @@ import {Blockhash} from "@openzeppelin/contracts/utils/Blockhash.sol";
 ///      override `pushHashes` to implement chain-specific cross-chain messaging mechanisms.
 /// @notice Inspired by: https://github.com/OffchainLabs/block-hash-pusher/blob/main/contracts/Pusher.sol
 abstract contract BlockHashArrayBuilder {
+    /// @notice Thrown when the block number is invalid
     error InvalidBlockNumber(uint256 blockNumber);
 
     /// @notice Builds an array of block hashes for the most recent blocks.
@@ -27,11 +28,11 @@ abstract contract BlockHashArrayBuilder {
         returns (bytes32[] memory blockHashes)
     {
         if (batchSize == 0 || batchSize > MAX_BATCH_SIZE()) {
-            revert IPusher.InvalidBatchSize(batchSize);
+            revert IPusher.InvalidBatch(firstBlockNumber, batchSize);
         }
 
         if (firstBlockNumber + batchSize > block.number) {
-            revert InvalidBlockNumber(firstBlockNumber + batchSize, block.number);
+            revert IPusher.InvalidBatch(firstBlockNumber, batchSize);
         }
 
         blockHashes = new bytes32[](batchSize);
