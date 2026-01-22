@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.30;
 
-import {BasePusher} from "../BasePusher.sol";
+import {BlockHashArrayBuilder} from "../BlockHashArrayBuilder.sol";
 import {IBuffer} from "../interfaces/IBuffer.sol";
 import {IPusher} from "../interfaces/IPusher.sol";
 import {IMessageService} from "@linea-contracts/messaging/interfaces/IMessageService.sol";
 
 /// @title LineaPusher
-/// @notice Implementation of BasePusher for pushing block hashes to Linea L2.
+/// @notice Implementation of IPusher for pushing block hashes to Linea L2.
 /// @dev This contract sends block hashes from Ethereum L1 to a LineaBuffer contract on Linea L2
 ///      via the Linea MessageService's `sendMessage` function. The pusher must be configured
 ///      with the correct rollup address and buffer contract address.
-contract LineaPusher is BasePusher {
+contract LineaPusher is BlockHashArrayBuilder, IPusher {
     /// @dev The address of the Linea Rollup contract on L1.
     address private immutable _lineaRollup;
 
@@ -30,8 +30,11 @@ contract LineaPusher is BasePusher {
     }
 
     /// @inheritdoc IPusher
-    function pushHashes(uint256 batchSize, bytes memory l2TransactionData) external payable {
-        (uint256 firstBlockNumber, bytes32[] memory blockHashes) = _buildBlockHashArray(batchSize);
+    function pushHashes(uint256 firstBlockNumber, uint256 batchSize, bytes calldata l2TransactionData)
+        external
+        payable
+    {
+        bytes32[] memory blockHashes = _buildBlockHashArray(firstBlockNumber, batchSize);
         bytes memory l2Calldata = abi.encodeCall(IBuffer.receiveHashes, (firstBlockNumber, blockHashes));
 
         LineaL2Transaction memory l2Transaction = abi.decode(l2TransactionData, (LineaL2Transaction));
