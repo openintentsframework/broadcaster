@@ -38,6 +38,10 @@ contract ZkSyncPusherTest is Test {
         zkSyncPusher.pushHashes{value: 0.005 ether}(block.number - 10, 10, l2TransactionData);
 
         zkSyncPusher.pushHashes{value: 0.005 ether}(block.number - 15, 15, l2TransactionData);
+
+        zkSyncPusher.pushHashes{value: 0.005 ether}(block.number - 1000, 10, l2TransactionData);
+
+        zkSyncPusher.pushHashes{value: 0.005 ether}(block.number - 8000, 20, l2TransactionData);
     }
 
     function test_pushHashes_fork_reverts_with_incorrect_l2_gas_price_per_pubdata() public {
