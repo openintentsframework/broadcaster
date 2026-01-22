@@ -25,15 +25,19 @@ contract ScrollPusherTest is Test {
         bytes memory l2TransactionData =
             abi.encode(ScrollPusher.ScrollL2Transaction({gasLimit: 400000, refundAddress: msg.sender}));
 
-        scrollPusher.pushHashes{value: 0.005 ether}(1, l2TransactionData);
+        scrollPusher.pushHashes{value: 0.005 ether}(block.number - 1, 1, l2TransactionData);
 
-        scrollPusher.pushHashes{value: 0.005 ether}(10, l2TransactionData);
+        scrollPusher.pushHashes{value: 0.005 ether}(block.number - 10, 10, l2TransactionData);
 
-        scrollPusher.pushHashes{value: 0.005 ether}(15, l2TransactionData);
+        scrollPusher.pushHashes{value: 0.005 ether}(block.number - 15, 15, l2TransactionData);
+
+        scrollPusher.pushHashes{value: 0.005 ether}(block.number - 1000, 10, l2TransactionData);
+
+        scrollPusher.pushHashes{value: 0.005 ether}(block.number - 8000, 20, l2TransactionData);
     }
 
     function testFuzz_pushHashes(uint16 batchSize) public {
-        vm.assume(batchSize > 0 && batchSize <= 8191);
+        vm.assume(batchSize > 0 && batchSize <= 256);
         vm.roll(batchSize + 1);
 
         ScrollPusher scrollPusher = new ScrollPusher(mockL1ScrollMessenger, buffer);
@@ -42,7 +46,7 @@ contract ScrollPusherTest is Test {
             abi.encode(ScrollPusher.ScrollL2Transaction({gasLimit: 0, refundAddress: address(0)}));
 
         vm.prank(user);
-        scrollPusher.pushHashes(batchSize, l2TransactionData);
+        scrollPusher.pushHashes(block.number - batchSize, batchSize, l2TransactionData);
     }
 
     function testFuzz_pushHashes_invalidBatchSize(uint16 batchSize) public {
@@ -55,8 +59,8 @@ contract ScrollPusherTest is Test {
             abi.encode(ScrollPusher.ScrollL2Transaction({gasLimit: 0, refundAddress: address(0)}));
 
         vm.prank(user);
-        vm.expectRevert(abi.encodeWithSelector(IPusher.InvalidBatchSize.selector, batchSize));
-        scrollPusher.pushHashes(batchSize, l2TransactionData);
+        vm.expectRevert(abi.encodeWithSelector(IPusher.InvalidBatch.selector, block.number - batchSize, batchSize));
+        scrollPusher.pushHashes(block.number - batchSize, batchSize, l2TransactionData);
     }
 
     function test_viewFunctions() public {

@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.30;
 
-import {BasePusher} from "../BasePusher.sol";
+import {BlockHashArrayBuilder} from "../BlockHashArrayBuilder.sol";
 import {IBuffer} from "../interfaces/IBuffer.sol";
 import {IPusher} from "../interfaces/IPusher.sol";
 import {IL1ScrollMessenger} from "@scroll-tech/scroll-contracts/L1/IL1ScrollMessenger.sol";
 
 /// @title ScrollPusher
-/// @notice Implementation of BasePusher for pushing block hashes to Scroll L2.
+/// @notice Implementation of IPusher for pushing block hashes to Scroll L2.
 /// @dev This contract sends block hashes from Ethereum L1 to a ScrollBuffer contract on Scroll L2
 ///      via the Scroll L1ScrollMessenger's `sendMessage` function. The pusher must be configured
 ///      with the correct L1ScrollMessenger address and buffer contract address.
-contract ScrollPusher is BasePusher {
+contract ScrollPusher is BlockHashArrayBuilder, IPusher {
     /// @dev The address of the Scroll L1ScrollMessenger contract on L1.
     address private immutable _l1ScrollMessenger;
 
@@ -32,8 +32,11 @@ contract ScrollPusher is BasePusher {
     }
 
     /// @inheritdoc IPusher
-    function pushHashes(uint256 batchSize, bytes memory l2TransactionData) external payable {
-        (uint256 firstBlockNumber, bytes32[] memory blockHashes) = _buildBlockHashArray(batchSize);
+    function pushHashes(uint256 firstBlockNumber, uint256 batchSize, bytes calldata l2TransactionData)
+        external
+        payable
+    {
+        bytes32[] memory blockHashes = _buildBlockHashArray(firstBlockNumber, batchSize);
         bytes memory l2Calldata = abi.encodeCall(IBuffer.receiveHashes, (firstBlockNumber, blockHashes));
 
         ScrollL2Transaction memory l2Transaction = abi.decode(l2TransactionData, (ScrollL2Transaction));
