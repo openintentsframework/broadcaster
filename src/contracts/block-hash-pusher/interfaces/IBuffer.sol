@@ -35,14 +35,6 @@ interface IBuffer {
     /// @notice The highest block number that has been pushed
     function newestBlockNumber() external view returns (uint256);
 
-    /// @dev 393168 - the size of the buffer. This is the maximum number of block hashes that can be stored.
-    ///      For a parent chain with a block time of 12s (Ethereum), this is equivalent to roughly 54 days of history.
-    function bufferSize() external view returns (uint256);
-
     /// @dev The address of the pusher contract on the parent chain.
     function pusher() external view returns (address);
-
-    /// @dev A buffer of block numbers whose hashes are stored in the `blockHashes` mapping.
-    ///      Should be the last storage variable declared to maintain flexibility in resizing the buffer.
-    function blockNumberBuffer(uint256) external view returns (uint256);
 }
