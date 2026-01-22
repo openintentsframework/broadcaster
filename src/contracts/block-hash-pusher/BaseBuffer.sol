@@ -18,7 +18,7 @@ abstract contract BaseBuffer is IBuffer {
     uint256 private constant _bufferSize = 393168; // 48 * 8191, where 8191 is the EIP-2935 history storage window
 
     /// @dev The block number of the newest block in the buffer.
-    uint64 private _newestBlockNumber;
+    uint256 private _newestBlockNumber;
 
     /// @dev Circular buffer storing block numbers at each index position.
     uint256[_bufferSize] private _blockNumberBuffer;
@@ -70,7 +70,7 @@ abstract contract BaseBuffer is IBuffer {
 
         if (lastBlockNumber > _newestBlockNumber) {
             // update the newest block number
-            _newestBlockNumber = uint64(lastBlockNumber);
+            _newestBlockNumber = lastBlockNumber;
         }
 
         emit BlockHashesPushed(firstBlockNumber, lastBlockNumber);
@@ -82,7 +82,7 @@ abstract contract BaseBuffer is IBuffer {
     }
 
     /// @inheritdoc IBuffer
-    function newestBlockNumber() public view returns (uint64) {
+    function newestBlockNumber() public view returns (uint256) {
         return _newestBlockNumber;
     }
 

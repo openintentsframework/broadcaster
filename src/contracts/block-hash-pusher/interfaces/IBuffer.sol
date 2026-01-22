@@ -33,7 +33,7 @@ interface IBuffer {
     function parentChainBlockHash(uint256 parentChainBlockNumber) external view returns (bytes32);
 
     /// @notice The highest block number that has been pushed
-    function newestBlockNumber() external view returns (uint64);
+    function newestBlockNumber() external view returns (uint256);
 
     /// @dev 393168 - the size of the buffer. This is the maximum number of block hashes that can be stored.
     ///      For a parent chain with a block time of 12s (Ethereum), this is equivalent to roughly 54 days of history.
