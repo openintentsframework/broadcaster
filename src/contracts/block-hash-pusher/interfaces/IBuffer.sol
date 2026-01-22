@@ -39,7 +39,7 @@ interface IBuffer {
     ///      For a parent chain with a block time of 12s (Ethereum), this is equivalent to roughly 54 days of history.
     function bufferSize() external view returns (uint256);
 
-    /// @dev A system address that is authorized to push hashes to the buffer.
+    /// @dev The address of the pusher contract on the parent chain.
     function pusher() external view returns (address);
 
     /// @dev A buffer of block numbers whose hashes are stored in the `blockHashes` mapping.
