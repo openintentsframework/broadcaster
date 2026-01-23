@@ -7,3 +7,6 @@
 [submodule "lib/block-hash-pusher"]
 	path = lib/block-hash-pusher
 	url = https://github.com/Offchainlabs/block-hash-pusher
+[submodule "lib/scroll-contracts"]
+	path = lib/scroll-contracts
+	url = https://github.com/scroll-tech/scroll-contracts
