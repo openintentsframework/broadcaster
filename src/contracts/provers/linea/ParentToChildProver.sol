@@ -16,7 +16,7 @@ interface ILineaRollup {
 /// @title Linea ParentToChildProver
 /// @notice Enables verification of Linea L2 state from Ethereum L1
 /// @dev Home chain: L1 (Ethereum). Target chain: L2 (Linea).
-///      On L1: getTargetBlockHash reads L2 state root directly from LineaRollup
+///      On L1: getTargetStateCommitment reads L2 state root directly from LineaRollup
 ///      On L2: verifyTargetBlockHash proves L2 state root from L1 LineaRollup storage
 ///      verifyStorageSlot: Verifies storage against the L2 state root using Sparse Merkle Tree proofs
 ///
@@ -86,7 +86,7 @@ contract ParentToChildProver is IStateProver {
     /// @dev Called on home chain (L1)
     /// @param input ABI encoded (uint256 l2BlockNumber)
     /// @return targetBlockHash The L2 state root
-    function getTargetBlockHash(bytes calldata input) external view returns (bytes32 targetBlockHash) {
+    function getTargetStateCommitment(bytes calldata input) external view returns (bytes32 targetBlockHash) {
         if (block.chainid != homeChainId) {
             revert CallNotOnHomeChain();
         }
@@ -123,7 +123,7 @@ contract ParentToChildProver is IStateProver {
     ///      5. The storage proof corresponds to the claimed slot (hKey check)
     ///      6. The storage value matches the proof's hValue
     ///
-    /// @param targetBlockHash The L2 SMT state root (from getTargetBlockHash or verifyTargetBlockHash)
+    /// @param targetBlockHash The L2 SMT state root (from getTargetStateCommitment or verifyTargetBlockHash)
     /// @param input ABI encoded proof data from linea_getProof
     /// @return account The address of the account on L2
     /// @return slot The storage slot

@@ -24,7 +24,7 @@ export class OptimismChildToParentProverHelper
   readonly l1BlockHashSlot: bigint = 2n  // hash is at slot 2
 
   /**
-   * Build input for getTargetBlockHash()
+   * Build input for getTargetStateCommitment()
    * For Optimism, this reads the L1Block predeploy directly, so input can be empty
    */
   async buildInputForGetTargetBlockHash(): Promise<{
@@ -37,7 +37,7 @@ export class OptimismChildToParentProverHelper
       slot: `0x${this.l1BlockHashSlot.toString(16)}` as Hex,
     }) as Hash
 
-    // getTargetBlockHash() on Optimism doesn't need any input
+    // getTargetStateCommitment() on Optimism doesn't need any input
     // It reads the predeploy directly
     return {
       input: '0x' as Hex,

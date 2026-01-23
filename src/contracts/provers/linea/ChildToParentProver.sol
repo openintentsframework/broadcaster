@@ -49,7 +49,7 @@ contract ChildToParentProver is IStateProver {
 
     /// @notice Get a parent chain block hash from the buffer at `blockHashBuffer`.
     /// @param  input ABI encoded (uint256 targetBlockNumber)
-    function getTargetBlockHash(bytes calldata input) external view returns (bytes32 targetBlockHash) {
+    function getTargetStateCommitment(bytes calldata input) external view returns (bytes32 targetBlockHash) {
         if (block.chainid != homeChainId) {
             revert CallNotOnHomeChain();
         }

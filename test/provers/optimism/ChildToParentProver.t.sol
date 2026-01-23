@@ -36,10 +36,10 @@ contract OptimismChildToParentProverTest is Test {
         payload = vm.parseBytes(vm.readFile(string.concat(vm.projectRoot(), "/", path)));
     }
 
-    /// @notice Test getTargetBlockHash() - reads L1Block predeploy on Optimism
+    /// @notice Test getTargetStateCommitment() - reads L1Block predeploy on Optimism
     /// @dev Uses LIVE data instead of payload files because L1Block updates constantly.
     ///      This approach is more reliable than static payloads for Optimism.
-    function test_getTargetBlockHash() public {
+    function test_getTargetStateCommitment() public {
         vm.selectFork(childForkId);
 
         // Read the CURRENT L1 block hash from the predeploy
@@ -52,14 +52,14 @@ contract OptimismChildToParentProverTest is Test {
         expectedL1Hash = abi.decode(data, (bytes32));
 
         // Test our prover returns the same value
-        bytes32 result = childToParentProver.getTargetBlockHash("");
+        bytes32 result = childToParentProver.getTargetStateCommitment("");
 
         assertEq(result, expectedL1Hash, "Block hash should match L1Block predeploy");
         assertTrue(result != bytes32(0), "Block hash should not be zero");
     }
 
-    /// @notice Test getTargetBlockHash() reverts when called on target chain (Ethereum)
-    function test_reverts_getTargetBlockHash_on_target_chain() public {
+    /// @notice Test getTargetStateCommitment() reverts when called on target chain (Ethereum)
+    function test_reverts_getTargetStateCommitment_on_target_chain() public {
         vm.selectFork(parentForkId);
         bytes memory payload = _loadPayload("test/payloads/optimism/calldata_get.hex");
 
@@ -75,7 +75,7 @@ contract OptimismChildToParentProverTest is Test {
 
         // Should revert because we're on Ethereum, not Optimism
         vm.expectRevert(ChildToParentProver.CallNotOnHomeChain.selector);
-        newChildToParentProver.getTargetBlockHash(abi.encode(input));
+        newChildToParentProver.getTargetStateCommitment(abi.encode(input));
     }
 
     /// @notice Test verifyTargetBlockHash() - uses Merkle proofs

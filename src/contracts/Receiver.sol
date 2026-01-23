@@ -131,7 +131,7 @@ contract Receiver is IReceiver {
 
             if (i == 0) {
                 prover = IStateProver(IStateProverPointer(readArgs.route[0]).implementationAddress());
-                blockHash = prover.getTargetBlockHash(readArgs.bhpInputs[0]);
+                blockHash = prover.getTargetStateCommitment(readArgs.bhpInputs[0]);
             } else {
                 prover = _blockHashProverCopies[remoteAccountId];
                 if (address(prover) == address(0)) {

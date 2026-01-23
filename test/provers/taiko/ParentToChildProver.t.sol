@@ -5,7 +5,7 @@ import {Test, console} from "forge-std/Test.sol";
 import {stdJson} from "forge-std/StdJson.sol";
 import {ParentToChildProver} from "../../../src/contracts/provers/taiko/ParentToChildProver.sol";
 
-/// @notice Mock SignalService for testing getTargetBlockHash
+/// @notice Mock SignalService for testing getTargetStateCommitment
 contract MockSignalService {
     struct Checkpoint {
         uint48 blockNumber;
@@ -31,7 +31,7 @@ contract MockSignalService {
 /// @title ParentToChildProver Tests
 /// @notice Tests for the Taiko ParentToChildProver (L1 → L2 verification)
 /// @dev Home chain: L1 (Ethereum). Target chain: L2 (Taiko).
-///      - getTargetBlockHash: Called on L1 to read L2 block hash from L1's SignalService
+///      - getTargetStateCommitment: Called on L1 to read L2 block hash from L1's SignalService
 ///      - verifyTargetBlockHash: Called on L2 to verify L2 block hash via storage proof
 ///      - verifyStorageSlot: Verifies storage slots against a trusted block hash
 contract TaikoParentToChildProverTest is Test {
@@ -89,32 +89,32 @@ contract TaikoParentToChildProverTest is Test {
         prover.verifyTargetBlockHash(bytes32(0), input);
     }
 
-    function test_getTargetBlockHash_revertsOffHomeChain() public {
+    function test_getTargetStateCommitment_revertsOffHomeChain() public {
         vm.chainId(L2_CHAIN_ID);
 
         bytes memory input = abi.encode(uint48(0));
 
         vm.expectRevert(ParentToChildProver.CallNotOnHomeChain.selector);
-        prover.getTargetBlockHash(input);
+        prover.getTargetStateCommitment(input);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // getTargetBlockHash Tests (Called on L1 to read L2 block hash)
+    // getTargetStateCommitment Tests (Called on L1 to read L2 block hash)
     // ═══════════════════════════════════════════════════════════════════════════
 
-    function test_getTargetBlockHash_success() public {
+    function test_getTargetStateCommitment_success() public {
         vm.chainId(L1_CHAIN_ID);
 
         // Set checkpoint in mock SignalService
         mockSignalService.setCheckpoint(uint48(L2_BLOCK_NUMBER), L2_BLOCK_HASH, L2_STATE_ROOT);
 
         bytes memory input = abi.encode(uint48(L2_BLOCK_NUMBER));
-        bytes32 targetBlockHash = prover.getTargetBlockHash(input);
+        bytes32 targetBlockHash = prover.getTargetStateCommitment(input);
 
         assertEq(targetBlockHash, L2_BLOCK_HASH, "targetBlockHash mismatch");
     }
 
-    function test_getTargetBlockHash_revertsWhenNotFound() public {
+    function test_getTargetStateCommitment_revertsWhenNotFound() public {
         vm.chainId(L1_CHAIN_ID);
 
         // Don't set any checkpoint - it doesn't exist
@@ -122,7 +122,7 @@ contract TaikoParentToChildProverTest is Test {
 
         // Reverts with SignalService's SS_CHECKPOINT_NOT_FOUND error
         vm.expectRevert(MockSignalService.SS_CHECKPOINT_NOT_FOUND.selector);
-        prover.getTargetBlockHash(input);
+        prover.getTargetStateCommitment(input);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -211,7 +211,7 @@ contract TaikoParentToChildProverTest is Test {
     /// @dev This test:
     ///      1. Deploys the prover configured for L1 as home chain
     ///      2. Sets L1's SignalService with an L2 checkpoint
-    ///      3. Uses getTargetBlockHash (on L1) to get L2 block hash
+    ///      3. Uses getTargetStateCommitment (on L1) to get L2 block hash
     ///      4. Uses verifyStorageSlot to verify L2 Broadcaster storage
     function test_integration_L2ToL1_verification() public {
         // Step 1: Configure chain as L1 (home chain)
@@ -222,7 +222,7 @@ contract TaikoParentToChildProverTest is Test {
 
         // Step 3: Get L2 block hash from L1's SignalService
         bytes memory getInput = abi.encode(uint48(L2_BLOCK_NUMBER));
-        bytes32 l2BlockHash = prover.getTargetBlockHash(getInput);
+        bytes32 l2BlockHash = prover.getTargetStateCommitment(getInput);
         assertEq(l2BlockHash, L2_BLOCK_HASH, "L2 block hash mismatch");
 
         // Step 4: Load proof data and verify L2 storage
@@ -250,7 +250,7 @@ contract TaikoParentToChildProverTest is Test {
     // Edge Case Tests
     // ═══════════════════════════════════════════════════════════════════════════
 
-    function test_getTargetBlockHash_zeroBlockNumber() public {
+    function test_getTargetStateCommitment_zeroBlockNumber() public {
         vm.chainId(L1_CHAIN_ID);
 
         // Block 0 with no checkpoint should revert
@@ -258,7 +258,7 @@ contract TaikoParentToChildProverTest is Test {
 
         // Reverts with SignalService's SS_CHECKPOINT_NOT_FOUND error
         vm.expectRevert(MockSignalService.SS_CHECKPOINT_NOT_FOUND.selector);
-        prover.getTargetBlockHash(input);
+        prover.getTargetStateCommitment(input);
     }
 
     function test_constructor_differentParameters() public {
@@ -277,7 +277,7 @@ contract TaikoParentToChildProverTest is Test {
     // Fuzz Tests
     // ═══════════════════════════════════════════════════════════════════════════
 
-    function testFuzz_getTargetBlockHash_revertsOnUnknownBlock(uint48 blockNumber) public {
+    function testFuzz_getTargetStateCommitment_revertsOnUnknownBlock(uint48 blockNumber) public {
         vm.chainId(L1_CHAIN_ID);
 
         // Any block number without a mocked checkpoint should revert
@@ -285,7 +285,7 @@ contract TaikoParentToChildProverTest is Test {
 
         // Reverts with SignalService's SS_CHECKPOINT_NOT_FOUND error
         vm.expectRevert(MockSignalService.SS_CHECKPOINT_NOT_FOUND.selector);
-        prover.getTargetBlockHash(input);
+        prover.getTargetStateCommitment(input);
     }
 
     function testFuzz_constructor_acceptsAnyParameters(address signalService, uint256 slot, uint256 chainId) public {

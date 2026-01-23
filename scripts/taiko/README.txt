@@ -359,6 +359,6 @@ IMPORTANT NOTES
 - storage-proof-generator uses debug_getRawHeader for Taiko
 - ParentToChildProver deployed on L1, reads L2
 - ChildToParentProver deployed on L2, reads L1
-- Both use getTargetBlockHash in tests (direct SignalService read)
+- Both use getTargetStateCommitment in tests (direct SignalService read)
 - Production would use verifyTargetBlockHash (with proofs)
 

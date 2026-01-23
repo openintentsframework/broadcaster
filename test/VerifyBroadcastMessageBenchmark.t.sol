@@ -463,7 +463,7 @@ contract VerifyBroadcastMessageBenchmark is Test {
         vm.startSnapshotGas("verifyBroadcastMessage", "ScrollToOptimism");
 
         // First: get Ethereum block hash via OP C2P (simulates first hop verification)
-        opC2PProver.getTargetBlockHash(bytes(""));
+        opC2PProver.getTargetStateCommitment(bytes(""));
 
         // Second: verify Scroll storage using Scroll P2C (simulates second hop verification)
         scrollP2CProverCopy.verifyStorageSlot(scrollStateRoot, scrollStorageProof);

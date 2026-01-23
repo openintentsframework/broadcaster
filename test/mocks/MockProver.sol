@@ -15,7 +15,7 @@ contract MockProver is IStateProver {
         return homeBlockHash;
     }
 
-    function getTargetBlockHash(bytes calldata input) external pure returns (bytes32 targetBlockHash) {
+    function getTargetStateCommitment(bytes calldata input) external pure returns (bytes32 targetBlockHash) {
         targetBlockHash = abi.decode(input, (bytes32));
     }
 

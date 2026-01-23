@@ -7,8 +7,8 @@ import { Address, Hash, Hex } from 'viem'
  */
 export interface IProverHelper {
   /**
-   * Builds the bytes input argument for the IStateProver::getTargetBlockHash function.
-   * Finds the newest block hash that can be returned by getTargetBlockHash on the prover.
+   * Builds the bytes input argument for the IStateProver::getTargetStateCommitment function.
+   * Finds the newest block hash that can be returned by getTargetStateCommitment on the prover.
    * @returns The input bytes and the resulting target block hash.
    */
   buildInputForGetTargetBlockHash(): Promise<{

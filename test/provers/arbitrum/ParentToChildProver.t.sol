@@ -84,15 +84,15 @@ contract ArbitrumParentToChildProverTest is Test {
         mockOutbox.updateSendRoot(sendRoot, targetBlockHashFromProof);
     }
 
-    function test_getTargetBlockHash() public {
+    function test_getTargetStateCommitment() public {
         vm.selectFork(parentForkId);
 
         // Test with the sendRoot from the proof data
         bytes32 sendRoot = 0x7995a5be000a0212a46f7f128e5ffd6f6a99fa9c72046d9e9b0668bd080712cd;
         ParentToChildProver mockProver = new ParentToChildProver(address(mockOutbox), rootSlot, block.chainid);
-        bytes32 result = mockProver.getTargetBlockHash(abi.encode(sendRoot));
+        bytes32 result = mockProver.getTargetStateCommitment(abi.encode(sendRoot));
         bytes32 expectedTargetBlockHash = 0xa97ce065a04d2abfec36a459db323721847718d3159d51c4256d271ee3b37e42;
-        assertEq(result, expectedTargetBlockHash, "getTargetBlockHash should return correct Arbitrum block hash");
+        assertEq(result, expectedTargetBlockHash, "getTargetStateCommitment should return correct Arbitrum block hash");
     }
 
     function test_verifyTargetBlockHash() public {
