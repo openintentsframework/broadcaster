@@ -7,5 +7,11 @@
   },
   "lib/openzeppelin-contracts": {
     "rev": "5eb047a0c10386b6634db56327a1f74e8a0432c2"
+  },
+  "lib/scroll-contracts": {
+    "tag": {
+      "name": "v4.0.0",
+      "rev": "42de954bee237cfa478a5b443ac0aeb900aca5ad"
+    }
   }
 }
