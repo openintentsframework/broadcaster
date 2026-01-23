@@ -320,7 +320,7 @@ contract ReceiverTest is Test {
         assertEq(timestamp, uint256(value), "wrong timestamp");
     }
 
-    function test_updateBlockHashProverCopy_from_Arbitrum_into_OP() public {
+    function test_updateStateProverCopy_from_Arbitrum_into_OP() public {
         vm.selectFork(optimismForkId);
 
         receiver = new Receiver();
@@ -373,7 +373,7 @@ contract ReceiverTest is Test {
 
         ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
-        bytes32 bhpPointerId = receiver.updateBlockHashProverCopy(remoteReadArgs, arbParentToChildProverCopy);
+        bytes32 bhpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
         assertEq(
             bhpPointerId,
@@ -393,7 +393,7 @@ contract ReceiverTest is Test {
         assertEq(address(arbParentToChildProverCopy).codehash, value, "wrong storage slot value");
     }
 
-    function test_updateBlockHashProverCopy_from_Arbitrum_into_OP_reverts_when_different_code_hash() public {
+    function test_updateStateProverCopy_from_Arbitrum_into_OP_reverts_when_different_code_hash() public {
         vm.selectFork(optimismForkId);
 
         receiver = new Receiver();
@@ -447,7 +447,7 @@ contract ReceiverTest is Test {
         ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
         vm.expectRevert(Receiver.DifferentCodeHash.selector);
-        receiver.updateBlockHashProverCopy(remoteReadArgs, arbParentToChildProverCopy);
+        receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
     }
 
     function test_verifyBroadcastMessage_from_Arbitrum_into_OP() public {
@@ -509,7 +509,7 @@ contract ReceiverTest is Test {
             IReceiver.RemoteReadArgs memory remoteReadArgs =
                 IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
 
-            bytes32 bhpPointerId = receiver.updateBlockHashProverCopy(remoteReadArgs, arbParentToChildProverCopy);
+            bytes32 bhpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
             assertEq(
                 bhpPointerId,
@@ -607,7 +607,7 @@ contract ReceiverTest is Test {
         assertEq(timestamp, uint256(valueArbitrum), "wrong timestamp");
     }
 
-    function test_updateBlockHashProverCopy_from_Arbitrum_into_Zksync() public {
+    function test_updateStateProverCopy_from_Arbitrum_into_Zksync() public {
         vm.selectFork(zksyncForkId);
 
         receiver = new Receiver();
@@ -660,7 +660,7 @@ contract ReceiverTest is Test {
 
         ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
-        bytes32 bhpPointerId = receiver.updateBlockHashProverCopy(remoteReadArgs, arbParentToChildProverCopy);
+        bytes32 bhpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
         assertEq(
             bhpPointerId,
@@ -739,7 +739,7 @@ contract ReceiverTest is Test {
             IReceiver.RemoteReadArgs memory remoteReadArgs =
                 IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
 
-            bytes32 bhpPointerId = receiver.updateBlockHashProverCopy(remoteReadArgs, arbParentToChildProverCopy);
+            bytes32 bhpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
             assertEq(
                 bhpPointerId,
@@ -835,7 +835,7 @@ contract ReceiverTest is Test {
         assertEq(timestamp, uint256(valueArbitrum), "wrong timestamp");
     }
 
-    function test_updateBlockHashProverCopy_from_Arbitrum_into_Linea() public {
+    function test_updateStateProverCopy_from_Arbitrum_into_Linea() public {
         vm.selectFork(lineaForkId);
 
         receiver = new Receiver();
@@ -888,7 +888,7 @@ contract ReceiverTest is Test {
 
         ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
-        bytes32 bhpPointerId = receiver.updateBlockHashProverCopy(remoteReadArgs, arbParentToChildProverCopy);
+        bytes32 bhpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
         assertEq(
             bhpPointerId,
@@ -967,7 +967,7 @@ contract ReceiverTest is Test {
             IReceiver.RemoteReadArgs memory remoteReadArgs =
                 IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
 
-            bytes32 bhpPointerId = receiver.updateBlockHashProverCopy(remoteReadArgs, arbParentToChildProverCopy);
+            bytes32 bhpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
             assertEq(
                 bhpPointerId,
@@ -1063,7 +1063,7 @@ contract ReceiverTest is Test {
         assertEq(timestamp, uint256(valueArbitrum), "wrong timestamp");
     }
 
-    function test_updateBlockHashProverCopy_from_Arbitrum_into_Scroll() public {
+    function test_updateStateProverCopy_from_Arbitrum_into_Scroll() public {
         vm.selectFork(scrollForkId);
 
         receiver = new Receiver();
@@ -1116,7 +1116,7 @@ contract ReceiverTest is Test {
 
         ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
-        bytes32 bhpPointerId = receiver.updateBlockHashProverCopy(remoteReadArgs, arbParentToChildProverCopy);
+        bytes32 bhpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
         assertEq(
             bhpPointerId,
@@ -1195,7 +1195,7 @@ contract ReceiverTest is Test {
             IReceiver.RemoteReadArgs memory remoteReadArgs =
                 IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
 
-            bytes32 bhpPointerId = receiver.updateBlockHashProverCopy(remoteReadArgs, arbParentToChildProverCopy);
+            bytes32 bhpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
             assertEq(
                 bhpPointerId,

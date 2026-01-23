@@ -39,7 +39,7 @@ Ethereum reference implementation for [ERC-7888: Crosschain Broadcaster](https:/
    - `bhpInputs`: prover-specific inputs for each hop (built off-chain with the TS helpers).
    - `storageProof`: a storage proof for the `Broadcaster` slot on the source chain at the proven block hash.
 3) `Receiver` accumulates the route to derive unique IDs, ensures the proven slot matches `keccak(message, publisher)`, and returns `(broadcasterId, timestamp)`.
-4) Before verifying, callers can seed `Receiver.updateBlockHashProverCopy` with a local prover copy whose code hash matches the pointer slot and whose `version()` increases.
+4) Before verifying, callers can seed `Receiver.updateStateProverCopy` with a local prover copy whose code hash matches the pointer slot and whose `version()` increases.
 
 ## Repository layout
 - `src/contracts/` – Solidity contracts and interfaces.
@@ -57,7 +57,7 @@ Ethereum reference implementation for [ERC-7888: Crosschain Broadcaster](https:/
 ## Using the contracts (high level)
 - Deploy a `Broadcaster` on each chain where messages originate.
 - Deploy a `BlockHashProverPointer` per chain pair direction; point it to the canonical `BlockHashProver` implementation (must expose `version()` and stable code hash).
-- On destination chains, deploy `Receiver` and register local prover copies via `updateBlockHashProverCopy` once the pointer’s code hash is provably available.
+- On destination chains, deploy `Receiver` and register local prover copies via `updateStateProverCopy` once the pointer’s code hash is provably available.
 - Off-chain, use the TS helpers (or your own tooling) to:
   1) Find a route (e.g., L2→L1→L2),
   2) Build `bhpInputs` per hop plus the final `storageProof`,

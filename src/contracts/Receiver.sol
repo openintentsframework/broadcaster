@@ -77,7 +77,7 @@ contract Receiver is IReceiver {
     /// @custom:throws WrongBlockHashProverPointerSlot if the proof doesn't read from the expected slot
     /// @custom:throws DifferentCodeHash if the local copy's code hash doesn't match the remote pointer's stored hash
     /// @custom:throws NewerProverVersion if an existing local copy has a version >= the new copy's version
-    function updateBlockHashProverCopy(RemoteReadArgs calldata bhpPointerReadArgs, IStateProver bhpCopy)
+    function updateStateProverCopy(RemoteReadArgs calldata bhpPointerReadArgs, IStateProver bhpCopy)
         external
         returns (bytes32 bhpPointerId)
     {
