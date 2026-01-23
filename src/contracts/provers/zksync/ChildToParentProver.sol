@@ -7,7 +7,7 @@ import {IBuffer} from "block-hash-pusher/contracts/interfaces/IBuffer.sol";
 import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 
 /// @notice implementation of a child to parent IStateProver.
-/// @dev    verifyTargetBlockHash and getTargetStateCommitment get block hashes from the block hash buffer on ZkSync.
+/// @dev    verifyTargetStateCommitment and getTargetStateCommitment get block hashes from the block hash buffer on ZkSync.
 ///         See https://github.com/OffchainLabs/block-hash-pusher/blob/a1e26f2e42e6306d1e7f03c5d20fa6aa64ff7a12 for more details.
 ///         verifyStorageSlot is implemented to work against any parent chain with a standard Ethereum block header and state trie.
 contract ChildToParentProver is IStateProver {
@@ -29,7 +29,7 @@ contract ChildToParentProver is IStateProver {
     /// @notice Get a parent chain block hash from the buffer at `blockHashBuffer` using a storage proof
     /// @param  homeBlockHash The block hash of the home chain.
     /// @param  input ABI encoded (bytes blockHeader, uint256 targetBlockNumber, bytes accountProof, bytes storageProof)
-    function verifyTargetBlockHash(bytes32 homeBlockHash, bytes calldata input)
+    function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
         external
         view
         returns (bytes32 targetBlockHash)

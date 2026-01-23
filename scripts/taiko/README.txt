@@ -360,5 +360,5 @@ IMPORTANT NOTES
 - ParentToChildProver deployed on L1, reads L2
 - ChildToParentProver deployed on L2, reads L1
 - Both use getTargetStateCommitment in tests (direct SignalService read)
-- Production would use verifyTargetBlockHash (with proofs)
+- Production would use verifyTargetStateCommitment (with proofs)
 

@@ -138,7 +138,7 @@ contract Receiver is IReceiver {
                     revert ProverCopyNotFound();
                 }
 
-                blockHash = prover.verifyTargetBlockHash(blockHash, readArgs.bhpInputs[i]);
+                blockHash = prover.verifyTargetStateCommitment(blockHash, readArgs.bhpInputs[i]);
             }
         }
 

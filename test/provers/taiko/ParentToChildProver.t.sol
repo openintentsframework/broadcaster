@@ -32,7 +32,7 @@ contract MockSignalService {
 /// @notice Tests for the Taiko ParentToChildProver (L1 → L2 verification)
 /// @dev Home chain: L1 (Ethereum). Target chain: L2 (Taiko).
 ///      - getTargetStateCommitment: Called on L1 to read L2 block hash from L1's SignalService
-///      - verifyTargetBlockHash: Called on L2 to verify L2 block hash via storage proof
+///      - verifyTargetStateCommitment: Called on L2 to verify L2 block hash via storage proof
 ///      - verifyStorageSlot: Verifies storage slots against a trusted block hash
 contract TaikoParentToChildProverTest is Test {
     using stdJson for string;
@@ -80,13 +80,13 @@ contract TaikoParentToChildProverTest is Test {
     // Chain ID Validation Tests
     // ═══════════════════════════════════════════════════════════════════════════
 
-    function test_verifyTargetBlockHash_revertsOnHomeChain() public {
+    function test_verifyTargetStateCommitment_revertsOnHomeChain() public {
         vm.chainId(L1_CHAIN_ID);
 
         bytes memory input = abi.encode(bytes(""), uint48(0), bytes(""), bytes(""));
 
         vm.expectRevert(ParentToChildProver.CallOnHomeChain.selector);
-        prover.verifyTargetBlockHash(bytes32(0), input);
+        prover.verifyTargetStateCommitment(bytes32(0), input);
     }
 
     function test_getTargetStateCommitment_revertsOffHomeChain() public {
@@ -172,17 +172,17 @@ contract TaikoParentToChildProverTest is Test {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // verifyTargetBlockHash Tests (Called on L2 to verify via storage proof)
+    // verifyTargetStateCommitment Tests (Called on L2 to verify via storage proof)
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /// @notice Test verifyTargetBlockHash with mocked L1 state
+    /// @notice Test verifyTargetStateCommitment with mocked L1 state
     /// @dev This simulates being on L2 and verifying that L1's SignalService
     ///      contains a checkpoint for a specific L2 block
-    function test_verifyTargetBlockHash_withMockedProof() public {
+    function test_verifyTargetStateCommitment_withMockedProof() public {
         // Simulate being on L2 (not home chain)
         vm.chainId(L2_CHAIN_ID);
 
-        // For verifyTargetBlockHash, we need:
+        // For verifyTargetStateCommitment, we need:
         // 1. An L1 block hash (homeBlockHash) - the trusted anchor
         // 2. Proof that L1's SignalService contains the L2 checkpoint
 
@@ -200,7 +200,7 @@ contract TaikoParentToChildProverTest is Test {
 
         // This will revert because the proof is invalid, but it proves we're past chain ID check
         vm.expectRevert(); // Will revert on invalid RLP/proof
-        prover.verifyTargetBlockHash(bytes32(uint256(1)), input);
+        prover.verifyTargetStateCommitment(bytes32(uint256(1)), input);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════

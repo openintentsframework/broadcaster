@@ -17,8 +17,8 @@ export interface IProverHelper {
   }>
 
   /**
-   * Build the bytes input argument for the IStateProver::verifyTargetBlockHash function.
-   * Finds the newest block hash that can be returned by verifyTargetBlockHash on the prover given the home block hash.
+   * Build the bytes input argument for the IStateProver::verifyTargetStateCommitment function.
+   * Finds the newest block hash that can be returned by verifyTargetStateCommitment on the prover given the home block hash.
    * @param homeBlockHash Home chain block hash that will be passed to the prover and proven against
    */
   buildInputForVerifyTargetBlockHash(

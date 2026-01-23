@@ -95,7 +95,7 @@ contract ArbitrumParentToChildProverTest is Test {
         assertEq(result, expectedTargetBlockHash, "getTargetStateCommitment should return correct Arbitrum block hash");
     }
 
-    function test_verifyTargetBlockHash() public {
+    function test_verifyTargetStateCommitment() public {
         vm.selectFork(parentForkId);
         uint256 proverHomeChainId = block.chainid;
         ParentToChildProver prover = new ParentToChildProver(address(outbox), rootSlot, proverHomeChainId);
@@ -116,11 +116,13 @@ contract ArbitrumParentToChildProverTest is Test {
         bytes memory input = abi.encode(rlpBlockHeader, sendRoot, rlpAccountProof, rlpStorageProof);
         bytes32 expectedTargetBlockHash = 0xcb53c786e7e875d7e3b1d3a770adbe02877ee5daab2ebfa55b935798b3ee9d24;
 
-        // verifyTargetBlockHash MUST be called off the prover's home chain.
+        // verifyTargetStateCommitment MUST be called off the prover's home chain.
         vm.chainId(proverHomeChainId + 1);
 
-        bytes32 result = prover.verifyTargetBlockHash(homeBlockHash, input);
-        assertEq(result, expectedTargetBlockHash, "verifyTargetBlockHash should return correct Arbitrum block hash");
+        bytes32 result = prover.verifyTargetStateCommitment(homeBlockHash, input);
+        assertEq(
+            result, expectedTargetBlockHash, "verifyTargetStateCommitment should return correct Arbitrum block hash"
+        );
     }
 
     function test_verifyStorageSlot() public {

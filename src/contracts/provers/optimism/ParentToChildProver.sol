@@ -16,7 +16,7 @@ interface IFaultDisputeGame {
 }
 
 /// @notice OP-stack implementation of a parent to child IStateProver.
-/// @dev    verifyTargetBlockHash and getTargetStateCommitment get block hashes from a valid fault dispute game proxy contract.
+/// @dev    verifyTargetStateCommitment and getTargetStateCommitment get block hashes from a valid fault dispute game proxy contract.
 ///         verifyStorageSlot is implemented to work against any OP-stack child chain with a standard Ethereum block header and state trie.
 contract ParentToChildProver is IStateProver {
     using Lib_RLPReader for Lib_RLPReader.RLPItem;
@@ -59,7 +59,7 @@ contract ParentToChildProver is IStateProver {
     ///                            bytes gameProxyAccountProof,
     ///                            bytes gameProxyCode,
     ///                            bytes rootClaimPreimage)
-    function verifyTargetBlockHash(bytes32 homeBlockHash, bytes calldata input)
+    function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
         external
         view
         returns (bytes32 targetBlockHash)

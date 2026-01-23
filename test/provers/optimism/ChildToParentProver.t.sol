@@ -78,12 +78,12 @@ contract OptimismChildToParentProverTest is Test {
         newChildToParentProver.getTargetStateCommitment(abi.encode(input));
     }
 
-    /// @notice Test verifyTargetBlockHash() - uses Merkle proofs
+    /// @notice Test verifyTargetStateCommitment() - uses Merkle proofs
     /// @dev Currently skipped due to memory allocation issues during proof decoding
     ///      The underlying Merkle proof verification logic IS tested in Arbitrum tests.
     ///      Root cause: Likely an ABI decoding issue with the specific proof structure from Optimism.
     ///      The ProverUtils.getSlotFromBlockHeader() function is identical for both chains.
-    function skip_test_verifyTargetBlockHash() public {
+    function skip_test_verifyTargetStateCommitment() public {
         vm.selectFork(parentForkId); // Run verification on Ethereum
 
         bytes memory payload = _loadPayload("test/payloads/optimism/calldata_verify_target.hex");
@@ -101,13 +101,13 @@ contract OptimismChildToParentProverTest is Test {
             targetBlockHash := mload(add(payload, 0x40))
         }
 
-        bytes32 result = childToParentProverCopy.verifyTargetBlockHash(homeBlockHash, input);
+        bytes32 result = childToParentProverCopy.verifyTargetStateCommitment(homeBlockHash, input);
 
         assertEq(result, targetBlockHash, "Target block hash should match");
     }
 
-    /// @notice Test verifyTargetBlockHash() reverts when called on home chain (Optimism)
-    function test_verifyTargetBlockHash_reverts_on_home_chain() public {
+    /// @notice Test verifyTargetStateCommitment() reverts when called on home chain (Optimism)
+    function test_verifyTargetStateCommitment_reverts_on_home_chain() public {
         vm.selectFork(childForkId); // On Optimism (home chain)
 
         bytes memory payload = _loadPayload("test/payloads/optimism/calldata_verify_target.hex");
@@ -125,13 +125,13 @@ contract OptimismChildToParentProverTest is Test {
 
         // Should revert because we're on Optimism (home chain)
         vm.expectRevert(ChildToParentProver.CallOnHomeChain.selector);
-        childToParentProverCopy.verifyTargetBlockHash(homeBlockHash, input);
+        childToParentProverCopy.verifyTargetStateCommitment(homeBlockHash, input);
     }
 
     /// @notice Test verifyStorageSlot() - verifies Ethereum storage from Optimism
     /// @dev Currently skipped due to memory allocation issues during proof decoding
     ///      The underlying storage proof verification logic IS tested in Arbitrum tests.
-    ///      Root cause: Same ABI decoding issue as skip_test_verifyTargetBlockHash.
+    ///      Root cause: Same ABI decoding issue as skip_test_verifyTargetStateCommitment.
     ///      The ProverUtils.getSlotFromBlockHeader() function is identical for both chains.
     function skip_test_verifyStorageSlot() public {
         vm.selectFork(parentForkId); // Run on Ethereum

@@ -4,7 +4,7 @@ pragma solidity 0.8.30;
 import {IStateProver} from "src/contracts/interfaces/IStateProver.sol";
 
 contract MockProver is IStateProver {
-    function verifyTargetBlockHash(
+    function verifyTargetStateCommitment(
         bytes32 homeBlockHash,
         bytes calldata /*input*/
     )

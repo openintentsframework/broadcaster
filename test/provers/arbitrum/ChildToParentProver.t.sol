@@ -159,7 +159,7 @@ contract BroadcasterTest is Test {
         childToParentProver.getTargetStateCommitment(abi.encode(input));
     }
 
-    function test_verifyTargetBlockHash() public {
+    function test_verifyTargetStateCommitment() public {
         vm.selectFork(parentForkId);
 
         bytes memory payload = _loadPayload("test/payloads/arbitrum/calldata_verify_target.hex");
@@ -178,12 +178,12 @@ contract BroadcasterTest is Test {
             targetBlockHash := mload(add(payload, 0x40))
         }
 
-        bytes32 result = childToParentProverCopy.verifyTargetBlockHash(homeBlockHash, input);
+        bytes32 result = childToParentProverCopy.verifyTargetStateCommitment(homeBlockHash, input);
 
         assertEq(result, targetBlockHash);
     }
 
-    function test_verifyTargetBlockHash_reverts_on_home_chain() public {
+    function test_verifyTargetStateCommitment_reverts_on_home_chain() public {
         vm.selectFork(childForkId);
 
         bytes memory payload = _loadPayload("test/payloads/arbitrum/calldata_verify_target.hex");
@@ -203,7 +203,7 @@ contract BroadcasterTest is Test {
         }
 
         vm.expectRevert(ChildToParentProver.CallOnHomeChain.selector);
-        childToParentProverCopy.verifyTargetBlockHash(homeBlockHash, input);
+        childToParentProverCopy.verifyTargetStateCommitment(homeBlockHash, input);
     }
 
     function test_verifyStorageSlot() public {

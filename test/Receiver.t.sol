@@ -531,9 +531,9 @@ contract ReceiverTest is Test {
 
         // Construct the route to verify a message broadcasted on Arbitrum chain in OP
         // We need to construct three inputs: one for OPChildToParentProver getTargetStateCommitment,
-        // one for ArbParentToChildProver verifyTargetBlockHash, and one for ArbParentToChildProver verifyStorageSlot
+        // one for ArbParentToChildProver verifyTargetStateCommitment, and one for ArbParentToChildProver verifyStorageSlot
         // the input to verifyStorageSlot is the proof of the broadcasted message itself.
-        // the input for verifyTargetBlockHash is the storage proof of the slot on the outbox contract.
+        // the input for verifyTargetStateCommitment is the storage proof of the slot on the outbox contract.
 
         string memory pathEthereum = "test/payloads/ethereum/output_storage_proof_block_9567705.json";
 
@@ -761,9 +761,9 @@ contract ReceiverTest is Test {
 
         // Construct the route to verify a message broadcasted on Arbitrum chain in ZkSync
         // We need to construct three inputs: one for ZksyncChildToParentProver getTargetStateCommitment,
-        // one for ArbParentToChildProver verifyTargetBlockHash, and one for ArbParentToChildProver verifyStorageSlot
+        // one for ArbParentToChildProver verifyTargetStateCommitment, and one for ArbParentToChildProver verifyStorageSlot
         // the input to verifyStorageSlot is the proof of the broadcasted message itself.
-        // the input for verifyTargetBlockHash is the storage proof of the slot on the outbox contract.
+        // the input for verifyTargetStateCommitment is the storage proof of the slot on the outbox contract.
 
         string memory pathEthereum = "test/payloads/ethereum/output_storage_proof_block_9567705.json";
 
@@ -989,9 +989,9 @@ contract ReceiverTest is Test {
 
         // Construct the route to verify a message broadcasted on Arbitrum chain in Linea
         // We need to construct three inputs: one for LineaChildToParentProver getTargetStateCommitment,
-        // one for ArbParentToChildProver verifyTargetBlockHash, and one for ArbParentToChildProver verifyStorageSlot
+        // one for ArbParentToChildProver verifyTargetStateCommitment, and one for ArbParentToChildProver verifyStorageSlot
         // the input to verifyStorageSlot is the proof of the broadcasted message itself.
-        // the input for verifyTargetBlockHash is the storage proof of the slot on the outbox contract.
+        // the input for verifyTargetStateCommitment is the storage proof of the slot on the outbox contract.
 
         string memory pathEthereum = "test/payloads/ethereum/output_storage_proof_block_9567705.json";
 
@@ -1217,9 +1217,9 @@ contract ReceiverTest is Test {
 
         // Construct the route to verify a message broadcasted on Arbitrum chain in Scroll
         // We need to construct three inputs: one for ScrollChildToParentProver getTargetStateCommitment,
-        // one for ArbParentToChildProver verifyTargetBlockHash, and one for ArbParentToChildProver verifyStorageSlot
+        // one for ArbParentToChildProver verifyTargetStateCommitment, and one for ArbParentToChildProver verifyStorageSlot
         // the input to verifyStorageSlot is the proof of the broadcasted message itself.
-        // the input for verifyTargetBlockHash is the storage proof of the slot on the outbox contract.
+        // the input for verifyTargetStateCommitment is the storage proof of the slot on the outbox contract.
 
         string memory pathEthereum = "test/payloads/ethereum/output_storage_proof_block_9567705.json";
 

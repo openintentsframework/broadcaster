@@ -7,7 +7,7 @@ import {IOutbox} from "@arbitrum/nitro-contracts/src/bridge/IOutbox.sol";
 import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 
 /// @notice Arbitrum implementation of a parent to child IStateProver.
-/// @dev    verifyTargetBlockHash and getTargetStateCommitment get block hashes from the child chain's Outbox contract.
+/// @dev    verifyTargetStateCommitment and getTargetStateCommitment get block hashes from the child chain's Outbox contract.
 ///         verifyStorageSlot is implemented to work against any Arbitrum child chain with a standard Ethereum block header and state trie.
 contract ParentToChildProver is IStateProver {
     /// @dev Address of the child chain's Outbox contract
@@ -33,7 +33,7 @@ contract ParentToChildProver is IStateProver {
     /// @notice Verify a target chain block hash given a home chain block hash and a proof.
     /// @param  homeBlockHash The block hash of the home chain.
     /// @param  input ABI encoded (bytes blockHeader, bytes32 sendRoot, bytes accountProof, bytes storageProof)
-    function verifyTargetBlockHash(bytes32 homeBlockHash, bytes calldata input)
+    function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
         external
         view
         returns (bytes32 targetBlockHash)

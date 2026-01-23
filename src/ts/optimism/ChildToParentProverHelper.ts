@@ -46,7 +46,7 @@ export class OptimismChildToParentProverHelper
   }
 
   /**
-   * Build input for verifyTargetBlockHash()
+   * Build input for verifyTargetStateCommitment()
    * This requires Merkle proofs of the L1Block predeploy's storage
    */
   async buildInputForVerifyTargetBlockHash(

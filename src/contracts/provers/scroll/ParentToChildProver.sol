@@ -21,7 +21,7 @@ interface IScrollChain {
 /// @notice Scroll implementation of a parent to child IStateProver.
 /// @dev    Home chain: L1 (Ethereum). Target chain: L2 (Scroll).
 ///         getTargetStateCommitment reads finalized L2 state roots directly from L1's ScrollChain.
-///         verifyTargetBlockHash verifies L2 state roots via storage proof against L1's ScrollChain.
+///         verifyTargetStateCommitment verifies L2 state roots via storage proof against L1's ScrollChain.
 ///         verifyStorageSlot verifies storage against the L2 state root using standard MPT proofs.
 ///
 ///         NOTE: Unlike other provers that return block hashes, Scroll stores STATE ROOTS directly
@@ -59,7 +59,7 @@ contract ParentToChildProver is IStateProver {
     /// @param  homeBlockHash The L1 block hash
     /// @param  input ABI encoded (bytes rlpBlockHeader, uint256 batchIndex, bytes accountProof, bytes storageProof)
     /// @return targetBlockHash The L2 state root stored in L1's ScrollChain (NOTE: this is a state root, not a block hash)
-    function verifyTargetBlockHash(bytes32 homeBlockHash, bytes calldata input)
+    function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
         external
         view
         returns (bytes32 targetBlockHash)

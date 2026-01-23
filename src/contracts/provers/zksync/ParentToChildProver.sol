@@ -56,7 +56,7 @@ struct ZkSyncProof {
 
 /// @notice ZkSync implementation of a parent to child IStateProver.
 /// @dev This contract verifies L2 logs root hashes from ZkSync child chains on the parent chain (L1).
-///      The `verifyTargetBlockHash` and `getTargetStateCommitment` functions retrieve L2 logs root hashes
+///      The `verifyTargetStateCommitment` and `getTargetStateCommitment` functions retrieve L2 logs root hashes
 ///      from the child chain's ZkChain contract. The `verifyStorageSlot` function is implemented
 ///      to work against any ZkSync child chain with a standard Ethereum block header and state trie.
 ///      This implementation is used to verify zkChain L2 log hash inclusion on L1 for messages that
@@ -118,7 +118,7 @@ contract ParentToChildProver is IStateProver {
     ///              - batchNumber: The batch number for which to retrieve the L2 logs root hash.
     ///              - storageProof: Storage proof for the storage slot containing the L2 logs root hash.
     /// @return targetL2LogsRootHash The L2 logs root hash for the specified batch number.
-    function verifyTargetBlockHash(bytes32 homeBlockHash, bytes calldata input)
+    function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
         external
         view
         returns (bytes32 targetL2LogsRootHash)

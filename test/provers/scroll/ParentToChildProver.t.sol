@@ -194,8 +194,8 @@ contract ScrollChainMock is IScrollChain {
             assertEq(actualValue, expectedValue, "value mismatch");
         }
 
-        /// @notice Test verifyTargetBlockHash reverts when called on home chain
-        function test_verifyTargetBlockHash_onHomeChain() public {
+        /// @notice Test verifyTargetStateCommitment reverts when called on home chain
+        function test_verifyTargetStateCommitment_onHomeChain() public {
             vm.selectFork(l1ForkId);
 
             bytes32 homeBlockHash = bytes32(uint256(1));
@@ -207,7 +207,7 @@ contract ScrollChainMock is IScrollChain {
             );
 
             vm.expectRevert(ParentToChildProver.CallOnHomeChain.selector);
-            parentToChildProver.verifyTargetBlockHash(homeBlockHash, input);
+            parentToChildProver.verifyTargetStateCommitment(homeBlockHash, input);
         }
 
         /// @notice Test version returns 1

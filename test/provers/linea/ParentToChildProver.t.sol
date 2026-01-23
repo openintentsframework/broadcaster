@@ -121,20 +121,20 @@ contract LineaParentToChildProverTest is Test {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // verifyTargetBlockHash Tests (Non-Home Chain)
+    // verifyTargetStateCommitment Tests (Non-Home Chain)
     // ═══════════════════════════════════════════════════════════════════════════
 
-    function test_verifyTargetBlockHash_revertsOnHomeChain() public {
-        // On L1 (home chain), verifyTargetBlockHash should revert
+    function test_verifyTargetStateCommitment_revertsOnHomeChain() public {
+        // On L1 (home chain), verifyTargetStateCommitment should revert
         vm.chainId(ETH_MAINNET_CHAIN_ID);
 
         vm.expectRevert(ParentToChildProver.CallOnHomeChain.selector);
-        prover.verifyTargetBlockHash(bytes32(0), bytes(""));
+        prover.verifyTargetStateCommitment(bytes32(0), bytes(""));
     }
 
     /// @dev This test requires a real storage proof from L1 LineaRollup
     ///      For now, we test that the function reverts with invalid proofs
-    function test_verifyTargetBlockHash_revertsWithInvalidProof() public {
+    function test_verifyTargetStateCommitment_revertsWithInvalidProof() public {
         vm.chainId(LINEA_MAINNET_CHAIN_ID);
 
         bytes memory input = abi.encode(
@@ -146,7 +146,7 @@ contract LineaParentToChildProverTest is Test {
 
         // Should revert due to invalid proof
         vm.expectRevert();
-        prover.verifyTargetBlockHash(bytes32(uint256(1)), input);
+        prover.verifyTargetStateCommitment(bytes32(uint256(1)), input);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════

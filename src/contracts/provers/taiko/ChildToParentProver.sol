@@ -17,7 +17,7 @@ interface ICheckpointStore {
 
 /// @notice Taiko implementation of a child to parent IStateProver.
 /// @dev    Home chain: L2 (Taiko). Target chain: L1 (Ethereum).
-///         verifyTargetBlockHash gets L1 block hashes from L2's SignalService checkpoint storage.
+///         verifyTargetStateCommitment gets L1 block hashes from L2's SignalService checkpoint storage.
 ///         getTargetStateCommitment reads L1 block hashes directly from L2's SignalService.
 ///         verifyStorageSlot works against any Ethereum-compatible chain with standard block headers.
 contract ChildToParentProver is IStateProver {
@@ -47,7 +47,7 @@ contract ChildToParentProver is IStateProver {
     /// @param  homeBlockHash The L2 block hash
     /// @param  input ABI encoded (bytes rlpBlockHeader, uint48 l1BlockNumber, bytes accountProof, bytes storageProof)
     /// @return targetBlockHash The L1 block hash stored in L2's SignalService
-    function verifyTargetBlockHash(bytes32 homeBlockHash, bytes calldata input)
+    function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
         external
         view
         returns (bytes32 targetBlockHash)

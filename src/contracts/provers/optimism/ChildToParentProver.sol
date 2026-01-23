@@ -9,7 +9,7 @@ interface IL1Block {
 }
 
 /// @notice OP-stack implementation of a child to parent IStateProver.
-/// @dev    verifyTargetBlockHash and getTargetStateCommitment get block hashes from the L1Block predeploy.
+/// @dev    verifyTargetStateCommitment and getTargetStateCommitment get block hashes from the L1Block predeploy.
 ///         verifyStorageSlot is implemented to work against any target chain with a standard Ethereum block header and state trie.
 ///
 /// @dev    Note: L1Block only stores the LATEST L1 block hash.
@@ -33,7 +33,7 @@ contract ChildToParentProver is IStateProver {
     /// @notice Verify the latest available target block hash given a home chain block hash and a storage proof of the L1Block predeploy.
     /// @param  homeBlockHash The block hash of the home chain.
     /// @param  input ABI encoded (bytes blockHeader, bytes accountProof, bytes storageProof)
-    function verifyTargetBlockHash(bytes32 homeBlockHash, bytes calldata input)
+    function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
         external
         view
         returns (bytes32 targetBlockHash)
