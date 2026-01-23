@@ -2,7 +2,6 @@
 pragma solidity 0.8.30;
 
 import {BaseBuffer} from "../BaseBuffer.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IBuffer} from "../interfaces/IBuffer.sol";
 import {IMessageService} from "@linea-contracts/messaging/interfaces/IMessageService.sol";
 
@@ -14,9 +13,7 @@ import {IMessageService} from "@linea-contracts/messaging/interfaces/IMessageSer
 ///      In order to do this, anyone is able to claim the message on the message service contract on L2.
 ///      Currently Linea runs a postman service that claims messages on L2, but this might not happen for more expensive messages and
 ///      users might need to claim the messages themselves in those cases.
-/// @notice The contract is `Ownable` but the ownership is renounced after the pusher address is set.
-///         This ensures that the pusher address is set only once and cannot be changed.
-contract LineaBuffer is BaseBuffer, Ownable {
+contract LineaBuffer is BaseBuffer {
     /// @dev The address of the L2MessageService contract on L2.
     address private _l2MessageService;
 
@@ -42,27 +39,13 @@ contract LineaBuffer is BaseBuffer, Ownable {
     /// @param pusherAddress The address of the pusher contract on L1.
     event PusherAddressSet(address pusherAddress);
 
-    constructor(address l2MessageService_, address initialOwner_) Ownable(initialOwner_) {
+    constructor(address l2MessageService_, address pusherAddress_) {
         _l2MessageService = l2MessageService_;
+        _pusherAddress = pusherAddress_;
 
         if (l2MessageService_ == address(0)) {
             revert InvalidL2MessageServiceAddress();
         }
-    }
-
-    /// @notice Sets the pusher address and renounces ownership.
-    /// @dev This function can only be called once by the owner. After setting the pusher address,
-    ///      ownership is renounced to prevent further modifications.
-    /// @param newPusherAddress The address of the LineaPusher contract on L1.
-    function setPusherAddress(address newPusherAddress) external onlyOwner {
-        if (newPusherAddress == address(0)) {
-            revert InvalidPusherAddress();
-        }
-
-        _pusherAddress = newPusherAddress;
-
-        emit PusherAddressSet(newPusherAddress);
-        renounceOwnership();
     }
 
     /// @inheritdoc IBuffer

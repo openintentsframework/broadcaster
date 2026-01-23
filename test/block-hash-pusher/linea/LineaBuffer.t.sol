@@ -10,8 +10,6 @@ import {IMessageService} from "@linea-contracts/messaging/interfaces/IMessageSer
 
 contract LineaBufferTest is Test {
     address public pusher = makeAddr("pusher");
-    address public owner = makeAddr("owner");
-
     address public claimer = makeAddr("claimer");
 
     MockLineaMessageService public mockLineaMessageService;
@@ -23,15 +21,12 @@ contract LineaBufferTest is Test {
     function testFuzz_receiveHashes(uint16 batchSize, uint8 firstBlockNumber) public {
         vm.assume(batchSize > 0 && batchSize <= 8191);
 
-        LineaBuffer buffer = new LineaBuffer(address(mockLineaMessageService), owner);
+        LineaBuffer buffer = new LineaBuffer(address(mockLineaMessageService), pusher);
 
         bytes32[] memory blockHashes = new bytes32[](batchSize);
         for (uint256 i = 0; i < batchSize; i++) {
             blockHashes[i] = keccak256(abi.encode(i + 1));
         }
-
-        vm.prank(owner);
-        buffer.setPusherAddress(pusher);
 
         bytes memory l2Calldata = abi.encodeCall(buffer.receiveHashes, (firstBlockNumber, blockHashes));
 
@@ -46,7 +41,7 @@ contract LineaBufferTest is Test {
         public
     {
         vm.assume(notLineaMessageService != address(mockLineaMessageService));
-        LineaBuffer buffer = new LineaBuffer(address(mockLineaMessageService), owner);
+        LineaBuffer buffer = new LineaBuffer(address(mockLineaMessageService), pusher);
 
         bytes memory l2Calldata = abi.encodeCall(buffer.receiveHashes, (1, new bytes32[](1)));
 
@@ -57,10 +52,7 @@ contract LineaBufferTest is Test {
 
     function testFuzz_receiveHashes_reverts_if_sender_does_not_match_pusher(address notPusher) public {
         vm.assume(notPusher != pusher);
-        LineaBuffer buffer = new LineaBuffer(address(mockLineaMessageService), owner);
-
-        vm.prank(owner);
-        buffer.setPusherAddress(pusher);
+        LineaBuffer buffer = new LineaBuffer(address(mockLineaMessageService), pusher);
 
         bytes memory l2Calldata = abi.encodeCall(buffer.receiveHashes, (1, new bytes32[](1)));
 
@@ -69,39 +61,5 @@ contract LineaBufferTest is Test {
         mockLineaMessageService.claimMessage(
             notPusher, address(buffer), 0.005 ether, 0, payable(claimer), l2Calldata, 0
         );
-    }
-
-    function test_setPusherAddress() public {
-        LineaBuffer buffer = new LineaBuffer(address(mockLineaMessageService), owner);
-
-        assertEq(buffer.pusher(), address(0));
-        assertEq(buffer.owner(), owner);
-
-        vm.prank(owner);
-        buffer.setPusherAddress(pusher);
-        assertEq(buffer.pusher(), pusher);
-        assertEq(buffer.owner(), address(0));
-
-        vm.prank(owner);
-        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, owner));
-        buffer.setPusherAddress(pusher);
-    }
-
-    function test_setPusherAddress_reverts_if_not_owner() public {
-        LineaBuffer buffer = new LineaBuffer(address(mockLineaMessageService), owner);
-
-        address notOwner = makeAddr("notOwner");
-
-        vm.prank(notOwner);
-        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, notOwner));
-        buffer.setPusherAddress(pusher);
-    }
-
-    function test_setPusherAddress_reverts_if_pusher_address_is_invalid() public {
-        LineaBuffer buffer = new LineaBuffer(address(mockLineaMessageService), owner);
-
-        vm.prank(owner);
-        vm.expectRevert(abi.encodeWithSelector(LineaBuffer.InvalidPusherAddress.selector));
-        buffer.setPusherAddress(address(0));
     }
 }

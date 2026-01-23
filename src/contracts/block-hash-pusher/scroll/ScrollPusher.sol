@@ -10,13 +10,10 @@ import {IL1ScrollMessenger} from "@scroll-tech/scroll-contracts/L1/IL1ScrollMess
 /// @notice Implementation of IPusher for pushing block hashes to Scroll L2.
 /// @dev This contract sends block hashes from Ethereum L1 to a ScrollBuffer contract on Scroll L2
 ///      via the Scroll L1ScrollMessenger's `sendMessage` function. The pusher must be configured
-///      with the correct L1ScrollMessenger address and buffer contract address.
+///      with the correct L1ScrollMessenger address.
 contract ScrollPusher is BlockHashArrayBuilder, IPusher {
     /// @dev The address of the Scroll L1ScrollMessenger contract on L1.
     address private immutable _l1ScrollMessenger;
-
-    /// @dev The address of the ScrollBuffer contract on L2.
-    address private immutable _bufferAddress;
 
     /// @notice Parameters for the L2 transaction that will be executed on Scroll.
     /// @param gasLimit The gas limit for the L2 transaction.
@@ -26,23 +23,26 @@ contract ScrollPusher is BlockHashArrayBuilder, IPusher {
         address refundAddress;
     }
 
-    constructor(address l1ScrollMessenger_, address bufferAddress_) {
+    constructor(address l1ScrollMessenger_) {
         _l1ScrollMessenger = l1ScrollMessenger_;
-        _bufferAddress = bufferAddress_;
     }
 
     /// @inheritdoc IPusher
-    function pushHashes(uint256 firstBlockNumber, uint256 batchSize, bytes calldata l2TransactionData)
+    function pushHashes(address buffer, uint256 firstBlockNumber, uint256 batchSize, bytes calldata l2TransactionData)
         external
         payable
     {
+        if (buffer == address(0)) {
+            revert InvalidBuffer(buffer);
+        }
+
         bytes32[] memory blockHashes = _buildBlockHashArray(firstBlockNumber, batchSize);
         bytes memory l2Calldata = abi.encodeCall(IBuffer.receiveHashes, (firstBlockNumber, blockHashes));
 
         ScrollL2Transaction memory l2Transaction = abi.decode(l2TransactionData, (ScrollL2Transaction));
 
         IL1ScrollMessenger(l1ScrollMessenger()).sendMessage{value: msg.value}(
-            bufferAddress(),
+            buffer,
             0,
             l2Calldata,
             l2Transaction.gasLimit,
@@ -50,11 +50,6 @@ contract ScrollPusher is BlockHashArrayBuilder, IPusher {
         );
 
         emit BlockHashesPushed(firstBlockNumber, firstBlockNumber + batchSize - 1);
-    }
-
-    /// @inheritdoc IPusher
-    function bufferAddress() public view returns (address) {
-        return _bufferAddress;
     }
 
     /// @notice The address of the Scroll L1ScrollMessenger contract on L1.
