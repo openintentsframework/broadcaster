@@ -18,10 +18,7 @@ contract LineaBuffer is BaseBuffer {
     address private _l2MessageService;
 
     /// @dev The address of the pusher contract on L1.
-    address private _pusherAddress;
-
-    /// @notice Thrown when attempting to receive hashes before the pusher address has been set.
-    error PusherAddressNotSet();
+    address private _pusher;
 
     /// @notice Thrown when attempting to set an invalid L2MessageService address.
     error InvalidL2MessageServiceAddress();
@@ -35,13 +32,9 @@ contract LineaBuffer is BaseBuffer {
     /// @notice Thrown when the sender does not match the pusher address.
     error SenderMismatch();
 
-    /// @notice Emitted when the pusher address is set and ownership is renounced.
-    /// @param pusherAddress The address of the pusher contract on L1.
-    event PusherAddressSet(address pusherAddress);
-
-    constructor(address l2MessageService_, address pusherAddress_) {
+    constructor(address l2MessageService_, address pusher_) {
         _l2MessageService = l2MessageService_;
-        _pusherAddress = pusherAddress_;
+        _pusher = pusher_;
 
         if (l2MessageService_ == address(0)) {
             revert InvalidL2MessageServiceAddress();
@@ -55,10 +48,10 @@ contract LineaBuffer is BaseBuffer {
         if (msg.sender != address(l2MessageServiceCached)) {
             revert InvalidSender();
         }
-        if (_pusherAddress == address(0)) {
-            revert PusherAddressNotSet();
+        if (_pusher == address(0)) {
+            revert InvalidPusherAddress();
         }
-        if (l2MessageServiceCached.sender() != _pusherAddress) {
+        if (l2MessageServiceCached.sender() != _pusher) {
             revert SenderMismatch();
         }
 
@@ -67,7 +60,7 @@ contract LineaBuffer is BaseBuffer {
 
     /// @inheritdoc IBuffer
     function pusher() public view returns (address) {
-        return _pusherAddress;
+        return _pusher;
     }
 
     /// @notice The address of the Linea L2MessageService contract on L2.

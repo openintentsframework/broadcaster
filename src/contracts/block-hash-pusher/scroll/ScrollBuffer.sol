@@ -15,10 +15,7 @@ contract ScrollBuffer is BaseBuffer {
     address private _l2ScrollMessenger;
 
     /// @dev The address of the pusher contract on L1.
-    address private _pusherAddress;
-
-    /// @notice Thrown when attempting to receive hashes before the pusher address has been set.
-    error PusherAddressNotSet();
+    address private _pusher;
 
     /// @notice Thrown when attempting to set an invalid L2ScrollMessenger address.
     error InvalidL2ScrollMessengerAddress();
@@ -32,13 +29,9 @@ contract ScrollBuffer is BaseBuffer {
     /// @notice Thrown when the sender is not the L2ScrollMessenger contract.
     error InvalidSender();
 
-    /// @notice Emitted when the pusher address is set and ownership is renounced.
-    /// @param pusherAddress The address of the pusher contract on L1.
-    event PusherAddressSet(address pusherAddress);
-
-    constructor(address l2ScrollMessenger_, address pusherAddress_) {
+    constructor(address l2ScrollMessenger_, address pusher_) {
         _l2ScrollMessenger = l2ScrollMessenger_;
-        _pusherAddress = pusherAddress_;
+        _pusher = pusher_;
 
         if (l2ScrollMessenger_ == address(0)) {
             revert InvalidL2ScrollMessengerAddress();
@@ -52,10 +45,10 @@ contract ScrollBuffer is BaseBuffer {
         if (msg.sender != address(l2ScrollMessengerCached)) {
             revert InvalidSender();
         }
-        if (_pusherAddress == address(0)) {
-            revert PusherAddressNotSet();
+        if (_pusher == address(0)) {
+            revert InvalidPusherAddress();
         }
-        if (l2ScrollMessengerCached.xDomainMessageSender() != _pusherAddress) {
+        if (l2ScrollMessengerCached.xDomainMessageSender() != _pusher) {
             revert DomainMessageSenderMismatch();
         }
 
@@ -64,7 +57,7 @@ contract ScrollBuffer is BaseBuffer {
 
     /// @inheritdoc IBuffer
     function pusher() public view returns (address) {
-        return _pusherAddress;
+        return _pusher;
     }
 
     /// @notice The address of the L2ScrollMessenger contract on L2.

@@ -12,20 +12,17 @@ import {IBuffer} from "../interfaces/IBuffer.sol";
 ///      The buffer only accepts hash pushes from the aliased pusher address.
 contract ZkSyncBuffer is BaseBuffer {
     /// @dev The address of the pusher contract on L1.
-    address private _pusherAddress;
-
-    /// @notice Thrown when attempting to receive hashes before the pusher address has been set.
-    error PusherAddressNotSet();
+    address private _pusher;
 
     /// @notice Thrown when attempting to set an invalid pusher address.
     error InvalidPusherAddress();
 
-    /// @notice Emitted when the pusher address is set and ownership is renounced.
-    /// @param pusherAddress The address of the pusher contract on L1.
-    event PusherAddressSet(address pusherAddress);
+    constructor(address pusher_) {
+        _pusher = pusher_;
 
-    constructor(address pusherAddress_) {
-        _pusherAddress = pusherAddress_;
+        if (pusher_ == address(0)) {
+            revert InvalidPusherAddress();
+        }
     }
 
     /// @inheritdoc IBuffer
@@ -39,14 +36,14 @@ contract ZkSyncBuffer is BaseBuffer {
 
     /// @inheritdoc IBuffer
     function pusher() public view returns (address) {
-        return _pusherAddress;
+        return _pusher;
     }
 
     /// @notice The aliased address of the pusher contract on L2.
     function aliasedPusher() public view returns (address) {
-        if (_pusherAddress == address(0)) {
-            revert PusherAddressNotSet();
+        if (_pusher == address(0)) {
+            revert InvalidPusherAddress();
         }
-        return AddressAliasHelper.applyL1ToL2Alias(_pusherAddress);
+        return AddressAliasHelper.applyL1ToL2Alias(_pusher);
     }
 }

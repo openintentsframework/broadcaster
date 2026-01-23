@@ -60,12 +60,12 @@ Concrete implementations must override `receiveHashes` to add chain-specific acc
 - Uses ZkSync's Mailbox contract (`requestL2Transaction`) to send L1→L2 messages
 - Requires L2 transaction parameters encoded as `L2Transaction` struct: gas limit, gas per pubdata byte limit, and refund recipient
 - The `l2GasPerPubdataByteLimit` must match ZkSync's `REQUIRED_L2_GAS_PRICE_PER_PUBDATA` constant (currently 800)
-- The `pushHashes` function signature is: `pushHashes(uint256 firstBlockNumber, uint256 batchSize, bytes calldata l2TransactionData)`
+- The `pushHashes` function signature is: `pushHashes(address buffer, uint256 firstBlockNumber, uint256 batchSize, bytes calldata l2TransactionData)`
 
 **ZkSyncBuffer** (`zksync/ZkSyncBuffer.sol`):
 - Deployed on ZkSync Era L2
 - Uses address aliasing for access control: only accepts messages from the aliased L1 pusher address
-- The pusher address is set once during initialization via `setPusherAddress`, after which ownership is renounced
+- The pusher address is set in the constructor during deployment
 - Uses `AddressAliasHelper.applyL1ToL2Alias()` from Arbitrum's nitro-contracts to verify the sender matches the expected aliased pusher address (ZkSync uses the same address aliasing mechanism as Arbitrum)
 - Provides `pusher()` to get the L1 pusher address and `aliasedPusher()` to get the aliased L2 address
 
@@ -75,13 +75,14 @@ Concrete implementations must override `receiveHashes` to add chain-specific acc
 - Deployed on Ethereum L1
 - Uses Scroll's L1ScrollMessenger contract (`sendMessage`) to send L1→L2 messages
 - Requires L2 transaction parameters: gas limit and refund address (optional, defaults to `msg.sender` if not provided)
-- The pusher must be configured with the correct L1ScrollMessenger address and buffer contract address
+- The pusher must be configured with the correct L1ScrollMessenger address
+- The `pushHashes` function signature is: `pushHashes(address buffer, uint256 firstBlockNumber, uint256 batchSize, bytes calldata l2TransactionData)`
 
 **ScrollBuffer** (`scroll/ScrollBuffer.sol`):
 - Deployed on Scroll L2
 - Uses Scroll's cross-domain messaging for access control: only accepts messages relayed by the L2ScrollMessenger contract
 - Verifies that `msg.sender` is the L2ScrollMessenger and that `xDomainMessageSender()` matches the pusher address
-- The pusher address is set once during initialization via `setPusherAddress()`, after which ownership is renounced
+- The pusher address is set in the constructor during deployment
 - Requires the L2ScrollMessenger address to be set during construction
 
 ### Linea
@@ -90,21 +91,23 @@ Concrete implementations must override `receiveHashes` to add chain-specific acc
 - Deployed on Ethereum L1
 - Uses Linea's Rollup contract (`sendMessage`) to send L1→L2 messages
 - Requires L2 transaction parameters: fee (paid to the postman for claiming the message on L2)
-- The pusher must be configured with the correct Linea Rollup address and buffer contract address
+- The pusher must be configured with the correct Linea Rollup address
 - The `msg.value` sent must be at least equal to the fee specified in the transaction data
+- The `pushHashes` function signature is: `pushHashes(address buffer, uint256 firstBlockNumber, uint256 batchSize, bytes calldata l2TransactionData)`
 
 **LineaBuffer** (`linea/LineaBuffer.sol`):
 - Deployed on Linea L2
 - Uses Linea's cross-chain messaging for access control: only accepts messages relayed by the L2MessageService contract
 - Verifies that `msg.sender` is the L2MessageService and that `sender()` matches the pusher address
-- The pusher address is set once during initialization via `setPusherAddress()`, after which ownership is renounced
+- The pusher address is set in the constructor during deployment
 - Requires the L2MessageService address to be set during construction
 - Messages must be claimed on L2 by a postman (Linea runs a postman service) or by users for more expensive messages
 
 ## Usage Flow
 
-1. **Initialization**: Deploy the buffer on L2 and set the pusher address via `setPusherAddress` (if required by the implementation)
+1. **Initialization**: Deploy the buffer on L2, passing the pusher address as a constructor parameter
 2. **Pushing Hashes**: Call `pushHashes` on the pusher contract with:
+   - `buffer`: The address of the buffer contract on L2
    - `firstBlockNumber`: The block number of the first block hash to push
    - `batchSize`: Number of consecutive block hashes to push (1 to `MAX_BATCH_SIZE`)
    - `l2TransactionData`: Chain-specific transaction data encoded as bytes (e.g., ABI-encoded `L2Transaction` struct for ZkSync)
