@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.30;
 
-/// @title  IBlockHashProverPointer
-/// @notice Keeps the code hash of the latest version of a block hash prover.
-///         MUST store the code hash in storage slot BLOCK_HASH_PROVER_POINTER_SLOT.
+/// @title  IStateProverPointer
+/// @notice Keeps the code hash of the latest version of a state commitment prover.
+///         MUST store the code hash in storage slot STATE_PROVER_POINTER_SLOT.
 ///         Different versions of the prover MUST have the same home and target chains.
-///         If the pointer's prover is updated, the new prover MUST have a higher IBlockHashProver::version() than the old one.
+///         If the pointer's prover is updated, the new prover MUST have a higher IStateProver::version() than the old one.
 ///         These pointers are always referred to by their address on their home chain.
-interface IBlockHashProverPointer {
+interface IStateProverPointer {
     /// @notice Return the code hash of the latest version of the prover.
     function implementationCodeHash() external view returns (bytes32);
 
