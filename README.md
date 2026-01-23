@@ -12,7 +12,7 @@ Ethereum reference implementation for [ERC-7888: Crosschain Broadcaster](https:/
 - `src/contracts/Receiver.sol`: Verifies broadcast messages from remote chains using a route of block-hash provers and a final storage proof; can cache prover copies.
 - `src/contracts/BlockHashProverPointer.sol`: Ownable pointer storing the current prover implementation address and code hash with version monotonicity checks.
 - `src/contracts/libraries/ProverUtils.sol`: Shared helpers for verifying block headers and MPT proofs (state root, account data, storage slot).
-- Interfaces: `IBroadcaster`, `IReceiver`, `IBlockHashProver`, `IBlockHashProverPointer`.
+- Interfaces: `IBroadcaster`, `IReceiver`, `IStateProver`, `IStateProverPointer`.
 
 ## Key concepts
 - **Broadcaster**: Singleton per chain that timestamps 32-byte messages in deterministic slots and emits `MessageBroadcast`.

@@ -2,15 +2,15 @@
 pragma solidity ^0.8.28;
 
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
-import {IBlockHashProver} from "../../interfaces/IBlockHashProver.sol";
+import {IStateProver} from "../../interfaces/IStateProver.sol";
 import {IBuffer} from "block-hash-pusher/contracts/interfaces/IBuffer.sol";
 import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 
-/// @notice implementation of a child to parent IBlockHashProver.
+/// @notice implementation of a child to parent IStateProver.
 /// @dev    verifyTargetBlockHash and getTargetBlockHash get block hashes from the block hash buffer on ZkSync.
 ///         See https://github.com/OffchainLabs/block-hash-pusher/blob/a1e26f2e42e6306d1e7f03c5d20fa6aa64ff7a12 for more details.
 ///         verifyStorageSlot is implemented to work against any parent chain with a standard Ethereum block header and state trie.
-contract ChildToParentProver is IBlockHashProver {
+contract ChildToParentProver is IStateProver {
     address public immutable blockHashBuffer;
     /// @dev Storage slot the buffer contract uses to store block hashes.
     ///      See https://github.com/OffchainLabs/block-hash-pusher/blob/a1e26f2e42e6306d1e7f03c5d20fa6aa64ff7a12/contracts/Buffer.sol#L32
@@ -85,7 +85,7 @@ contract ChildToParentProver is IBlockHashProver {
         );
     }
 
-    /// @inheritdoc IBlockHashProver
+    /// @inheritdoc IStateProver
     function version() external pure returns (uint256) {
         return 1;
     }

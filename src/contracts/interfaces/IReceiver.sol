@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.30;
 
-import {IBlockHashProver} from "./IBlockHashProver.sol";
+import {IStateProver} from "./IStateProver.sol";
 
 /// @notice Reads messages from a broadcaster.
 interface IReceiver {

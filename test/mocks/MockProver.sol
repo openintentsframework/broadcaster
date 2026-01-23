@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.30;
 
-import {IBlockHashProver} from "src/contracts/interfaces/IBlockHashProver.sol";
+import {IStateProver} from "src/contracts/interfaces/IStateProver.sol";
 
-contract MockProver is IBlockHashProver {
+contract MockProver is IStateProver {
     function verifyTargetBlockHash(
         bytes32 homeBlockHash,
         bytes calldata /*input*/

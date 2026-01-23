@@ -2,8 +2,8 @@
 pragma solidity 0.8.30;
 
 import {IReceiver} from "./interfaces/IReceiver.sol";
-import {IBlockHashProver} from "./interfaces/IBlockHashProver.sol";
-import {IBlockHashProverPointer} from "./interfaces/IBlockHashProverPointer.sol";
+import {IStateProver} from "./interfaces/IStateProver.sol";
+import {IStateProverPointer} from "./interfaces/IStateProverPointer.sol";
 import {BLOCK_HASH_PROVER_POINTER_SLOT} from "./BlockHashProverPointer.sol";
 
 /// @title Receiver
@@ -15,7 +15,7 @@ import {BLOCK_HASH_PROVER_POINTER_SLOT} from "./BlockHashProverPointer.sol";
 ///      The verification process ensures that a message was actually broadcast on a remote chain
 ///      at a specific timestamp without requiring trust in intermediaries.
 contract Receiver is IReceiver {
-    mapping(bytes32 blockHashProverPointerId => IBlockHashProver blockHashProverCopy) private _blockHashProverCopies;
+    mapping(bytes32 blockHashProverPointerId => IStateProver blockHashProverCopy) private _blockHashProverCopies;
 
     error InvalidRouteLength();
     error EmptyRoute();
@@ -77,7 +77,7 @@ contract Receiver is IReceiver {
     /// @custom:throws WrongBlockHashProverPointerSlot if the proof doesn't read from the expected slot
     /// @custom:throws DifferentCodeHash if the local copy's code hash doesn't match the remote pointer's stored hash
     /// @custom:throws NewerProverVersion if an existing local copy has a version >= the new copy's version
-    function updateBlockHashProverCopy(RemoteReadArgs calldata bhpPointerReadArgs, IBlockHashProver bhpCopy)
+    function updateBlockHashProverCopy(RemoteReadArgs calldata bhpPointerReadArgs, IStateProver bhpCopy)
         external
         returns (bytes32 bhpPointerId)
     {
@@ -93,7 +93,7 @@ contract Receiver is IReceiver {
             revert DifferentCodeHash();
         }
 
-        IBlockHashProver oldProverCopy = _blockHashProverCopies[bhpPointerId];
+        IStateProver oldProverCopy = _blockHashProverCopies[bhpPointerId];
 
         if (address(oldProverCopy) != address(0) && oldProverCopy.version() >= bhpCopy.version()) {
             revert NewerProverVersion();
@@ -106,7 +106,7 @@ contract Receiver is IReceiver {
     ///         MUST return 0 if the BlockHashProverPointer does not exist.
     /// @param bhpPointerId The unique identifier of the BlockHashProverPointer.
     /// @return bhpCopy The BlockHashProver copy stored on the local chain, or address(0) if not found.
-    function blockHashProverCopy(bytes32 bhpPointerId) external view returns (IBlockHashProver bhpCopy) {
+    function blockHashProverCopy(bytes32 bhpPointerId) external view returns (IStateProver bhpCopy) {
         bhpCopy = _blockHashProverCopies[bhpPointerId];
     }
 
@@ -123,14 +123,14 @@ contract Receiver is IReceiver {
             revert EmptyRoute();
         }
 
-        IBlockHashProver prover;
+        IStateProver prover;
         bytes32 blockHash;
 
         for (uint256 i = 0; i < readArgs.route.length; i++) {
             remoteAccountId = accumulator(remoteAccountId, readArgs.route[i]);
 
             if (i == 0) {
-                prover = IBlockHashProver(IBlockHashProverPointer(readArgs.route[0]).implementationAddress());
+                prover = IStateProver(IStateProverPointer(readArgs.route[0]).implementationAddress());
                 blockHash = prover.getTargetBlockHash(readArgs.bhpInputs[0]);
             } else {
                 prover = _blockHashProverCopies[remoteAccountId];

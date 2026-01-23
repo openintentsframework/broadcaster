@@ -2,7 +2,7 @@
 pragma solidity ^0.8.28;
 
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
-import {IBlockHashProver} from "../../interfaces/IBlockHashProver.sol";
+import {IStateProver} from "../../interfaces/IStateProver.sol";
 import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 
 interface ICheckpointStore {
@@ -15,12 +15,12 @@ interface ICheckpointStore {
     function getCheckpoint(uint48 _blockNumber) external view returns (Checkpoint memory);
 }
 
-/// @notice Taiko implementation of a parent to child IBlockHashProver.
+/// @notice Taiko implementation of a parent to child IStateProver.
 /// @dev    Home chain: L1 (Ethereum). Target chain: L2 (Taiko).
 ///         verifyTargetBlockHash gets L2 block hashes from L1's SignalService checkpoint storage.
 ///         getTargetBlockHash reads L2 block hashes directly from L1's SignalService.
 ///         verifyStorageSlot works against any Ethereum-compatible chain with standard block headers.
-contract ParentToChildProver is IBlockHashProver {
+contract ParentToChildProver is IStateProver {
     /// @dev Address of the L1 SignalService contract
     address public immutable signalService;
 
@@ -121,7 +121,7 @@ contract ParentToChildProver is IBlockHashProver {
         );
     }
 
-    /// @inheritdoc IBlockHashProver
+    /// @inheritdoc IStateProver
     function version() external pure returns (uint256) {
         return 1;
     }

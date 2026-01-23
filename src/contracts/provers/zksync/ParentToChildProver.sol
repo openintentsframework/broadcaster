@@ -2,7 +2,7 @@
 pragma solidity 0.8.30;
 
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
-import {IBlockHashProver} from "../../interfaces/IBlockHashProver.sol";
+import {IStateProver} from "../../interfaces/IStateProver.sol";
 import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 
 import {MessageHashing, ProofData} from "./libraries/MessageHashing.sol";
@@ -54,14 +54,14 @@ struct ZkSyncProof {
     bytes32[] proof;
 }
 
-/// @notice ZkSync implementation of a parent to child IBlockHashProver.
+/// @notice ZkSync implementation of a parent to child IStateProver.
 /// @dev This contract verifies L2 logs root hashes from ZkSync child chains on the parent chain (L1).
 ///      The `verifyTargetBlockHash` and `getTargetBlockHash` functions retrieve L2 logs root hashes
 ///      from the child chain's ZkChain contract. The `verifyStorageSlot` function is implemented
 ///      to work against any ZkSync child chain with a standard Ethereum block header and state trie.
 ///      This implementation is used to verify zkChain L2 log hash inclusion on L1 for messages that
 ///      use the gateway as a middleware between the L2 and the L1.
-contract ParentToChildProver is IBlockHashProver {
+contract ParentToChildProver is IStateProver {
     /// @notice The ZkChain contract address on the gateway chain that stores L2 logs root hashes.
     IZkChain public immutable gatewayZkChain;
 
@@ -276,7 +276,7 @@ contract ParentToChildProver is IBlockHashProver {
     }
 
     /// @notice Returns the version of this block hash prover implementation.
-    /// @inheritdoc IBlockHashProver
+    /// @inheritdoc IStateProver
     /// @return The version number (currently 1).
     function version() external pure returns (uint256) {
         return 1;

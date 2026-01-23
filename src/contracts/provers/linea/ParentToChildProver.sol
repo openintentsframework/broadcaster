@@ -3,7 +3,7 @@ pragma solidity ^0.8.28;
 
 import {SparseMerkleProof} from "../../libraries/linea/SparseMerkleProof.sol";
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
-import {IBlockHashProver} from "../../interfaces/IBlockHashProver.sol";
+import {IStateProver} from "../../interfaces/IStateProver.sol";
 import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 
 interface ILineaRollup {
@@ -22,7 +22,7 @@ interface ILineaRollup {
 ///
 ///      Note: Linea uses Sparse Merkle Tree (SMT) with MiMC hashing, NOT Merkle-Patricia Trie (MPT).
 ///      The state root stored on L1 is the SMT root, which requires linea_getProof for verification.
-contract ParentToChildProver is IBlockHashProver {
+contract ParentToChildProver is IStateProver {
     /// @dev Address of the LineaRollup contract on L1
     address public immutable lineaRollup;
 
@@ -201,7 +201,7 @@ contract ParentToChildProver is IBlockHashProver {
         value = claimedStorageValue;
     }
 
-    /// @inheritdoc IBlockHashProver
+    /// @inheritdoc IStateProver
     function version() external pure returns (uint256) {
         return 1;
     }

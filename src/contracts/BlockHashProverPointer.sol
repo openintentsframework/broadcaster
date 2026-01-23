@@ -3,8 +3,8 @@ pragma solidity 0.8.30;
 
 import {StorageSlot} from "@openzeppelin/contracts/utils/StorageSlot.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {IBlockHashProver} from "./interfaces/IBlockHashProver.sol";
-import {IBlockHashProverPointer} from "./interfaces/IBlockHashProverPointer.sol";
+import {IStateProver} from "./interfaces/IStateProver.sol";
+import {IStateProverPointer} from "./interfaces/IStateProverPointer.sol";
 
 bytes32 constant BLOCK_HASH_PROVER_POINTER_SLOT = bytes32(uint256(keccak256("eip7888.pointer.slot")) - 1);
 
@@ -13,7 +13,7 @@ bytes32 constant BLOCK_HASH_PROVER_POINTER_SLOT = bytes32(uint256(keccak256("eip
 /// @dev This contract stores the address and code hash of the current BlockHashProver implementation.
 ///      It enforces version monotonicity to ensure that updates always move to newer versions.
 ///      The code hash is stored in a dedicated storage slot for efficient cross-chain verification.
-contract BlockHashProverPointer is IBlockHashProverPointer, Ownable {
+contract BlockHashProverPointer is IStateProverPointer, Ownable {
     address internal _implementationAddress;
 
     error NonIncreasingVersion(uint256 newVersion, uint256 oldVersion);
@@ -45,7 +45,7 @@ contract BlockHashProverPointer is IBlockHashProverPointer, Ownable {
         }
 
         (bool success, bytes memory returnData) =
-            _newImplementationAddress.staticcall(abi.encodeWithSelector(IBlockHashProver.version.selector));
+            _newImplementationAddress.staticcall(abi.encodeWithSelector(IStateProver.version.selector));
         if (!success || returnData.length != 32) {
             revert InvalidImplementationAddress();
         }
@@ -54,7 +54,7 @@ contract BlockHashProverPointer is IBlockHashProverPointer, Ownable {
 
         address currentImplementationAddress = implementationAddress();
         if (currentImplementationAddress != address(0)) {
-            uint256 oldVersion = IBlockHashProver(currentImplementationAddress).version();
+            uint256 oldVersion = IStateProver(currentImplementationAddress).version();
             if (newVersion <= oldVersion) {
                 revert NonIncreasingVersion(newVersion, oldVersion);
             }

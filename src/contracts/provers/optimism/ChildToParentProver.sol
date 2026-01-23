@@ -2,13 +2,13 @@
 pragma solidity 0.8.30;
 
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
-import {IBlockHashProver} from "../../interfaces/IBlockHashProver.sol";
+import {IStateProver} from "../../interfaces/IStateProver.sol";
 
 interface IL1Block {
     function hash() external view returns (bytes32);
 }
 
-/// @notice OP-stack implementation of a child to parent IBlockHashProver.
+/// @notice OP-stack implementation of a child to parent IStateProver.
 /// @dev    verifyTargetBlockHash and getTargetBlockHash get block hashes from the L1Block predeploy.
 ///         verifyStorageSlot is implemented to work against any target chain with a standard Ethereum block header and state trie.
 ///
@@ -16,7 +16,7 @@ interface IL1Block {
 ///         Historical messages CAN be verified by generating fresh proofs on-demand.
 ///         Pre-generated proofs become stale when L1Block updates (~5 minutes).
 ///         Operational difference from Arbitrum: proofs must be generated just-in-time rather than pre-cached.
-contract ChildToParentProver is IBlockHashProver {
+contract ChildToParentProver is IStateProver {
     address public constant l1BlockPredeploy = 0x4200000000000000000000000000000000000015;
     uint256 public constant l1BlockHashSlot = 2; // hash is at slot 2
 
@@ -91,7 +91,7 @@ contract ChildToParentProver is IBlockHashProver {
         );
     }
 
-    /// @inheritdoc IBlockHashProver
+    /// @inheritdoc IStateProver
     function version() external pure returns (uint256) {
         return 1;
     }

@@ -4,7 +4,7 @@ pragma solidity 0.8.30;
 import {Lib_SecureMerkleTrie} from "@eth-optimism/contracts/libraries/trie/Lib_SecureMerkleTrie.sol";
 import {Lib_RLPReader} from "@eth-optimism/contracts/libraries/rlp/Lib_RLPReader.sol";
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
-import {IBlockHashProver} from "../../interfaces/IBlockHashProver.sol";
+import {IStateProver} from "../../interfaces/IStateProver.sol";
 import {Bytes} from "@openzeppelin/contracts/utils/Bytes.sol";
 
 interface IAnchorStateRegistry {
@@ -15,10 +15,10 @@ interface IFaultDisputeGame {
     function rootClaim() external view returns (bytes32);
 }
 
-/// @notice OP-stack implementation of a parent to child IBlockHashProver.
+/// @notice OP-stack implementation of a parent to child IStateProver.
 /// @dev    verifyTargetBlockHash and getTargetBlockHash get block hashes from a valid fault dispute game proxy contract.
 ///         verifyStorageSlot is implemented to work against any OP-stack child chain with a standard Ethereum block header and state trie.
-contract ParentToChildProver is IBlockHashProver {
+contract ParentToChildProver is IStateProver {
     using Lib_RLPReader for Lib_RLPReader.RLPItem;
 
     struct OutputRootProof {
@@ -155,7 +155,7 @@ contract ParentToChildProver is IBlockHashProver {
         );
     }
 
-    /// @inheritdoc IBlockHashProver
+    /// @inheritdoc IStateProver
     function version() external pure returns (uint256) {
         return 1;
     }
