@@ -4,7 +4,7 @@ Ethereum reference implementation for [ERC-7888: Crosschain Broadcaster](https:/
 
 - **Broadcast**: `Broadcaster` stores `block.timestamp` in slot `keccak(message, publisher)`, emits `MessageBroadcast`, and prevents duplicates per publisher.
 - **Prove**: `Receiver` walks a user-specified route of `StateProver` contracts to recover a finalized target block hash, proves a storage slot on a remote `Broadcaster`, checks the slot is non-zero and matches the expected `(message, publisher)` slot, then returns the timestamp.
-- **Upgrade safely**: `StateProverPointer` holds the latest prover implementation address and code hash in a fixed slot (`BLOCK_HASH_PROVER_POINTER_SLOT`), enforcing monotonic `version()` upgrades so routes stay stable while provers evolve.
+- **Upgrade safely**: `StateProverPointer` holds the latest prover implementation address and code hash in a fixed slot (`STATE_PROVER_POINTER_SLOT`), enforcing monotonic `version()` upgrades so routes stay stable while provers evolve.
 - **Reusable proving code**: `StateProver` copies can be deployed on any chain; the pointer-stored code hash guarantees the copy matches the canonical implementation.
 
 ## Contracts
@@ -18,7 +18,7 @@ Ethereum reference implementation for [ERC-7888: Crosschain Broadcaster](https:/
 - **Broadcaster**: Singleton per chain that timestamps 32-byte messages in deterministic slots and emits `MessageBroadcast`.
 - **Receiver**: Trustlessly reads a remote `Broadcaster` slot by following a prover route, checking slot correctness, and returning `(broadcasterId, timestamp)`.
 - **StateProver**: Chain-specific verifier that proves a target block hash from a home chain state root and verifies arbitrary storage for that block.
-- **StateProverPointer**: Stable address that stores the prover implementation address and code hash in `BLOCK_HASH_PROVER_POINTER_SLOT`, enforcing increasing `version()`.
+- **StateProverPointer**: Stable address that stores the prover implementation address and code hash in `STATE_PROVER_POINTER_SLOT`, enforcing increasing `version()`.
 - **StateProverCopy**: Locally deployed prover contract whose `codehash` matches the pointer; used by `Receiver` when proving multi-hop routes.
 - **Route**: Ordered addresses of prover pointers from the destination back to the origin chain; hashed cumulatively in `Receiver` to produce unique IDs.
 

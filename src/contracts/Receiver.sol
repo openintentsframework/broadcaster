@@ -4,7 +4,7 @@ pragma solidity 0.8.30;
 import {IReceiver} from "./interfaces/IReceiver.sol";
 import {IStateProver} from "./interfaces/IStateProver.sol";
 import {IStateProverPointer} from "./interfaces/IStateProverPointer.sol";
-import {BLOCK_HASH_PROVER_POINTER_SLOT} from "./StateProverPointer.sol";
+import {STATE_PROVER_POINTER_SLOT} from "./StateProverPointer.sol";
 
 /// @title Receiver
 /// @notice Verifies broadcast messages from remote chains using cryptographic storage proofs
@@ -66,7 +66,7 @@ contract Receiver is IReceiver {
     /// @notice Updates the local copy of a StateProver for a specific remote chain
     /// @dev This function verifies and stores a local copy of a StateProver contract from a remote chain.
     ///      The verification process ensures:
-    ///      1. The provided proof reads from the correct storage slot (BLOCK_HASH_PROVER_POINTER_SLOT)
+    ///      1. The provided proof reads from the correct storage slot (STATE_PROVER_POINTER_SLOT)
     ///      2. The code hash of the local copy matches the code hash stored in the remote pointer
     ///      3. The new version is newer than any existing local copy (version monotonicity)
     ///      This allows the Receiver to trustlessly obtain and update StateProver implementations
@@ -85,7 +85,7 @@ contract Receiver is IReceiver {
         bytes32 scpCodeHash;
         (scpPointerId, slot, scpCodeHash) = _readRemoteSlot(scpPointerReadArgs);
 
-        if (slot != uint256(BLOCK_HASH_PROVER_POINTER_SLOT)) {
+        if (slot != uint256(STATE_PROVER_POINTER_SLOT)) {
             revert WrongStateProverPointerSlot();
         }
 

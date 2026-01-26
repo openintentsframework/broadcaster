@@ -6,7 +6,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IStateProver} from "./interfaces/IStateProver.sol";
 import {IStateProverPointer} from "./interfaces/IStateProverPointer.sol";
 
-bytes32 constant BLOCK_HASH_PROVER_POINTER_SLOT = bytes32(uint256(keccak256("eip7888.pointer.slot")) - 1);
+bytes32 constant STATE_PROVER_POINTER_SLOT = bytes32(uint256(keccak256("eip7888.pointer.slot")) - 1);
 
 /// @title StateProverPointer
 /// @notice Manages a versioned pointer to the latest StateProver implementation
@@ -30,7 +30,7 @@ contract StateProverPointer is IStateProverPointer, Ownable {
     /// @notice Return the code hash of the latest version of the prover.
     /// @return codeHash The code hash of the current implementation stored in the pointer slot.
     function implementationCodeHash() public view returns (bytes32 codeHash) {
-        codeHash = StorageSlot.getBytes32Slot(BLOCK_HASH_PROVER_POINTER_SLOT).value;
+        codeHash = StorageSlot.getBytes32Slot(STATE_PROVER_POINTER_SLOT).value;
     }
 
     /// @notice Updates the StateProver implementation to a new version
@@ -65,6 +65,6 @@ contract StateProverPointer is IStateProverPointer, Ownable {
     }
 
     function _setCodeHash(bytes32 _codeHash) internal {
-        StorageSlot.getBytes32Slot(BLOCK_HASH_PROVER_POINTER_SLOT).value = _codeHash;
+        StorageSlot.getBytes32Slot(STATE_PROVER_POINTER_SLOT).value = _codeHash;
     }
 }
