@@ -12,10 +12,10 @@ import {IL2ScrollMessenger} from "@scroll-tech/scroll-contracts/L2/IL2ScrollMess
 ///      The L2ScrollMessenger contract on L2 is responsible for relaying the message to the buffer contract on L2.
 contract ScrollBuffer is BaseBuffer {
     /// @dev The address of the L2ScrollMessenger contract on L2.
-    address private _l2ScrollMessenger;
+    address private immutable _l2ScrollMessenger;
 
     /// @dev The address of the pusher contract on L1.
-    address private _pusher;
+    address private immutable _pusher;
 
     /// @notice Thrown when attempting to set an invalid L2ScrollMessenger address.
     error InvalidL2ScrollMessengerAddress();

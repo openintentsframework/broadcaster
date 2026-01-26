@@ -12,7 +12,7 @@ import {IBuffer} from "../interfaces/IBuffer.sol";
 ///      The buffer only accepts hash pushes from the aliased pusher address.
 contract ZkSyncBuffer is BaseBuffer {
     /// @dev The address of the pusher contract on L1.
-    address private _pusher;
+    address private immutable _pusher;
 
     /// @notice Thrown when attempting to set an invalid pusher address.
     error InvalidPusherAddress();

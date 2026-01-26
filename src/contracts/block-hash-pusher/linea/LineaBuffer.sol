@@ -15,10 +15,10 @@ import {IMessageService} from "@linea-contracts/messaging/interfaces/IMessageSer
 ///      users might need to claim the messages themselves in those cases.
 contract LineaBuffer is BaseBuffer {
     /// @dev The address of the L2MessageService contract on L2.
-    address private _l2MessageService;
+    address private immutable _l2MessageService;
 
     /// @dev The address of the pusher contract on L1.
-    address private _pusher;
+    address private immutable _pusher;
 
     /// @notice Thrown when attempting to set an invalid L2MessageService address.
     error InvalidL2MessageServiceAddress();
