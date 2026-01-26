@@ -373,10 +373,10 @@ contract ReceiverTest is Test {
 
         ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
-        bytes32 bhpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
+        bytes32 scpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
         assertEq(
-            bhpPointerId,
+            scpPointerId,
             keccak256(
                 abi.encode(
                     keccak256(
@@ -509,10 +509,10 @@ contract ReceiverTest is Test {
             IReceiver.RemoteReadArgs memory remoteReadArgs =
                 IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProofToLastProver});
 
-            bytes32 bhpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
+            bytes32 scpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
             assertEq(
-                bhpPointerId,
+                scpPointerId,
                 keccak256(
                     abi.encode(
                         keccak256(
@@ -660,10 +660,10 @@ contract ReceiverTest is Test {
 
         ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
-        bytes32 bhpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
+        bytes32 scpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
         assertEq(
-            bhpPointerId,
+            scpPointerId,
             keccak256(
                 abi.encode(
                     keccak256(
@@ -739,10 +739,10 @@ contract ReceiverTest is Test {
             IReceiver.RemoteReadArgs memory remoteReadArgs =
                 IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProofToLastProver});
 
-            bytes32 bhpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
+            bytes32 scpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
             assertEq(
-                bhpPointerId,
+                scpPointerId,
                 keccak256(
                     abi.encode(
                         keccak256(
@@ -888,10 +888,10 @@ contract ReceiverTest is Test {
 
         ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
-        bytes32 bhpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
+        bytes32 scpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
         assertEq(
-            bhpPointerId,
+            scpPointerId,
             keccak256(
                 abi.encode(
                     keccak256(
@@ -967,10 +967,10 @@ contract ReceiverTest is Test {
             IReceiver.RemoteReadArgs memory remoteReadArgs =
                 IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProofToLastProver});
 
-            bytes32 bhpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
+            bytes32 scpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
             assertEq(
-                bhpPointerId,
+                scpPointerId,
                 keccak256(
                     abi.encode(
                         keccak256(
@@ -1116,10 +1116,10 @@ contract ReceiverTest is Test {
 
         ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
-        bytes32 bhpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
+        bytes32 scpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
         assertEq(
-            bhpPointerId,
+            scpPointerId,
             keccak256(
                 abi.encode(
                     keccak256(
@@ -1195,10 +1195,10 @@ contract ReceiverTest is Test {
             IReceiver.RemoteReadArgs memory remoteReadArgs =
                 IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProofToLastProver});
 
-            bytes32 bhpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
+            bytes32 scpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
             assertEq(
-                bhpPointerId,
+                scpPointerId,
                 keccak256(
                     abi.encode(
                         keccak256(

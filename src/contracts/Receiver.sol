@@ -71,43 +71,43 @@ contract Receiver is IReceiver {
     ///      3. The new version is newer than any existing local copy (version monotonicity)
     ///      This allows the Receiver to trustlessly obtain and update StateProver implementations
     ///      needed for cross-chain message verification.
-    /// @param bhpPointerReadArgs Contains the route and proofs to read the remote StateProverPointer's storage
-    /// @param bhpCopy The local deployed copy of the StateProver contract
-    /// @return bhpPointerId A unique identifier for the remote StateProverPointer (accumulated hash of route)
+    /// @param scpPointerReadArgs Contains the route and proofs to read the remote StateProverPointer's storage
+    /// @param scpCopy The local deployed copy of the StateProver contract
+    /// @return scpPointerId A unique identifier for the remote StateProverPointer (accumulated hash of route)
     /// @custom:throws WrongStateProverPointerSlot if the proof doesn't read from the expected slot
     /// @custom:throws DifferentCodeHash if the local copy's code hash doesn't match the remote pointer's stored hash
     /// @custom:throws NewerProverVersion if an existing local copy has a version >= the new copy's version
-    function updateStateProverCopy(RemoteReadArgs calldata bhpPointerReadArgs, IStateProver bhpCopy)
+    function updateStateProverCopy(RemoteReadArgs calldata scpPointerReadArgs, IStateProver scpCopy)
         external
-        returns (bytes32 bhpPointerId)
+        returns (bytes32 scpPointerId)
     {
         uint256 slot;
-        bytes32 bhpCodeHash;
-        (bhpPointerId, slot, bhpCodeHash) = _readRemoteSlot(bhpPointerReadArgs);
+        bytes32 scpCodeHash;
+        (scpPointerId, slot, scpCodeHash) = _readRemoteSlot(scpPointerReadArgs);
 
         if (slot != uint256(BLOCK_HASH_PROVER_POINTER_SLOT)) {
             revert WrongStateProverPointerSlot();
         }
 
-        if (address(bhpCopy).codehash != bhpCodeHash) {
+        if (address(scpCopy).codehash != scpCodeHash) {
             revert DifferentCodeHash();
         }
 
-        IStateProver oldProverCopy = _stateProverCopies[bhpPointerId];
+        IStateProver oldProverCopy = _stateProverCopies[scpPointerId];
 
-        if (address(oldProverCopy) != address(0) && oldProverCopy.version() >= bhpCopy.version()) {
+        if (address(oldProverCopy) != address(0) && oldProverCopy.version() >= scpCopy.version()) {
             revert NewerProverVersion();
         }
 
-        _stateProverCopies[bhpPointerId] = bhpCopy;
+        _stateProverCopies[scpPointerId] = scpCopy;
     }
 
-    /// @notice The StateProverCopy on the local chain corresponding to the bhpPointerId
+    /// @notice The StateProverCopy on the local chain corresponding to the scpPointerId
     ///         MUST return 0 if the StateProverPointer does not exist.
-    /// @param bhpPointerId The unique identifier of the StateProverPointer.
-    /// @return bhpCopy The StateProver copy stored on the local chain, or address(0) if not found.
-    function stateProverCopy(bytes32 bhpPointerId) external view returns (IStateProver bhpCopy) {
-        bhpCopy = _stateProverCopies[bhpPointerId];
+    /// @param scpPointerId The unique identifier of the StateProverPointer.
+    /// @return scpCopy The StateProver copy stored on the local chain, or address(0) if not found.
+    function stateProverCopy(bytes32 scpPointerId) external view returns (IStateProver scpCopy) {
+        scpCopy = _stateProverCopies[scpPointerId];
     }
 
     function _readRemoteSlot(RemoteReadArgs calldata readArgs)
@@ -124,27 +124,27 @@ contract Receiver is IReceiver {
         }
 
         IStateProver prover;
-        bytes32 blockHash;
+        bytes32 stateCommitment;
 
         for (uint256 i = 0; i < readArgs.route.length; i++) {
             remoteAccountId = accumulator(remoteAccountId, readArgs.route[i]);
 
             if (i == 0) {
                 prover = IStateProver(IStateProverPointer(readArgs.route[0]).implementationAddress());
-                blockHash = prover.getTargetStateCommitment(readArgs.scpInputs[0]);
+                stateCommitment = prover.getTargetStateCommitment(readArgs.scpInputs[0]);
             } else {
                 prover = _stateProverCopies[remoteAccountId];
                 if (address(prover) == address(0)) {
                     revert ProverCopyNotFound();
                 }
 
-                blockHash = prover.verifyTargetStateCommitment(blockHash, readArgs.scpInputs[i]);
+                stateCommitment = prover.verifyTargetStateCommitment(stateCommitment, readArgs.scpInputs[i]);
             }
         }
 
         address remoteAccount;
 
-        (remoteAccount, slot, slotValue) = prover.verifyStorageSlot(blockHash, readArgs.proof);
+        (remoteAccount, slot, slotValue) = prover.verifyStorageSlot(stateCommitment, readArgs.proof);
 
         remoteAccountId = accumulator(remoteAccountId, remoteAccount);
     }

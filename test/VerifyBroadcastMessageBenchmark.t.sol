@@ -424,9 +424,9 @@ contract VerifyBroadcastMessageBenchmark is Test {
 
         // Register the Scroll prover copy in receiver's mapping
         bytes32 acc1 = keccak256(abi.encode(bytes32(0), address(opPointer)));
-        bytes32 bhpPointerId = keccak256(abi.encode(acc1, scrollPointerAddress));
+        bytes32 scpPointerId = keccak256(abi.encode(acc1, scrollPointerAddress));
 
-        bytes32 mappingSlot = keccak256(abi.encode(bhpPointerId, uint256(0)));
+        bytes32 mappingSlot = keccak256(abi.encode(scpPointerId, uint256(0)));
         vm.store(address(receiver), mappingSlot, bytes32(uint256(uint160(address(scrollP2CProverCopy)))));
 
         // Load Ethereum proof for first hop
