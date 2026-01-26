@@ -18,12 +18,15 @@ interface IPusher {
     /// @notice Thrown when the batch is invalid.
     error InvalidBatch(uint256 firstBlockNumber, uint256 batchSize);
 
+    /// @notice Thrown when the buffer address is invalid.
+    error InvalidBuffer(address buffer);
+
     /// @notice Push some hashes of previous blocks to the buffer on the child chain
+    /// @param buffer The address of the buffer contract on the child chain.
     /// @param firstBlockNumber The first block number to push.
     /// @param batchSize The number of hashes to push. Must be less than or equal to MAX_BATCH_SIZE. Must be at least 1.
     /// @param l2TransactionData The data of the L2 transaction.
-    function pushHashes(uint256 firstBlockNumber, uint256 batchSize, bytes calldata l2TransactionData) external payable;
-
-    /// @notice The address of the buffer contract on the child chain.
-    function bufferAddress() external view returns (address);
+    function pushHashes(address buffer, uint256 firstBlockNumber, uint256 batchSize, bytes calldata l2TransactionData)
+        external
+        payable;
 }

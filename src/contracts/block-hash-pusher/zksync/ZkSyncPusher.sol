@@ -22,13 +22,10 @@ interface IMailbox {
 /// @notice Implementation of IPusher for pushing block hashes to ZkSync Era L2.
 /// @dev This contract sends block hashes from Ethereum L1 to a ZkSyncBuffer contract on ZkSync Era L2
 ///      via the ZkSync Mailbox's `requestL2Transaction` function. The pusher must be configured
-///      with the correct ZkSync Diamond proxy address and buffer contract address.
+///      with the correct ZkSync Diamond proxy address.
 contract ZkSyncPusher is BlockHashArrayBuilder, IPusher {
     /// @dev The address of the ZkSync Diamond proxy contract on L1.
     address private immutable _zkSyncDiamond;
-
-    /// @dev The address of the ZkSyncBuffer contract on L2.
-    address private immutable _bufferAddress;
 
     /// @notice Thrown when the L2 transaction request fails.
     error FailedToPushHashes();
@@ -43,16 +40,19 @@ contract ZkSyncPusher is BlockHashArrayBuilder, IPusher {
         address refundRecipient;
     }
 
-    constructor(address zkSyncDiamond_, address bufferAddress_) {
+    constructor(address zkSyncDiamond_) {
         _zkSyncDiamond = zkSyncDiamond_;
-        _bufferAddress = bufferAddress_;
     }
 
     /// @inheritdoc IPusher
-    function pushHashes(uint256 firstBlockNumber, uint256 batchSize, bytes calldata l2TransactionData)
+    function pushHashes(address buffer, uint256 firstBlockNumber, uint256 batchSize, bytes calldata l2TransactionData)
         external
         payable
     {
+        if (buffer == address(0)) {
+            revert InvalidBuffer(buffer);
+        }
+
         bytes32[] memory blockHashes = _buildBlockHashArray(firstBlockNumber, batchSize);
         bytes memory l2Calldata = abi.encodeCall(IBuffer.receiveHashes, (firstBlockNumber, blockHashes));
 
@@ -61,7 +61,7 @@ contract ZkSyncPusher is BlockHashArrayBuilder, IPusher {
         /// In the current behavior of the ZkSync Mailbox, the `l2GasPerPubdataByteLimit` value must be equal to the `REQUIRED_L2_GAS_PRICE_PER_PUBDATA` value,
         /// which is a constant defined by ZkSync. The current value is 800. However, since this might change in the future, the value must be passed in as a parameter.
         bytes32 canonicalTxHash = IMailbox(zkSyncDiamond()).requestL2Transaction{value: msg.value}(
-            bufferAddress(),
+            buffer,
             0,
             l2Calldata,
             l2Transaction.l2GasLimit,
@@ -75,11 +75,6 @@ contract ZkSyncPusher is BlockHashArrayBuilder, IPusher {
         }
 
         emit BlockHashesPushed(firstBlockNumber, firstBlockNumber + batchSize - 1);
-    }
-
-    /// @inheritdoc IPusher
-    function bufferAddress() public view returns (address) {
-        return _bufferAddress;
     }
 
     /// @notice The address of the ZkSync Diamond proxy contract on L1.

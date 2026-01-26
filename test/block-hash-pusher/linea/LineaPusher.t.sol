@@ -21,68 +21,67 @@ contract LineaPusherTest is Test {
     function test_pushHashes_fork() public {
         vm.createSelectFork(vm.envString("ETHEREUM_RPC_URL"));
 
-        LineaPusher lineaPusher = new LineaPusher(lineaRollupAddress, buffer);
+        LineaPusher lineaPusher = new LineaPusher(lineaRollupAddress);
 
         bytes memory l2TransactionData = abi.encode(LineaPusher.LineaL2Transaction({_fee: 0.005 ether}));
 
-        lineaPusher.pushHashes{value: 0.005 ether}(block.number - 1, 1, l2TransactionData);
+        lineaPusher.pushHashes{value: 0.005 ether}(buffer, block.number - 1, 1, l2TransactionData);
 
-        lineaPusher.pushHashes{value: 0.005 ether}(block.number - 10, 10, l2TransactionData);
+        lineaPusher.pushHashes{value: 0.005 ether}(buffer, block.number - 10, 10, l2TransactionData);
 
-        lineaPusher.pushHashes{value: 0.005 ether}(block.number - 15, 15, l2TransactionData);
+        lineaPusher.pushHashes{value: 0.005 ether}(buffer, block.number - 15, 15, l2TransactionData);
 
-        lineaPusher.pushHashes{value: 0.005 ether}(block.number - 1000, 10, l2TransactionData);
+        lineaPusher.pushHashes{value: 0.005 ether}(buffer, block.number - 1000, 10, l2TransactionData);
 
-        lineaPusher.pushHashes{value: 0.005 ether}(block.number - 8000, 20, l2TransactionData);
+        lineaPusher.pushHashes{value: 0.005 ether}(buffer, block.number - 8000, 20, l2TransactionData);
 
         // push hashes with _fee < msg.value should revert
         vm.expectRevert(abi.encodeWithSelector(IMessageService.ValueSentTooLow.selector));
-        lineaPusher.pushHashes{value: 0.004 ether}(block.number - 1, 1, l2TransactionData);
+        lineaPusher.pushHashes{value: 0.004 ether}(buffer, block.number - 1, 1, l2TransactionData);
     }
 
     function testFuzz_pushHashes(uint16 batchSize) public {
         vm.assume(batchSize > 0 && batchSize <= 256);
         vm.roll(batchSize + 1);
 
-        LineaPusher lineaPusher = new LineaPusher(mockLineaRollup, buffer);
+        LineaPusher lineaPusher = new LineaPusher(mockLineaRollup);
 
         bytes memory l2TransactionData = abi.encode(LineaPusher.LineaL2Transaction({_fee: 0.005 ether}));
 
         vm.deal(user, 0.005 ether);
         vm.prank(user);
-        lineaPusher.pushHashes{value: 0.005 ether}(block.number - batchSize, batchSize, l2TransactionData);
+        lineaPusher.pushHashes{value: 0.005 ether}(buffer, block.number - batchSize, batchSize, l2TransactionData);
     }
 
     function testFuzz_pushHashes_reverts_if_value_too_low(uint16 batchSize) public {
         vm.assume(batchSize > 0 && batchSize <= 256);
         vm.roll(batchSize + 1);
 
-        LineaPusher lineaPusher = new LineaPusher(mockLineaRollup, buffer);
+        LineaPusher lineaPusher = new LineaPusher(mockLineaRollup);
 
         bytes memory l2TransactionData = abi.encode(LineaPusher.LineaL2Transaction({_fee: 0.005 ether}));
 
         vm.deal(user, 0.005 ether);
         vm.prank(user);
         vm.expectRevert(abi.encodeWithSelector(IMessageService.ValueSentTooLow.selector));
-        lineaPusher.pushHashes{value: 0.001 ether}(block.number - batchSize, batchSize, l2TransactionData);
+        lineaPusher.pushHashes{value: 0.001 ether}(buffer, block.number - batchSize, batchSize, l2TransactionData);
     }
 
     function testFuzz_pushHashes_invalidBatchSize(uint16 batchSize) public {
         vm.assume(batchSize == 0 || batchSize > 8191);
         vm.roll(uint32(batchSize) + 1); // uint32 to avoid overflow
 
-        LineaPusher lineaPusher = new LineaPusher(mockLineaRollup, buffer);
+        LineaPusher lineaPusher = new LineaPusher(mockLineaRollup);
 
         bytes memory l2TransactionData = abi.encode(LineaPusher.LineaL2Transaction({_fee: 0.005 ether}));
 
         vm.prank(user);
         vm.expectRevert(abi.encodeWithSelector(IPusher.InvalidBatch.selector, block.number - batchSize, batchSize));
-        lineaPusher.pushHashes(block.number - batchSize, batchSize, l2TransactionData);
+        lineaPusher.pushHashes(buffer, block.number - batchSize, batchSize, l2TransactionData);
     }
 
     function test_viewFunctions() public {
-        LineaPusher lineaPusher = new LineaPusher(mockLineaRollup, buffer);
+        LineaPusher lineaPusher = new LineaPusher(mockLineaRollup);
         assertEq(lineaPusher.lineaRollup(), mockLineaRollup);
-        assertEq(lineaPusher.bufferAddress(), buffer);
     }
 }
