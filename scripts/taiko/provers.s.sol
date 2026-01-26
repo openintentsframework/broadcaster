@@ -24,12 +24,12 @@ contract DeployL1Prover is Script {
             homeChainId
         );
         
-        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
-        blockHashProverPointer.setImplementationAddress(address(parentToChildProver));
+        StateProverPointer stateProverPointer = new StateProverPointer(owner);
+        stateProverPointer.setImplementationAddress(address(parentToChildProver));
         
         vm.stopBroadcast();
 
         console.log("ParentToChildProver:", address(parentToChildProver));
-        console.log("L1ProverPointer:", address(blockHashProverPointer));
+        console.log("L1ProverPointer:", address(stateProverPointer));
     }
 }

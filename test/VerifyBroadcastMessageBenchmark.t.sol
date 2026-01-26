@@ -254,10 +254,10 @@ contract VerifyBroadcastMessageBenchmark is Test {
         receiver = new Receiver();
         ZksyncP2C parentToChildProver = new ZksyncP2C(address(mockZkChain), 0, 300, 32657, block.chainid);
 
-        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
+        StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
-        blockHashProverPointer.setImplementationAddress(address(parentToChildProver));
+        stateProverPointer.setImplementationAddress(address(parentToChildProver));
 
         bytes32 message = 0x0000000000000000000000000000000000000000000000000000000074657374; // "test"
         address publisher = 0x9a56fFd72F4B526c523C733F1F74197A51c495E1;
@@ -267,7 +267,7 @@ contract VerifyBroadcastMessageBenchmark is Test {
         bytes memory input = abi.encode(proof, publisher, message);
 
         address[] memory route = new address[](1);
-        route[0] = address(blockHashProverPointer);
+        route[0] = address(stateProverPointer);
 
         bytes[] memory scpInputs = new bytes[](1);
         scpInputs[0] = abi.encode(47506);

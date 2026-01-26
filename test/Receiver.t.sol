@@ -105,10 +105,10 @@ contract ReceiverTest is Test {
         receiver = new Receiver();
         ArbChildToParentProver childToParentProver = new ArbChildToParentProver(block.chainid);
 
-        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
+        StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
-        blockHashProverPointer.setImplementationAddress(address(childToParentProver));
+        stateProverPointer.setImplementationAddress(address(childToParentProver));
 
         bytes32 message = 0x0000000000000000000000000000000000000000000000000000000074657374; // "test"
         address publisher = 0x9a56fFd72F4B526c523C733F1F74197A51c495E1;
@@ -145,7 +145,7 @@ contract ReceiverTest is Test {
         bytes memory input = abi.encode(rlpBlockHeader, account, expectedSlot, rlpAccountProof, rlpStorageProof);
 
         address[] memory route = new address[](1);
-        route[0] = address(blockHashProverPointer);
+        route[0] = address(stateProverPointer);
 
         bytes[] memory scpInputs = new bytes[](1);
         scpInputs[0] = abi.encode(blockNumber);
@@ -164,7 +164,7 @@ contract ReceiverTest is Test {
                     keccak256(
                         abi.encode(
                             bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
-                            address(blockHashProverPointer)
+                            address(stateProverPointer)
                         )
                     ),
                     account
@@ -181,10 +181,10 @@ contract ReceiverTest is Test {
         receiver = new Receiver();
         ArbParentToChildProver parentToChildProver = _getOnChainArbProverCopy();
 
-        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
+        StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
-        blockHashProverPointer.setImplementationAddress(address(parentToChildProver));
+        stateProverPointer.setImplementationAddress(address(parentToChildProver));
 
         bytes32 message = 0x0000000000000000000000000000000000000000000000000000000074657374; // "test"
         address publisher = 0x9a56fFd72F4B526c523C733F1F74197A51c495E1;
@@ -217,7 +217,7 @@ contract ReceiverTest is Test {
         outbox.updateSendRoot(sendRoot, blockHash);
 
         address[] memory route = new address[](1);
-        route[0] = address(blockHashProverPointer);
+        route[0] = address(stateProverPointer);
 
         bytes[] memory scpInputs = new bytes[](1);
         scpInputs[0] = abi.encode(sendRoot);
@@ -236,7 +236,7 @@ contract ReceiverTest is Test {
                     keccak256(
                         abi.encode(
                             bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
-                            address(blockHashProverPointer)
+                            address(stateProverPointer)
                         )
                     ),
                     account
@@ -253,10 +253,10 @@ contract ReceiverTest is Test {
 
         OPChildToParentProver childToParentProver = new OPChildToParentProver(block.chainid);
 
-        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
+        StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
-        blockHashProverPointer.setImplementationAddress(address(childToParentProver));
+        stateProverPointer.setImplementationAddress(address(childToParentProver));
 
         bytes32 message = 0x0000000000000000000000000000000000000000000000000000000074657374; // "test"
         address publisher = 0x9a56fFd72F4B526c523C733F1F74197A51c495E1;
@@ -290,7 +290,7 @@ contract ReceiverTest is Test {
         );
 
         address[] memory route = new address[](1);
-        route[0] = address(blockHashProverPointer);
+        route[0] = address(stateProverPointer);
 
         bytes[] memory scpInputs = new bytes[](1);
         scpInputs[0] = bytes("");
@@ -309,7 +309,7 @@ contract ReceiverTest is Test {
                     keccak256(
                         abi.encode(
                             bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
-                            address(blockHashProverPointer)
+                            address(stateProverPointer)
                         )
                     ),
                     account
@@ -327,10 +327,10 @@ contract ReceiverTest is Test {
 
         OPChildToParentProver childToParentProver = new OPChildToParentProver(block.chainid);
 
-        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
+        StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
-        blockHashProverPointer.setImplementationAddress(address(childToParentProver));
+        stateProverPointer.setImplementationAddress(address(childToParentProver));
 
         uint256 expectedSlot = uint256(keccak256("eip7888.pointer.slot")) - 1;
 
@@ -361,7 +361,7 @@ contract ReceiverTest is Test {
         );
 
         address[] memory route = new address[](1);
-        route[0] = address(blockHashProverPointer);
+        route[0] = address(stateProverPointer);
 
         bytes[] memory scpInputs = new bytes[](1);
         scpInputs[0] = bytes("");
@@ -382,7 +382,7 @@ contract ReceiverTest is Test {
                     keccak256(
                         abi.encode(
                             bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
-                            address(blockHashProverPointer)
+                            address(stateProverPointer)
                         )
                     ),
                     account
@@ -400,10 +400,10 @@ contract ReceiverTest is Test {
 
         OPChildToParentProver childToParentProver = new OPChildToParentProver(block.chainid);
 
-        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
+        StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
-        blockHashProverPointer.setImplementationAddress(address(childToParentProver));
+        stateProverPointer.setImplementationAddress(address(childToParentProver));
 
         uint256 expectedSlot = uint256(keccak256("eip7888.pointer.slot")) - 1;
 
@@ -434,7 +434,7 @@ contract ReceiverTest is Test {
         );
 
         address[] memory route = new address[](1);
-        route[0] = address(blockHashProverPointer);
+        route[0] = address(stateProverPointer);
 
         bytes[] memory scpInputs = new bytes[](1);
         scpInputs[0] = bytes("");
@@ -457,14 +457,14 @@ contract ReceiverTest is Test {
 
         OPChildToParentProver childToParentProver = new OPChildToParentProver(block.chainid);
 
-        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
+        StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
         ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
         address arbParentToChildProverPointerAddress;
 
         vm.prank(owner);
-        blockHashProverPointer.setImplementationAddress(address(childToParentProver));
+        stateProverPointer.setImplementationAddress(address(childToParentProver));
         // Update the Arbitrum Prover (ParentToChildProver) copy on OP chain
         {
             uint256 expectedSlot = uint256(keccak256("eip7888.pointer.slot")) - 1;
@@ -499,7 +499,7 @@ contract ReceiverTest is Test {
             );
 
             address[] memory route = new address[](1);
-            route[0] = address(blockHashProverPointer);
+            route[0] = address(stateProverPointer);
 
             bytes[] memory scpInputs = new bytes[](1);
             scpInputs[0] = bytes("");
@@ -518,7 +518,7 @@ contract ReceiverTest is Test {
                         keccak256(
                             abi.encode(
                                 bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
-                                address(blockHashProverPointer)
+                                address(stateProverPointer)
                             )
                         ),
                         account
@@ -563,7 +563,7 @@ contract ReceiverTest is Test {
         );
 
         address[] memory route = new address[](2);
-        route[0] = address(blockHashProverPointer);
+        route[0] = address(stateProverPointer);
         route[1] = arbParentToChildProverPointerAddress;
 
         bytes memory input0 = bytes("");
@@ -593,7 +593,7 @@ contract ReceiverTest is Test {
                         keccak256(
                             abi.encode(
                                 bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
-                                address(blockHashProverPointer)
+                                address(stateProverPointer)
                             )
                         ),
                         arbParentToChildProverPointerAddress
@@ -616,10 +616,10 @@ contract ReceiverTest is Test {
 
         ZksyncChildToParentProver childToParentProver = new ZksyncChildToParentProver(address(buffer), block.chainid);
 
-        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
+        StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
-        blockHashProverPointer.setImplementationAddress(address(childToParentProver));
+        stateProverPointer.setImplementationAddress(address(childToParentProver));
 
         uint256 expectedSlot = uint256(keccak256("eip7888.pointer.slot")) - 1;
 
@@ -648,7 +648,7 @@ contract ReceiverTest is Test {
         buffer.receiveHashes(blockNumber, blockHashes);
 
         address[] memory route = new address[](1);
-        route[0] = address(blockHashProverPointer);
+        route[0] = address(stateProverPointer);
 
         bytes[] memory scpInputs = new bytes[](1);
         scpInputs[0] = abi.encode(blockNumber);
@@ -669,7 +669,7 @@ contract ReceiverTest is Test {
                     keccak256(
                         abi.encode(
                             bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
-                            address(blockHashProverPointer)
+                            address(stateProverPointer)
                         )
                     ),
                     account
@@ -689,14 +689,14 @@ contract ReceiverTest is Test {
 
         ZksyncChildToParentProver childToParentProver = new ZksyncChildToParentProver(address(buffer), block.chainid);
 
-        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
+        StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
         ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
         address arbParentToChildProverPointerAddress;
 
         vm.prank(owner);
-        blockHashProverPointer.setImplementationAddress(address(childToParentProver));
+        stateProverPointer.setImplementationAddress(address(childToParentProver));
         // Update the Arbitrum Prover (ParentToChildProver) copy on ZKSync chain
         {
             uint256 expectedSlot = uint256(keccak256("eip7888.pointer.slot")) - 1;
@@ -729,7 +729,7 @@ contract ReceiverTest is Test {
             buffer.receiveHashes(blockNumber, blockHashes);
 
             address[] memory route = new address[](1);
-            route[0] = address(blockHashProverPointer);
+            route[0] = address(stateProverPointer);
 
             bytes[] memory scpInputs = new bytes[](1);
             scpInputs[0] = abi.encode(blockNumber);
@@ -748,7 +748,7 @@ contract ReceiverTest is Test {
                         keccak256(
                             abi.encode(
                                 bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
-                                address(blockHashProverPointer)
+                                address(stateProverPointer)
                             )
                         ),
                         account
@@ -791,7 +791,7 @@ contract ReceiverTest is Test {
         buffer.receiveHashes(blockNumberEthereum, blockHashes);
 
         address[] memory route = new address[](2);
-        route[0] = address(blockHashProverPointer);
+        route[0] = address(stateProverPointer);
         route[1] = arbParentToChildProverPointerAddress;
 
         bytes memory input0 = abi.encode(blockNumberEthereum);
@@ -821,7 +821,7 @@ contract ReceiverTest is Test {
                         keccak256(
                             abi.encode(
                                 bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
-                                address(blockHashProverPointer)
+                                address(stateProverPointer)
                             )
                         ),
                         arbParentToChildProverPointerAddress
@@ -844,10 +844,10 @@ contract ReceiverTest is Test {
 
         LineaChildToParentProver childToParentProver = new LineaChildToParentProver(address(buffer), block.chainid);
 
-        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
+        StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
-        blockHashProverPointer.setImplementationAddress(address(childToParentProver));
+        stateProverPointer.setImplementationAddress(address(childToParentProver));
 
         uint256 expectedSlot = uint256(keccak256("eip7888.pointer.slot")) - 1;
 
@@ -876,7 +876,7 @@ contract ReceiverTest is Test {
         buffer.receiveHashes(blockNumber, blockHashes);
 
         address[] memory route = new address[](1);
-        route[0] = address(blockHashProverPointer);
+        route[0] = address(stateProverPointer);
 
         bytes[] memory scpInputs = new bytes[](1);
         scpInputs[0] = abi.encode(blockNumber);
@@ -897,7 +897,7 @@ contract ReceiverTest is Test {
                     keccak256(
                         abi.encode(
                             bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
-                            address(blockHashProverPointer)
+                            address(stateProverPointer)
                         )
                     ),
                     account
@@ -917,14 +917,14 @@ contract ReceiverTest is Test {
 
         LineaChildToParentProver childToParentProver = new LineaChildToParentProver(address(buffer), block.chainid);
 
-        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
+        StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
         ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
         address arbParentToChildProverPointerAddress;
 
         vm.prank(owner);
-        blockHashProverPointer.setImplementationAddress(address(childToParentProver));
+        stateProverPointer.setImplementationAddress(address(childToParentProver));
         // Update the Arbitrum Prover (ParentToChildProver) copy on Linea chain
         {
             uint256 expectedSlot = uint256(keccak256("eip7888.pointer.slot")) - 1;
@@ -957,7 +957,7 @@ contract ReceiverTest is Test {
             buffer.receiveHashes(blockNumber, blockHashes);
 
             address[] memory route = new address[](1);
-            route[0] = address(blockHashProverPointer);
+            route[0] = address(stateProverPointer);
 
             bytes[] memory scpInputs = new bytes[](1);
             scpInputs[0] = abi.encode(blockNumber);
@@ -976,7 +976,7 @@ contract ReceiverTest is Test {
                         keccak256(
                             abi.encode(
                                 bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
-                                address(blockHashProverPointer)
+                                address(stateProverPointer)
                             )
                         ),
                         account
@@ -1019,7 +1019,7 @@ contract ReceiverTest is Test {
         buffer.receiveHashes(blockNumberEthereum, blockHashes);
 
         address[] memory route = new address[](2);
-        route[0] = address(blockHashProverPointer);
+        route[0] = address(stateProverPointer);
         route[1] = arbParentToChildProverPointerAddress;
 
         bytes memory input0 = abi.encode(blockNumberEthereum);
@@ -1049,7 +1049,7 @@ contract ReceiverTest is Test {
                         keccak256(
                             abi.encode(
                                 bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
-                                address(blockHashProverPointer)
+                                address(stateProverPointer)
                             )
                         ),
                         arbParentToChildProverPointerAddress
@@ -1072,10 +1072,10 @@ contract ReceiverTest is Test {
 
         ScrollChildToParentProver childToParentProver = new ScrollChildToParentProver(address(buffer), block.chainid);
 
-        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
+        StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
-        blockHashProverPointer.setImplementationAddress(address(childToParentProver));
+        stateProverPointer.setImplementationAddress(address(childToParentProver));
 
         uint256 expectedSlot = uint256(keccak256("eip7888.pointer.slot")) - 1;
 
@@ -1104,7 +1104,7 @@ contract ReceiverTest is Test {
         buffer.receiveHashes(blockNumber, blockHashes);
 
         address[] memory route = new address[](1);
-        route[0] = address(blockHashProverPointer);
+        route[0] = address(stateProverPointer);
 
         bytes[] memory scpInputs = new bytes[](1);
         scpInputs[0] = abi.encode(blockNumber);
@@ -1125,7 +1125,7 @@ contract ReceiverTest is Test {
                     keccak256(
                         abi.encode(
                             bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
-                            address(blockHashProverPointer)
+                            address(stateProverPointer)
                         )
                     ),
                     account
@@ -1145,14 +1145,14 @@ contract ReceiverTest is Test {
 
         ScrollChildToParentProver childToParentProver = new ScrollChildToParentProver(address(buffer), block.chainid);
 
-        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
+        StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
         ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
         address arbParentToChildProverPointerAddress;
 
         vm.prank(owner);
-        blockHashProverPointer.setImplementationAddress(address(childToParentProver));
+        stateProverPointer.setImplementationAddress(address(childToParentProver));
         // Update the Arbitrum Prover (ParentToChildProver) copy on Scroll chain
         {
             uint256 expectedSlot = uint256(keccak256("eip7888.pointer.slot")) - 1;
@@ -1185,7 +1185,7 @@ contract ReceiverTest is Test {
             buffer.receiveHashes(blockNumber, blockHashes);
 
             address[] memory route = new address[](1);
-            route[0] = address(blockHashProverPointer);
+            route[0] = address(stateProverPointer);
 
             bytes[] memory scpInputs = new bytes[](1);
             scpInputs[0] = abi.encode(blockNumber);
@@ -1204,7 +1204,7 @@ contract ReceiverTest is Test {
                         keccak256(
                             abi.encode(
                                 bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
-                                address(blockHashProverPointer)
+                                address(stateProverPointer)
                             )
                         ),
                         account
@@ -1247,7 +1247,7 @@ contract ReceiverTest is Test {
         buffer.receiveHashes(blockNumberEthereum, blockHashes);
 
         address[] memory route = new address[](2);
-        route[0] = address(blockHashProverPointer);
+        route[0] = address(stateProverPointer);
         route[1] = arbParentToChildProverPointerAddress;
 
         bytes memory input0 = abi.encode(blockNumberEthereum);
@@ -1277,7 +1277,7 @@ contract ReceiverTest is Test {
                         keccak256(
                             abi.encode(
                                 bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
-                                address(blockHashProverPointer)
+                                address(stateProverPointer)
                             )
                         ),
                         arbParentToChildProverPointerAddress
@@ -1306,10 +1306,10 @@ contract ReceiverTest is Test {
         ScrollParentToChildProver parentToChildProver =
             new ScrollParentToChildProver(scrollChain, finalizedStateRootsSlot, homeChainId);
 
-        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
+        StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
-        blockHashProverPointer.setImplementationAddress(address(parentToChildProver));
+        stateProverPointer.setImplementationAddress(address(parentToChildProver));
 
         // Load the E2E proof data
         string memory path = "test/payloads/scroll/e2e-proof.json";
@@ -1362,10 +1362,10 @@ contract ReceiverTest is Test {
         ScrollParentToChildProver parentToChildProver =
             new ScrollParentToChildProver(scrollChain, finalizedStateRootsSlot, homeChainId);
 
-        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
+        StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
-        blockHashProverPointer.setImplementationAddress(address(parentToChildProver));
+        stateProverPointer.setImplementationAddress(address(parentToChildProver));
 
         // Load the E2E proof data
         string memory path = "test/payloads/scroll/e2e-proof.json";
@@ -1394,7 +1394,7 @@ contract ReceiverTest is Test {
         bytes memory storageProofInput = abi.encode(account, storageSlot, rlpAccountProof, rlpStorageProof);
 
         address[] memory route = new address[](1);
-        route[0] = address(blockHashProverPointer);
+        route[0] = address(stateProverPointer);
 
         bytes[] memory scpInputs = new bytes[](1);
         scpInputs[0] = abi.encode(batchIndex);
@@ -1411,7 +1411,7 @@ contract ReceiverTest is Test {
                     keccak256(
                         abi.encode(
                             bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
-                            address(blockHashProverPointer)
+                            address(stateProverPointer)
                         )
                     ),
                     account
@@ -1440,10 +1440,10 @@ contract ReceiverTest is Test {
         LineaParentToChildProver parentToChildProver =
             new LineaParentToChildProver(lineaRollup, stateRootHashesSlot, homeChainId);
 
-        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
+        StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
-        blockHashProverPointer.setImplementationAddress(address(parentToChildProver));
+        stateProverPointer.setImplementationAddress(address(parentToChildProver));
 
         // Read the SMT proof data
         string memory path = "test/payloads/linea/lineaProofL2-smt.json";
@@ -1466,7 +1466,7 @@ contract ReceiverTest is Test {
 
         // Construct the route
         address[] memory route = new address[](1);
-        route[0] = address(blockHashProverPointer);
+        route[0] = address(stateProverPointer);
 
         bytes[] memory scpInputs = new bytes[](1);
         scpInputs[0] = abi.encode(l2BlockNumber);
@@ -1496,7 +1496,7 @@ contract ReceiverTest is Test {
                     keccak256(
                         abi.encode(
                             bytes32(0x0000000000000000000000000000000000000000000000000000000000000000),
-                            address(blockHashProverPointer)
+                            address(stateProverPointer)
                         )
                     ),
                     account

@@ -7,50 +7,50 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {MockProver} from "./mocks/MockProver.sol";
 
 contract StateProverPointerTest is Test {
-    StateProverPointer public blockHashProverPointer;
+    StateProverPointer public stateProverPointer;
     MockProver public mockProver;
     address public owner = makeAddr("owner");
 
     function setUp() public {
-        blockHashProverPointer = new StateProverPointer(owner);
+        stateProverPointer = new StateProverPointer(owner);
         mockProver = new MockProver();
     }
 
     function test_checkOwner() public view {
-        assertEq(blockHashProverPointer.owner(), owner);
+        assertEq(stateProverPointer.owner(), owner);
     }
 
     function test_setImplementationAddress() public {
         vm.prank(owner);
-        blockHashProverPointer.setImplementationAddress(address(mockProver));
-        assertEq(blockHashProverPointer.implementationAddress(), address(mockProver));
-        assertEq(blockHashProverPointer.implementationCodeHash(), address(mockProver).codehash);
+        stateProverPointer.setImplementationAddress(address(mockProver));
+        assertEq(stateProverPointer.implementationAddress(), address(mockProver));
+        assertEq(stateProverPointer.implementationCodeHash(), address(mockProver).codehash);
     }
 
     function test_setImplementationAddress_reverts_if_not_owner() public {
         vm.prank(makeAddr("notOwner"));
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, makeAddr("notOwner")));
-        blockHashProverPointer.setImplementationAddress(address(mockProver));
+        stateProverPointer.setImplementationAddress(address(mockProver));
     }
 
     function test_setImplementationAddress_reverts_if_version_is_not_increasing() public {
         vm.prank(owner);
-        blockHashProverPointer.setImplementationAddress(address(mockProver));
+        stateProverPointer.setImplementationAddress(address(mockProver));
         vm.prank(owner);
         vm.expectRevert(abi.encodeWithSelector(StateProverPointer.NonIncreasingVersion.selector, 1, 1));
-        blockHashProverPointer.setImplementationAddress(address(mockProver));
+        stateProverPointer.setImplementationAddress(address(mockProver));
     }
 
     function test_setImplementationAddress_reverts_if_implementation_address_is_invalid() public {
         vm.prank(owner);
         vm.expectRevert(abi.encodeWithSelector(StateProverPointer.InvalidImplementationAddress.selector));
-        blockHashProverPointer.setImplementationAddress(address(0));
+        stateProverPointer.setImplementationAddress(address(0));
     }
 
     function test_setImplementationAddress_reverts_if_implementation_address_is_invalid_eoa() public {
         vm.prank(owner);
         vm.expectRevert(abi.encodeWithSelector(StateProverPointer.InvalidImplementationAddress.selector));
-        blockHashProverPointer.setImplementationAddress(makeAddr("invalid"));
+        stateProverPointer.setImplementationAddress(makeAddr("invalid"));
     }
 }
 

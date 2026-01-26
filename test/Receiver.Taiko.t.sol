@@ -25,7 +25,7 @@ contract ReceiverTaikoTest is Test {
     Receiver public receiver;
     TaikoParentToChildProver public parentToChildProver;
     TaikoChildToParentProver public childToParentProver;
-    StateProverPointer public blockHashProverPointer;
+    StateProverPointer public stateProverPointer;
 
     // Note: We don't use forks anymore to avoid dependency on Taiko internal testnet
     // which can be reset at any time. Instead, we use local mocks with vm.chainId().
@@ -48,10 +48,10 @@ contract ReceiverTaikoTest is Test {
 
         receiver = new Receiver();
         parentToChildProver = new TaikoParentToChildProver(L1_SIGNAL_SERVICE, CHECKPOINTS_SLOT, L1_CHAIN_ID);
-        blockHashProverPointer = new StateProverPointer(owner);
+        stateProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
-        blockHashProverPointer.setImplementationAddress(address(parentToChildProver));
+        stateProverPointer.setImplementationAddress(address(parentToChildProver));
 
         // Read proof data
         string memory proofPath = "test/payloads/taiko/taikoProofL2.json";
@@ -82,7 +82,7 @@ contract ReceiverTaikoTest is Test {
         bytes memory storageProofInput = abi.encode(rlpBlockHeader, account, slot, rlpAccountProof, rlpStorageProof);
 
         address[] memory route = new address[](1);
-        route[0] = address(blockHashProverPointer);
+        route[0] = address(stateProverPointer);
 
         bytes[] memory scpInputs = new bytes[](1);
         scpInputs[0] = abi.encode(uint48(blockNumber));
@@ -111,10 +111,10 @@ contract ReceiverTaikoTest is Test {
 
         receiver = new Receiver();
         parentToChildProver = new TaikoParentToChildProver(L1_SIGNAL_SERVICE, CHECKPOINTS_SLOT, L1_CHAIN_ID);
-        blockHashProverPointer = new StateProverPointer(owner);
+        stateProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
-        blockHashProverPointer.setImplementationAddress(address(parentToChildProver));
+        stateProverPointer.setImplementationAddress(address(parentToChildProver));
 
         // Read proof data
         string memory proofPath = "test/payloads/taiko/taikoProofL2.json";
@@ -141,7 +141,7 @@ contract ReceiverTaikoTest is Test {
         bytes memory storageProofInput = abi.encode(rlpBlockHeader, account, slot, rlpAccountProof, rlpStorageProof);
 
         address[] memory route = new address[](1);
-        route[0] = address(blockHashProverPointer);
+        route[0] = address(stateProverPointer);
 
         bytes[] memory scpInputs = new bytes[](1);
         scpInputs[0] = abi.encode(uint48(blockNumber));
@@ -171,10 +171,10 @@ contract ReceiverTaikoTest is Test {
 
         receiver = new Receiver();
         childToParentProver = new TaikoChildToParentProver(L2_SIGNAL_SERVICE, CHECKPOINTS_SLOT, L2_CHAIN_ID);
-        blockHashProverPointer = new StateProverPointer(owner);
+        stateProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
-        blockHashProverPointer.setImplementationAddress(address(childToParentProver));
+        stateProverPointer.setImplementationAddress(address(childToParentProver));
 
         // Read proof data
         string memory proofPath = "test/payloads/taiko/taikoProofL1.json";
@@ -204,7 +204,7 @@ contract ReceiverTaikoTest is Test {
         bytes memory storageProofInput = abi.encode(rlpBlockHeader, account, slot, rlpAccountProof, rlpStorageProof);
 
         address[] memory route = new address[](1);
-        route[0] = address(blockHashProverPointer);
+        route[0] = address(stateProverPointer);
 
         bytes[] memory scpInputs = new bytes[](1);
         scpInputs[0] = abi.encode(uint48(blockNumber));

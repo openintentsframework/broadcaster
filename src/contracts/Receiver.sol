@@ -15,7 +15,7 @@ import {BLOCK_HASH_PROVER_POINTER_SLOT} from "./StateProverPointer.sol";
 ///      The verification process ensures that a message was actually broadcast on a remote chain
 ///      at a specific timestamp without requiring trust in intermediaries.
 contract Receiver is IReceiver {
-    mapping(bytes32 blockHashProverPointerId => IStateProver stateProverCopy) private _blockHashProverCopies;
+    mapping(bytes32 stateProverPointerId => IStateProver stateProverCopy) private _stateProverCopies;
 
     error InvalidRouteLength();
     error EmptyRoute();
@@ -93,13 +93,13 @@ contract Receiver is IReceiver {
             revert DifferentCodeHash();
         }
 
-        IStateProver oldProverCopy = _blockHashProverCopies[bhpPointerId];
+        IStateProver oldProverCopy = _stateProverCopies[bhpPointerId];
 
         if (address(oldProverCopy) != address(0) && oldProverCopy.version() >= bhpCopy.version()) {
             revert NewerProverVersion();
         }
 
-        _blockHashProverCopies[bhpPointerId] = bhpCopy;
+        _stateProverCopies[bhpPointerId] = bhpCopy;
     }
 
     /// @notice The StateProverCopy on the local chain corresponding to the bhpPointerId
@@ -107,7 +107,7 @@ contract Receiver is IReceiver {
     /// @param bhpPointerId The unique identifier of the StateProverPointer.
     /// @return bhpCopy The StateProver copy stored on the local chain, or address(0) if not found.
     function stateProverCopy(bytes32 bhpPointerId) external view returns (IStateProver bhpCopy) {
-        bhpCopy = _blockHashProverCopies[bhpPointerId];
+        bhpCopy = _stateProverCopies[bhpPointerId];
     }
 
     function _readRemoteSlot(RemoteReadArgs calldata readArgs)
@@ -133,7 +133,7 @@ contract Receiver is IReceiver {
                 prover = IStateProver(IStateProverPointer(readArgs.route[0]).implementationAddress());
                 blockHash = prover.getTargetStateCommitment(readArgs.scpInputs[0]);
             } else {
-                prover = _blockHashProverCopies[remoteAccountId];
+                prover = _stateProverCopies[remoteAccountId];
                 if (address(prover) == address(0)) {
                     revert ProverCopyNotFound();
                 }
