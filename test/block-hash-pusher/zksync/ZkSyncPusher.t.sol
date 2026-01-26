@@ -23,7 +23,7 @@ contract ZkSyncPusherTest is Test {
     function test_pushHashes_fork() public {
         vm.createSelectFork(vm.envString("ETHEREUM_RPC_URL"));
 
-        ZkSyncPusher zkSyncPusher = new ZkSyncPusher(zkSyncMailBoxAddress, buffer);
+        ZkSyncPusher zkSyncPusher = new ZkSyncPusher(zkSyncMailBoxAddress);
 
         bytes memory l2TransactionData = abi.encode(
             ZkSyncPusher.ZkSyncL2Transaction({
@@ -33,21 +33,21 @@ contract ZkSyncPusherTest is Test {
             })
         );
 
-        zkSyncPusher.pushHashes{value: 0.005 ether}(block.number - 1, 1, l2TransactionData);
+        zkSyncPusher.pushHashes{value: 0.005 ether}(buffer, block.number - 1, 1, l2TransactionData);
 
-        zkSyncPusher.pushHashes{value: 0.005 ether}(block.number - 10, 10, l2TransactionData);
+        zkSyncPusher.pushHashes{value: 0.005 ether}(buffer, block.number - 10, 10, l2TransactionData);
 
-        zkSyncPusher.pushHashes{value: 0.005 ether}(block.number - 15, 15, l2TransactionData);
+        zkSyncPusher.pushHashes{value: 0.005 ether}(buffer, block.number - 15, 15, l2TransactionData);
 
-        zkSyncPusher.pushHashes{value: 0.005 ether}(block.number - 1000, 10, l2TransactionData);
+        zkSyncPusher.pushHashes{value: 0.005 ether}(buffer, block.number - 1000, 10, l2TransactionData);
 
-        zkSyncPusher.pushHashes{value: 0.005 ether}(block.number - 8000, 20, l2TransactionData);
+        zkSyncPusher.pushHashes{value: 0.005 ether}(buffer, block.number - 8000, 20, l2TransactionData);
     }
 
     function test_pushHashes_fork_reverts_with_incorrect_l2_gas_price_per_pubdata() public {
         vm.createSelectFork(vm.envString("ETHEREUM_RPC_URL"));
 
-        ZkSyncPusher zkSyncPusher = new ZkSyncPusher(zkSyncMailBoxAddress, buffer);
+        ZkSyncPusher zkSyncPusher = new ZkSyncPusher(zkSyncMailBoxAddress);
 
         bytes memory l2TransactionData = abi.encode(
             ZkSyncPusher.ZkSyncL2Transaction({
@@ -58,14 +58,14 @@ contract ZkSyncPusherTest is Test {
         );
 
         vm.expectRevert(GasPerPubdataMismatch.selector);
-        zkSyncPusher.pushHashes{value: 50000000000000000}(block.number - 1, 1, l2TransactionData);
+        zkSyncPusher.pushHashes{value: 50000000000000000}(buffer, block.number - 1, 1, l2TransactionData);
     }
 
     function testFuzz_pushHashes(uint16 batchSize) public {
         vm.assume(batchSize > 0 && batchSize <= 256);
         vm.roll(batchSize + 1);
 
-        ZkSyncPusher zkSyncPusher = new ZkSyncPusher(mockZkSyncMailbox, buffer);
+        ZkSyncPusher zkSyncPusher = new ZkSyncPusher(mockZkSyncMailbox);
 
         bytes memory l2TransactionData = abi.encode(
             ZkSyncPusher.ZkSyncL2Transaction({
@@ -76,14 +76,14 @@ contract ZkSyncPusherTest is Test {
         );
 
         vm.prank(user);
-        zkSyncPusher.pushHashes(block.number - batchSize, batchSize, l2TransactionData);
+        zkSyncPusher.pushHashes(buffer, block.number - batchSize, batchSize, l2TransactionData);
     }
 
     function testFuzz_pushHashes_invalidBatchSize(uint16 batchSize) public {
         vm.assume(batchSize == 0 || batchSize > 8191);
         vm.roll(uint32(batchSize) + 1); // uint32 to avoid overflow
 
-        ZkSyncPusher zkSyncPusher = new ZkSyncPusher(mockZkSyncMailbox, buffer);
+        ZkSyncPusher zkSyncPusher = new ZkSyncPusher(mockZkSyncMailbox);
 
         bytes memory l2TransactionData = abi.encode(
             ZkSyncPusher.ZkSyncL2Transaction({
@@ -95,12 +95,11 @@ contract ZkSyncPusherTest is Test {
 
         vm.prank(user);
         vm.expectRevert(abi.encodeWithSelector(IPusher.InvalidBatch.selector, block.number - batchSize, batchSize));
-        zkSyncPusher.pushHashes(block.number - batchSize, batchSize, l2TransactionData);
+        zkSyncPusher.pushHashes(buffer, block.number - batchSize, batchSize, l2TransactionData);
     }
 
     function test_viewFunctions() public {
-        ZkSyncPusher zkSyncPusher = new ZkSyncPusher(mockZkSyncMailbox, buffer);
+        ZkSyncPusher zkSyncPusher = new ZkSyncPusher(mockZkSyncMailbox);
         assertEq(zkSyncPusher.zkSyncDiamond(), mockZkSyncMailbox);
-        assertEq(zkSyncPusher.bufferAddress(), buffer);
     }
 }
