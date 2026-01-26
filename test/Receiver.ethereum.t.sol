@@ -152,7 +152,7 @@ contract ReceiverTest is Test {
         bytes memory storageProofToLastProver = input;
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProofToLastProver});
 
         (bytes32 broadcasterId, uint256 timestamp) = receiver.verifyBroadcastMessage(remoteReadArgs, message, publisher);
 
@@ -211,7 +211,7 @@ contract ReceiverTest is Test {
         bytes memory storageProofToLastProver = input;
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProofToLastProver});
 
         vm.expectRevert(ZksyncParentToChildProver.SlotMismatch.selector);
         receiver.verifyBroadcastMessage(remoteReadArgs, message, publisher);

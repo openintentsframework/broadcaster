@@ -15,7 +15,7 @@ import {BLOCK_HASH_PROVER_POINTER_SLOT} from "./StateProverPointer.sol";
 ///      The verification process ensures that a message was actually broadcast on a remote chain
 ///      at a specific timestamp without requiring trust in intermediaries.
 contract Receiver is IReceiver {
-    mapping(bytes32 blockHashProverPointerId => IStateProver blockHashProverCopy) private _blockHashProverCopies;
+    mapping(bytes32 blockHashProverPointerId => IStateProver stateProverCopy) private _blockHashProverCopies;
 
     error InvalidRouteLength();
     error EmptyRoute();
@@ -106,7 +106,7 @@ contract Receiver is IReceiver {
     ///         MUST return 0 if the StateProverPointer does not exist.
     /// @param bhpPointerId The unique identifier of the StateProverPointer.
     /// @return bhpCopy The StateProver copy stored on the local chain, or address(0) if not found.
-    function blockHashProverCopy(bytes32 bhpPointerId) external view returns (IStateProver bhpCopy) {
+    function stateProverCopy(bytes32 bhpPointerId) external view returns (IStateProver bhpCopy) {
         bhpCopy = _blockHashProverCopies[bhpPointerId];
     }
 

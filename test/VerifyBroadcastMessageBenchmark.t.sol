@@ -87,7 +87,7 @@ contract VerifyBroadcastMessageBenchmark is Test {
         scpInputs[0] = abi.encode(uint48(blockNumber));
 
         IReceiver.RemoteReadArgs memory args =
-            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProof});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProof});
 
         // Call and snapshot
         receiver.verifyBroadcastMessage(args, message, publisher);
@@ -136,7 +136,7 @@ contract VerifyBroadcastMessageBenchmark is Test {
         scpInputs[0] = abi.encode(batchIndex);
 
         IReceiver.RemoteReadArgs memory args =
-            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProof});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProof});
 
         // Call and snapshot
         receiver.verifyBroadcastMessage(args, message, publisher);
@@ -184,7 +184,7 @@ contract VerifyBroadcastMessageBenchmark is Test {
         scpInputs[0] = abi.encode(l2BlockNumber);
 
         IReceiver.RemoteReadArgs memory args =
-            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: smtProof});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: smtProof});
 
         // Call and snapshot
         receiver.verifyBroadcastMessage(args, message, publisher);
@@ -275,7 +275,7 @@ contract VerifyBroadcastMessageBenchmark is Test {
         bytes memory storageProofToLastProver = input;
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProofToLastProver});
 
         receiver.verifyBroadcastMessage(remoteReadArgs, message, publisher);
         vm.snapshotGasLastCall("verifyBroadcastMessage", "ZkSyncL2ToEthereum");
@@ -333,7 +333,7 @@ contract VerifyBroadcastMessageBenchmark is Test {
         scpInputs[0] = abi.encode(uint48(blockNumber));
 
         IReceiver.RemoteReadArgs memory args =
-            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProof});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProof});
 
         // Call and snapshot
         receiver.verifyBroadcastMessage(args, message, publisher);
@@ -382,7 +382,7 @@ contract VerifyBroadcastMessageBenchmark is Test {
         scpInputs[0] = bytes("");
 
         IReceiver.RemoteReadArgs memory args =
-            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProof});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProof});
 
         // Call and snapshot
         receiver.verifyBroadcastMessage(args, message, publisher);

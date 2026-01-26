@@ -153,7 +153,7 @@ contract ReceiverTest is Test {
         bytes memory storageProofToLastProver = input;
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProofToLastProver});
 
         (bytes32 broadcasterId, uint256 timestamp) = receiver.verifyBroadcastMessage(remoteReadArgs, message, publisher);
 
@@ -225,7 +225,7 @@ contract ReceiverTest is Test {
         bytes memory storageProofToLastProver = input;
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProofToLastProver});
 
         (bytes32 broadcasterId, uint256 timestamp) = receiver.verifyBroadcastMessage(remoteReadArgs, message, publisher);
 
@@ -298,7 +298,7 @@ contract ReceiverTest is Test {
         bytes memory storageProofToLastProver = input;
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProofToLastProver});
 
         (bytes32 broadcasterId, uint256 timestamp) = receiver.verifyBroadcastMessage(remoteReadArgs, message, publisher);
 
@@ -369,7 +369,7 @@ contract ReceiverTest is Test {
         bytes memory storageProofToLastProver = input;
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProofToLastProver});
 
         ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
@@ -442,7 +442,7 @@ contract ReceiverTest is Test {
         bytes memory storageProofToLastProver = input;
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProofToLastProver});
 
         ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
@@ -507,7 +507,7 @@ contract ReceiverTest is Test {
             bytes memory storageProofToLastProver = inputForOPChildToParentProver;
 
             IReceiver.RemoteReadArgs memory remoteReadArgs =
-                IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
+                IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProofToLastProver});
 
             bytes32 bhpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
@@ -579,7 +579,7 @@ contract ReceiverTest is Test {
         );
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProofToLastProver});
 
         bytes32 message = 0x0000000000000000000000000000000000000000000000000000000074657374; // "test"
         address publisher = 0x9a56fFd72F4B526c523C733F1F74197A51c495E1;
@@ -656,7 +656,7 @@ contract ReceiverTest is Test {
         bytes memory storageProofToLastProver = input;
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProofToLastProver});
 
         ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
@@ -737,7 +737,7 @@ contract ReceiverTest is Test {
             bytes memory storageProofToLastProver = inputForOPChildToParentProver;
 
             IReceiver.RemoteReadArgs memory remoteReadArgs =
-                IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
+                IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProofToLastProver});
 
             bytes32 bhpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
@@ -807,7 +807,7 @@ contract ReceiverTest is Test {
         );
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProofToLastProver});
 
         bytes32 message = 0x0000000000000000000000000000000000000000000000000000000074657374; // "test"
         address publisher = 0x9a56fFd72F4B526c523C733F1F74197A51c495E1;
@@ -884,7 +884,7 @@ contract ReceiverTest is Test {
         bytes memory storageProofToLastProver = input;
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProofToLastProver});
 
         ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
@@ -965,7 +965,7 @@ contract ReceiverTest is Test {
             bytes memory storageProofToLastProver = inputForOPChildToParentProver;
 
             IReceiver.RemoteReadArgs memory remoteReadArgs =
-                IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
+                IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProofToLastProver});
 
             bytes32 bhpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
@@ -1035,7 +1035,7 @@ contract ReceiverTest is Test {
         );
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProofToLastProver});
 
         bytes32 message = 0x0000000000000000000000000000000000000000000000000000000074657374; // "test"
         address publisher = 0x9a56fFd72F4B526c523C733F1F74197A51c495E1;
@@ -1112,7 +1112,7 @@ contract ReceiverTest is Test {
         bytes memory storageProofToLastProver = input;
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProofToLastProver});
 
         ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
@@ -1193,7 +1193,7 @@ contract ReceiverTest is Test {
             bytes memory storageProofToLastProver = inputForOPChildToParentProver;
 
             IReceiver.RemoteReadArgs memory remoteReadArgs =
-                IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
+                IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProofToLastProver});
 
             bytes32 bhpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
@@ -1263,7 +1263,7 @@ contract ReceiverTest is Test {
         );
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProofToLastProver});
 
         bytes32 message = 0x0000000000000000000000000000000000000000000000000000000074657374; // "test"
         address publisher = 0x9a56fFd72F4B526c523C733F1F74197A51c495E1;
@@ -1400,7 +1400,7 @@ contract ReceiverTest is Test {
         scpInputs[0] = abi.encode(batchIndex);
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofInput});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProofInput});
 
         (bytes32 broadcasterId, uint256 timestamp) = receiver.verifyBroadcastMessage(remoteReadArgs, message, publisher);
 
@@ -1474,7 +1474,7 @@ contract ReceiverTest is Test {
         bytes memory storageProofToLastProver = smtProof;
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProofToLastProver});
 
         // Calculate expected message hash from the slot
         // The slot is keccak256(abi.encode(message, publisher))

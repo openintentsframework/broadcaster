@@ -112,7 +112,7 @@ contract ParentToChildProver is IStateProver {
     ///      - accountProof: from accountProof.proof.proofRelatedNodes (42 elements)
     ///      - accountValue: from accountProof.proof.value (192 bytes)
     ///      - storageLeafIndex: from storageProofs[0].leafIndex
-    ///      - storageProof: from storageProofs[0].proof.proofRelatedNodes (42 elements)
+    ///      - proof: from storageProofs[0].proof.proofRelatedNodes (42 elements)
     ///      - storageValue: the claimed storage value (32 bytes, to verify)
     ///
     ///      Security: This function verifies that:

@@ -63,7 +63,7 @@ contract VerifyOnChain is Script {
         IReceiver.RemoteReadArgs memory remoteReadArgs = IReceiver.RemoteReadArgs({
             route: route,
             scpInputs: scpInputs,
-            storageProof: storageProofInput
+            proof: storageProofInput
         });
 
         // Call the deployed Receiver contract
@@ -115,7 +115,7 @@ contract VerifyOnChain is Script {
         IReceiver.RemoteReadArgs memory remoteReadArgs = IReceiver.RemoteReadArgs({
             route: route,
             scpInputs: scpInputs,
-            storageProof: storageProofInput
+            proof: storageProofInput
         });
 
         // Call the deployed Receiver contract

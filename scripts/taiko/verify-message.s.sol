@@ -35,7 +35,7 @@ contract VerifyMessage is Script {
         IReceiver.RemoteReadArgs memory remoteReadArgs = IReceiver.RemoteReadArgs({
             route: route,
             scpInputs: scpInputs,
-            storageProof: storageProofInput
+            proof: storageProofInput
         });
         
         bytes32 message = 0xd9222d7d84eefb8570069f30ab4a850423ba57a374c593b67a224c430f9736df;
