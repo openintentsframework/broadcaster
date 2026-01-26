@@ -69,7 +69,7 @@ fi
 if [ "$SKIP_L1" = false ]; then
     L1_BROADCASTER=$(echo "$L1_OUTPUT" | grep -o "Broadcaster: 0x[a-fA-F0-9]*" | cut -d' ' -f2)
     L1_RECEIVER=$(echo "$L1_OUTPUT" | grep -o "Receiver: 0x[a-fA-F0-9]*" | cut -d' ' -f2)
-    L1_POINTER=$(echo "$L1_OUTPUT" | grep -o "BlockHashProverPointer: 0x[a-fA-F0-9]*" | cut -d' ' -f2)
+    L1_POINTER=$(echo "$L1_OUTPUT" | grep -o "StateProverPointer: 0x[a-fA-F0-9]*" | cut -d' ' -f2)
 fi
 
 if [ "$SKIP_L2" = false ]; then
@@ -81,7 +81,7 @@ if [ "$SKIP_L2" = false ]; then
     
     L2_BROADCASTER=$(echo "$L2_OUTPUT" | grep -o "Broadcaster: 0x[a-fA-F0-9]*" | cut -d' ' -f2)
     L2_RECEIVER=$(echo "$L2_OUTPUT" | grep -o "Receiver: 0x[a-fA-F0-9]*" | cut -d' ' -f2)
-    L2_POINTER=$(echo "$L2_OUTPUT" | grep -o "BlockHashProverPointer: 0x[a-fA-F0-9]*" | cut -d' ' -f2)
+    L2_POINTER=$(echo "$L2_OUTPUT" | grep -o "StateProverPointer: 0x[a-fA-F0-9]*" | cut -d' ' -f2)
 else
     echo "Skipping L2 deployment (already deployed)"
 fi
@@ -134,7 +134,7 @@ if [ "$SKIP_L1" = false ] || [ "$SKIP_L1_PROVER" = false ]; then
 
         forge verify-contract --rpc-url "$L1_RPC" --verifier blockscout --verifier-url "$L1_VERIFIER_URL" \
             --constructor-args $(cast abi-encode "constructor(address)" "$TAIKO_DEPLOYER_ADDRESS") \
-            "$L1_POINTER" src/contracts/BlockHashProverPointer.sol:BlockHashProverPointer || true
+            "$L1_POINTER" src/contracts/StateProverPointer.sol:StateProverPointer || true
     fi
     
     if [ "$SKIP_L1_PROVER" = false ]; then
@@ -144,7 +144,7 @@ if [ "$SKIP_L1" = false ] || [ "$SKIP_L1_PROVER" = false ]; then
 
         forge verify-contract --rpc-url "$L1_RPC" --verifier blockscout --verifier-url "$L1_VERIFIER_URL" \
             --constructor-args $(cast abi-encode "constructor(address)" "$TAIKO_DEPLOYER_ADDRESS") \
-            "$L1_PROVER_POINTER" src/contracts/BlockHashProverPointer.sol:BlockHashProverPointer || true
+            "$L1_PROVER_POINTER" src/contracts/StateProverPointer.sol:StateProverPointer || true
     fi
 fi
 
@@ -160,7 +160,7 @@ if [ "$SKIP_L2" = false ] || [ "$SKIP_L2_PROVER" = false ]; then
 
         forge verify-contract --rpc-url "$L2_RPC" --verifier blockscout --verifier-url "$L2_VERIFIER_URL" \
             --constructor-args $(cast abi-encode "constructor(address)" "$TAIKO_DEPLOYER_ADDRESS") \
-            "$L2_POINTER" src/contracts/BlockHashProverPointer.sol:BlockHashProverPointer || true
+            "$L2_POINTER" src/contracts/StateProverPointer.sol:StateProverPointer || true
     fi
 
     if [ "$SKIP_L2_PROVER" = false ]; then
@@ -170,7 +170,7 @@ if [ "$SKIP_L2" = false ] || [ "$SKIP_L2_PROVER" = false ]; then
 
         forge verify-contract --rpc-url "$L2_RPC" --verifier blockscout --verifier-url "$L2_VERIFIER_URL" \
             --constructor-args $(cast abi-encode "constructor(address)" "$TAIKO_DEPLOYER_ADDRESS") \
-            "$L2_PROVER_POINTER" src/contracts/BlockHashProverPointer.sol:BlockHashProverPointer || true
+            "$L2_PROVER_POINTER" src/contracts/StateProverPointer.sol:StateProverPointer || true
     fi
 fi
 
@@ -195,14 +195,14 @@ echo ""
 echo "L1 (Taiko Parent Chain - 32382):"
 echo "  Broadcaster:           $L1_BROADCASTER"
 echo "  Receiver:              $L1_RECEIVER"
-echo "  BlockHashProverPointer: $L1_POINTER"
+echo "  StateProverPointer: $L1_POINTER"
 echo "  ParentToChildProver:   $L1_PARENT_TO_CHILD_PROVER"
 echo "  ProverPointer:         $L1_PROVER_POINTER"
 echo ""
 echo "L2 (Taiko Child Chain - 167001):"
 echo "  Broadcaster:           $L2_BROADCASTER"
 echo "  Receiver:              $L2_RECEIVER"
-echo "  BlockHashProverPointer: $L2_POINTER"
+echo "  StateProverPointer: $L2_POINTER"
 echo "  ChildToParentProver:   $L2_CHILD_TO_PARENT_PROVER"
 echo "  ProverPointer:         $L2_PROVER_POINTER"
 echo ""

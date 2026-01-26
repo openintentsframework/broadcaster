@@ -8,7 +8,7 @@ import {IReceiver} from "../src/contracts/interfaces/IReceiver.sol";
 import {IStateProver} from "../src/contracts/interfaces/IStateProver.sol";
 import {IOutbox} from "@arbitrum/nitro-contracts/src/bridge/IOutbox.sol";
 import {IStateProverPointer} from "../src/contracts/interfaces/IStateProverPointer.sol";
-import {BLOCK_HASH_PROVER_POINTER_SLOT} from "../src/contracts/BlockHashProverPointer.sol";
+import {BLOCK_HASH_PROVER_POINTER_SLOT} from "../src/contracts/StateProverPointer.sol";
 import {BlockHeaders} from "./utils/BlockHeaders.sol";
 import {IBuffer} from "block-hash-pusher/contracts/interfaces/IBuffer.sol";
 import {BufferMock} from "./mocks/BufferMock.sol";
@@ -27,7 +27,7 @@ import {
 import {
     ParentToChildProver as ScrollParentToChildProver
 } from "../src/contracts/provers/scroll/ParentToChildProver.sol";
-import {BlockHashProverPointer} from "../src/contracts/BlockHashProverPointer.sol";
+import {StateProverPointer} from "../src/contracts/StateProverPointer.sol";
 import {RLP} from "@openzeppelin/contracts/utils/RLP.sol";
 
 interface IL1Block {
@@ -105,7 +105,7 @@ contract ReceiverTest is Test {
         receiver = new Receiver();
         ArbChildToParentProver childToParentProver = new ArbChildToParentProver(block.chainid);
 
-        BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
+        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
         blockHashProverPointer.setImplementationAddress(address(childToParentProver));
@@ -147,13 +147,13 @@ contract ReceiverTest is Test {
         address[] memory route = new address[](1);
         route[0] = address(blockHashProverPointer);
 
-        bytes[] memory bhpInputs = new bytes[](1);
-        bhpInputs[0] = abi.encode(blockNumber);
+        bytes[] memory scpInputs = new bytes[](1);
+        scpInputs[0] = abi.encode(blockNumber);
 
         bytes memory storageProofToLastProver = input;
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
 
         (bytes32 broadcasterId, uint256 timestamp) = receiver.verifyBroadcastMessage(remoteReadArgs, message, publisher);
 
@@ -181,7 +181,7 @@ contract ReceiverTest is Test {
         receiver = new Receiver();
         ArbParentToChildProver parentToChildProver = _getOnChainArbProverCopy();
 
-        BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
+        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
         blockHashProverPointer.setImplementationAddress(address(parentToChildProver));
@@ -219,13 +219,13 @@ contract ReceiverTest is Test {
         address[] memory route = new address[](1);
         route[0] = address(blockHashProverPointer);
 
-        bytes[] memory bhpInputs = new bytes[](1);
-        bhpInputs[0] = abi.encode(sendRoot);
+        bytes[] memory scpInputs = new bytes[](1);
+        scpInputs[0] = abi.encode(sendRoot);
 
         bytes memory storageProofToLastProver = input;
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
 
         (bytes32 broadcasterId, uint256 timestamp) = receiver.verifyBroadcastMessage(remoteReadArgs, message, publisher);
 
@@ -253,7 +253,7 @@ contract ReceiverTest is Test {
 
         OPChildToParentProver childToParentProver = new OPChildToParentProver(block.chainid);
 
-        BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
+        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
         blockHashProverPointer.setImplementationAddress(address(childToParentProver));
@@ -292,13 +292,13 @@ contract ReceiverTest is Test {
         address[] memory route = new address[](1);
         route[0] = address(blockHashProverPointer);
 
-        bytes[] memory bhpInputs = new bytes[](1);
-        bhpInputs[0] = bytes("");
+        bytes[] memory scpInputs = new bytes[](1);
+        scpInputs[0] = bytes("");
 
         bytes memory storageProofToLastProver = input;
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
 
         (bytes32 broadcasterId, uint256 timestamp) = receiver.verifyBroadcastMessage(remoteReadArgs, message, publisher);
 
@@ -327,7 +327,7 @@ contract ReceiverTest is Test {
 
         OPChildToParentProver childToParentProver = new OPChildToParentProver(block.chainid);
 
-        BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
+        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
         blockHashProverPointer.setImplementationAddress(address(childToParentProver));
@@ -363,13 +363,13 @@ contract ReceiverTest is Test {
         address[] memory route = new address[](1);
         route[0] = address(blockHashProverPointer);
 
-        bytes[] memory bhpInputs = new bytes[](1);
-        bhpInputs[0] = bytes("");
+        bytes[] memory scpInputs = new bytes[](1);
+        scpInputs[0] = bytes("");
 
         bytes memory storageProofToLastProver = input;
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
 
         ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
@@ -400,7 +400,7 @@ contract ReceiverTest is Test {
 
         OPChildToParentProver childToParentProver = new OPChildToParentProver(block.chainid);
 
-        BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
+        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
         blockHashProverPointer.setImplementationAddress(address(childToParentProver));
@@ -436,13 +436,13 @@ contract ReceiverTest is Test {
         address[] memory route = new address[](1);
         route[0] = address(blockHashProverPointer);
 
-        bytes[] memory bhpInputs = new bytes[](1);
-        bhpInputs[0] = bytes("");
+        bytes[] memory scpInputs = new bytes[](1);
+        scpInputs[0] = bytes("");
 
         bytes memory storageProofToLastProver = input;
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
 
         ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
@@ -457,7 +457,7 @@ contract ReceiverTest is Test {
 
         OPChildToParentProver childToParentProver = new OPChildToParentProver(block.chainid);
 
-        BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
+        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
 
         ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
@@ -501,13 +501,13 @@ contract ReceiverTest is Test {
             address[] memory route = new address[](1);
             route[0] = address(blockHashProverPointer);
 
-            bytes[] memory bhpInputs = new bytes[](1);
-            bhpInputs[0] = bytes("");
+            bytes[] memory scpInputs = new bytes[](1);
+            scpInputs[0] = bytes("");
 
             bytes memory storageProofToLastProver = inputForOPChildToParentProver;
 
             IReceiver.RemoteReadArgs memory remoteReadArgs =
-                IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
+                IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
 
             bytes32 bhpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
@@ -570,16 +570,16 @@ contract ReceiverTest is Test {
         bytes memory input1 =
             abi.encode(rlpBlockHeaderEthereum, sendRootArbitrum, rlpAccountProofEthereum, rlpStorageProofEthereum);
 
-        bytes[] memory bhpInputs = new bytes[](2);
-        bhpInputs[0] = input0;
-        bhpInputs[1] = input1;
+        bytes[] memory scpInputs = new bytes[](2);
+        scpInputs[0] = input0;
+        scpInputs[1] = input1;
 
         bytes memory storageProofToLastProver = abi.encode(
             rlpBlockHeaderArbitrum, accountArbitrum, slotArbitrum, rlpAccountProofArbitrum, rlpStorageProofArbitrum
         );
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
 
         bytes32 message = 0x0000000000000000000000000000000000000000000000000000000074657374; // "test"
         address publisher = 0x9a56fFd72F4B526c523C733F1F74197A51c495E1;
@@ -616,7 +616,7 @@ contract ReceiverTest is Test {
 
         ZksyncChildToParentProver childToParentProver = new ZksyncChildToParentProver(address(buffer), block.chainid);
 
-        BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
+        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
         blockHashProverPointer.setImplementationAddress(address(childToParentProver));
@@ -650,13 +650,13 @@ contract ReceiverTest is Test {
         address[] memory route = new address[](1);
         route[0] = address(blockHashProverPointer);
 
-        bytes[] memory bhpInputs = new bytes[](1);
-        bhpInputs[0] = abi.encode(blockNumber);
+        bytes[] memory scpInputs = new bytes[](1);
+        scpInputs[0] = abi.encode(blockNumber);
 
         bytes memory storageProofToLastProver = input;
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
 
         ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
@@ -689,7 +689,7 @@ contract ReceiverTest is Test {
 
         ZksyncChildToParentProver childToParentProver = new ZksyncChildToParentProver(address(buffer), block.chainid);
 
-        BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
+        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
 
         ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
@@ -731,13 +731,13 @@ contract ReceiverTest is Test {
             address[] memory route = new address[](1);
             route[0] = address(blockHashProverPointer);
 
-            bytes[] memory bhpInputs = new bytes[](1);
-            bhpInputs[0] = abi.encode(blockNumber);
+            bytes[] memory scpInputs = new bytes[](1);
+            scpInputs[0] = abi.encode(blockNumber);
 
             bytes memory storageProofToLastProver = inputForOPChildToParentProver;
 
             IReceiver.RemoteReadArgs memory remoteReadArgs =
-                IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
+                IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
 
             bytes32 bhpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
@@ -798,16 +798,16 @@ contract ReceiverTest is Test {
         bytes memory input1 =
             abi.encode(rlpBlockHeaderEthereum, sendRootArbitrum, rlpAccountProofEthereum, rlpStorageProofEthereum);
 
-        bytes[] memory bhpInputs = new bytes[](2);
-        bhpInputs[0] = input0;
-        bhpInputs[1] = input1;
+        bytes[] memory scpInputs = new bytes[](2);
+        scpInputs[0] = input0;
+        scpInputs[1] = input1;
 
         bytes memory storageProofToLastProver = abi.encode(
             rlpBlockHeaderArbitrum, accountArbitrum, slotArbitrum, rlpAccountProofArbitrum, rlpStorageProofArbitrum
         );
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
 
         bytes32 message = 0x0000000000000000000000000000000000000000000000000000000074657374; // "test"
         address publisher = 0x9a56fFd72F4B526c523C733F1F74197A51c495E1;
@@ -844,7 +844,7 @@ contract ReceiverTest is Test {
 
         LineaChildToParentProver childToParentProver = new LineaChildToParentProver(address(buffer), block.chainid);
 
-        BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
+        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
         blockHashProverPointer.setImplementationAddress(address(childToParentProver));
@@ -878,13 +878,13 @@ contract ReceiverTest is Test {
         address[] memory route = new address[](1);
         route[0] = address(blockHashProverPointer);
 
-        bytes[] memory bhpInputs = new bytes[](1);
-        bhpInputs[0] = abi.encode(blockNumber);
+        bytes[] memory scpInputs = new bytes[](1);
+        scpInputs[0] = abi.encode(blockNumber);
 
         bytes memory storageProofToLastProver = input;
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
 
         ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
@@ -917,7 +917,7 @@ contract ReceiverTest is Test {
 
         LineaChildToParentProver childToParentProver = new LineaChildToParentProver(address(buffer), block.chainid);
 
-        BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
+        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
 
         ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
@@ -959,13 +959,13 @@ contract ReceiverTest is Test {
             address[] memory route = new address[](1);
             route[0] = address(blockHashProverPointer);
 
-            bytes[] memory bhpInputs = new bytes[](1);
-            bhpInputs[0] = abi.encode(blockNumber);
+            bytes[] memory scpInputs = new bytes[](1);
+            scpInputs[0] = abi.encode(blockNumber);
 
             bytes memory storageProofToLastProver = inputForOPChildToParentProver;
 
             IReceiver.RemoteReadArgs memory remoteReadArgs =
-                IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
+                IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
 
             bytes32 bhpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
@@ -1026,16 +1026,16 @@ contract ReceiverTest is Test {
         bytes memory input1 =
             abi.encode(rlpBlockHeaderEthereum, sendRootArbitrum, rlpAccountProofEthereum, rlpStorageProofEthereum);
 
-        bytes[] memory bhpInputs = new bytes[](2);
-        bhpInputs[0] = input0;
-        bhpInputs[1] = input1;
+        bytes[] memory scpInputs = new bytes[](2);
+        scpInputs[0] = input0;
+        scpInputs[1] = input1;
 
         bytes memory storageProofToLastProver = abi.encode(
             rlpBlockHeaderArbitrum, accountArbitrum, slotArbitrum, rlpAccountProofArbitrum, rlpStorageProofArbitrum
         );
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
 
         bytes32 message = 0x0000000000000000000000000000000000000000000000000000000074657374; // "test"
         address publisher = 0x9a56fFd72F4B526c523C733F1F74197A51c495E1;
@@ -1072,7 +1072,7 @@ contract ReceiverTest is Test {
 
         ScrollChildToParentProver childToParentProver = new ScrollChildToParentProver(address(buffer), block.chainid);
 
-        BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
+        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
         blockHashProverPointer.setImplementationAddress(address(childToParentProver));
@@ -1106,13 +1106,13 @@ contract ReceiverTest is Test {
         address[] memory route = new address[](1);
         route[0] = address(blockHashProverPointer);
 
-        bytes[] memory bhpInputs = new bytes[](1);
-        bhpInputs[0] = abi.encode(blockNumber);
+        bytes[] memory scpInputs = new bytes[](1);
+        scpInputs[0] = abi.encode(blockNumber);
 
         bytes memory storageProofToLastProver = input;
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
 
         ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
@@ -1145,7 +1145,7 @@ contract ReceiverTest is Test {
 
         ScrollChildToParentProver childToParentProver = new ScrollChildToParentProver(address(buffer), block.chainid);
 
-        BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
+        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
 
         ArbParentToChildProver arbParentToChildProverCopy = _getOnChainArbProverCopy();
 
@@ -1187,13 +1187,13 @@ contract ReceiverTest is Test {
             address[] memory route = new address[](1);
             route[0] = address(blockHashProverPointer);
 
-            bytes[] memory bhpInputs = new bytes[](1);
-            bhpInputs[0] = abi.encode(blockNumber);
+            bytes[] memory scpInputs = new bytes[](1);
+            scpInputs[0] = abi.encode(blockNumber);
 
             bytes memory storageProofToLastProver = inputForOPChildToParentProver;
 
             IReceiver.RemoteReadArgs memory remoteReadArgs =
-                IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
+                IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
 
             bytes32 bhpPointerId = receiver.updateStateProverCopy(remoteReadArgs, arbParentToChildProverCopy);
 
@@ -1254,16 +1254,16 @@ contract ReceiverTest is Test {
         bytes memory input1 =
             abi.encode(rlpBlockHeaderEthereum, sendRootArbitrum, rlpAccountProofEthereum, rlpStorageProofEthereum);
 
-        bytes[] memory bhpInputs = new bytes[](2);
-        bhpInputs[0] = input0;
-        bhpInputs[1] = input1;
+        bytes[] memory scpInputs = new bytes[](2);
+        scpInputs[0] = input0;
+        scpInputs[1] = input1;
 
         bytes memory storageProofToLastProver = abi.encode(
             rlpBlockHeaderArbitrum, accountArbitrum, slotArbitrum, rlpAccountProofArbitrum, rlpStorageProofArbitrum
         );
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
 
         bytes32 message = 0x0000000000000000000000000000000000000000000000000000000074657374; // "test"
         address publisher = 0x9a56fFd72F4B526c523C733F1F74197A51c495E1;
@@ -1306,7 +1306,7 @@ contract ReceiverTest is Test {
         ScrollParentToChildProver parentToChildProver =
             new ScrollParentToChildProver(scrollChain, finalizedStateRootsSlot, homeChainId);
 
-        BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
+        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
         blockHashProverPointer.setImplementationAddress(address(parentToChildProver));
@@ -1362,7 +1362,7 @@ contract ReceiverTest is Test {
         ScrollParentToChildProver parentToChildProver =
             new ScrollParentToChildProver(scrollChain, finalizedStateRootsSlot, homeChainId);
 
-        BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
+        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
         blockHashProverPointer.setImplementationAddress(address(parentToChildProver));
@@ -1396,11 +1396,11 @@ contract ReceiverTest is Test {
         address[] memory route = new address[](1);
         route[0] = address(blockHashProverPointer);
 
-        bytes[] memory bhpInputs = new bytes[](1);
-        bhpInputs[0] = abi.encode(batchIndex);
+        bytes[] memory scpInputs = new bytes[](1);
+        scpInputs[0] = abi.encode(batchIndex);
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofInput});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofInput});
 
         (bytes32 broadcasterId, uint256 timestamp) = receiver.verifyBroadcastMessage(remoteReadArgs, message, publisher);
 
@@ -1440,7 +1440,7 @@ contract ReceiverTest is Test {
         LineaParentToChildProver parentToChildProver =
             new LineaParentToChildProver(lineaRollup, stateRootHashesSlot, homeChainId);
 
-        BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
+        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
         blockHashProverPointer.setImplementationAddress(address(parentToChildProver));
@@ -1468,13 +1468,13 @@ contract ReceiverTest is Test {
         address[] memory route = new address[](1);
         route[0] = address(blockHashProverPointer);
 
-        bytes[] memory bhpInputs = new bytes[](1);
-        bhpInputs[0] = abi.encode(l2BlockNumber);
+        bytes[] memory scpInputs = new bytes[](1);
+        scpInputs[0] = abi.encode(l2BlockNumber);
 
         bytes memory storageProofToLastProver = smtProof;
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
 
         // Calculate expected message hash from the slot
         // The slot is keccak256(abi.encode(message, publisher))

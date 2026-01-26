@@ -2,17 +2,17 @@
 pragma solidity 0.8.30;
 
 import {Test} from "forge-std/Test.sol";
-import {BlockHashProverPointer} from "../src/contracts/BlockHashProverPointer.sol";
+import {StateProverPointer} from "../src/contracts/StateProverPointer.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {MockProver} from "./mocks/MockProver.sol";
 
-contract BlockHashProverPointerTest is Test {
-    BlockHashProverPointer public blockHashProverPointer;
+contract StateProverPointerTest is Test {
+    StateProverPointer public blockHashProverPointer;
     MockProver public mockProver;
     address public owner = makeAddr("owner");
 
     function setUp() public {
-        blockHashProverPointer = new BlockHashProverPointer(owner);
+        blockHashProverPointer = new StateProverPointer(owner);
         mockProver = new MockProver();
     }
 
@@ -37,19 +37,19 @@ contract BlockHashProverPointerTest is Test {
         vm.prank(owner);
         blockHashProverPointer.setImplementationAddress(address(mockProver));
         vm.prank(owner);
-        vm.expectRevert(abi.encodeWithSelector(BlockHashProverPointer.NonIncreasingVersion.selector, 1, 1));
+        vm.expectRevert(abi.encodeWithSelector(StateProverPointer.NonIncreasingVersion.selector, 1, 1));
         blockHashProverPointer.setImplementationAddress(address(mockProver));
     }
 
     function test_setImplementationAddress_reverts_if_implementation_address_is_invalid() public {
         vm.prank(owner);
-        vm.expectRevert(abi.encodeWithSelector(BlockHashProverPointer.InvalidImplementationAddress.selector));
+        vm.expectRevert(abi.encodeWithSelector(StateProverPointer.InvalidImplementationAddress.selector));
         blockHashProverPointer.setImplementationAddress(address(0));
     }
 
     function test_setImplementationAddress_reverts_if_implementation_address_is_invalid_eoa() public {
         vm.prank(owner);
-        vm.expectRevert(abi.encodeWithSelector(BlockHashProverPointer.InvalidImplementationAddress.selector));
+        vm.expectRevert(abi.encodeWithSelector(StateProverPointer.InvalidImplementationAddress.selector));
         blockHashProverPointer.setImplementationAddress(makeAddr("invalid"));
     }
 }

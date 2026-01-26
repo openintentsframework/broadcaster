@@ -8,7 +8,7 @@ import {IReceiver} from "../src/contracts/interfaces/IReceiver.sol";
 import {IStateProver} from "../src/contracts/interfaces/IStateProver.sol";
 import {IOutbox} from "@arbitrum/nitro-contracts/src/bridge/IOutbox.sol";
 import {IStateProverPointer} from "../src/contracts/interfaces/IStateProverPointer.sol";
-import {BLOCK_HASH_PROVER_POINTER_SLOT} from "../src/contracts/BlockHashProverPointer.sol";
+import {BLOCK_HASH_PROVER_POINTER_SLOT} from "../src/contracts/StateProverPointer.sol";
 import {BlockHeaders} from "./utils/BlockHeaders.sol";
 import {IBuffer} from "block-hash-pusher/contracts/interfaces/IBuffer.sol";
 import {BufferMock} from "./mocks/BufferMock.sol";
@@ -32,7 +32,7 @@ import {
 import {
     ParentToChildProver as ScrollParentToChildProver
 } from "../src/contracts/provers/scroll/ParentToChildProver.sol";
-import {BlockHashProverPointer} from "../src/contracts/BlockHashProverPointer.sol";
+import {StateProverPointer} from "../src/contracts/StateProverPointer.sol";
 import {RLP} from "@openzeppelin/contracts/utils/RLP.sol";
 
 import {MockZkChain} from "./provers/zksync/ParentChildToProver.t.sol";
@@ -129,7 +129,7 @@ contract ReceiverTest is Test {
         ZksyncParentToChildProver parentToChildProver =
             new ZksyncParentToChildProver(address(mockZkChain), 0, 300, 32657, block.chainid);
 
-        BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
+        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
         blockHashProverPointer.setImplementationAddress(address(parentToChildProver));
@@ -146,13 +146,13 @@ contract ReceiverTest is Test {
         address[] memory route = new address[](1);
         route[0] = address(blockHashProverPointer);
 
-        bytes[] memory bhpInputs = new bytes[](1);
-        bhpInputs[0] = abi.encode(47506);
+        bytes[] memory scpInputs = new bytes[](1);
+        scpInputs[0] = abi.encode(47506);
 
         bytes memory storageProofToLastProver = input;
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
 
         (bytes32 broadcasterId, uint256 timestamp) = receiver.verifyBroadcastMessage(remoteReadArgs, message, publisher);
 
@@ -188,7 +188,7 @@ contract ReceiverTest is Test {
         ZksyncParentToChildProver parentToChildProver =
             new ZksyncParentToChildProver(address(mockZkChain), 0, 300, 32657, block.chainid);
 
-        BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
+        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
         blockHashProverPointer.setImplementationAddress(address(parentToChildProver));
@@ -205,13 +205,13 @@ contract ReceiverTest is Test {
         address[] memory route = new address[](1);
         route[0] = address(blockHashProverPointer);
 
-        bytes[] memory bhpInputs = new bytes[](1);
-        bhpInputs[0] = abi.encode(47506);
+        bytes[] memory scpInputs = new bytes[](1);
+        scpInputs[0] = abi.encode(47506);
 
         bytes memory storageProofToLastProver = input;
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, storageProof: storageProofToLastProver});
 
         vm.expectRevert(ZksyncParentToChildProver.SlotMismatch.selector);
         receiver.verifyBroadcastMessage(remoteReadArgs, message, publisher);

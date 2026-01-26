@@ -4,7 +4,7 @@ pragma solidity ^0.8.27;
 import { Script } from "forge-std/Script.sol";
 import { console } from "forge-std/console.sol";
 import { ChildToParentProver as TaikoChildToParentProver } from "../../src/contracts/provers/taiko/ChildToParentProver.sol";
-import { BlockHashProverPointer } from "../../src/contracts/BlockHashProverPointer.sol";
+import { StateProverPointer } from "../../src/contracts/StateProverPointer.sol";
 
 /// @notice Deploy ChildToParentProver on L2 (Taiko Child Chain)
 /// @dev This script deploys the prover that allows reading L1 state from L2
@@ -24,7 +24,7 @@ contract DeployL2Prover is Script {
             homeChainId
         );
         
-        BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
+        StateProverPointer blockHashProverPointer = new StateProverPointer(owner);
         blockHashProverPointer.setImplementationAddress(address(childToParentProver));
         
         vm.stopBroadcast();
