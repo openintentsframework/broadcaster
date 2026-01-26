@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 import {Lib_SecureMerkleTrie} from "@eth-optimism/contracts/libraries/trie/Lib_SecureMerkleTrie.sol";
 import {RLP} from "@openzeppelin/contracts/utils/RLP.sol";
 import {Memory} from "@openzeppelin/contracts/utils/Memory.sol";
 
-/// @notice Base contract for IBlockHashProver contracts. Contains helpers for verifying block headers and MPT proofs.
+/// @notice Base contract for IStateProver contracts. Contains helpers for verifying block headers and MPT proofs.
 library ProverUtils {
     using Memory for bytes;
     using RLP for Memory.Slice;
@@ -73,7 +73,7 @@ library ProverUtils {
         bytes memory rlpStorageProof
     ) internal pure returns (bytes32 value) {
         // verify the block header
-        if(blockHash != keccak256(rlpBlockHeader)) {
+        if (blockHash != keccak256(rlpBlockHeader)) {
             revert BlockHashDoesNotMatch();
         }
 
@@ -95,7 +95,6 @@ library ProverUtils {
         pure
         returns (bool accountExists, bytes memory accountData)
     {
-
         (accountExists, accountData) = Lib_SecureMerkleTrie.get(abi.encodePacked(account), rlpAccountProof, stateRoot);
     }
 
@@ -119,15 +118,13 @@ library ProverUtils {
         // verify the proof
         (bool accountExists, bytes memory accountValue) =
             getAccountDataFromStateRoot(stateRoot, rlpAccountProof, account);
-    
 
-        if(!accountExists) {
+        if (!accountExists) {
             revert AccountDoesNotExist();
         }
 
         (bool slotExists, bytes memory slotValue) =
             Lib_SecureMerkleTrie.get(abi.encode(slot), rlpStorageProof, extractStorageRootFromAccountData(accountValue));
-    
 
         // decode the slot value
         if (slotExists) value = slotValue.asSlice().readBytes32();

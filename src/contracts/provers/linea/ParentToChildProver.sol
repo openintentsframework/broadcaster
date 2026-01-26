@@ -3,7 +3,7 @@ pragma solidity ^0.8.28;
 
 import {SparseMerkleProof} from "../../libraries/linea/SparseMerkleProof.sol";
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
-import {IBlockHashProver} from "../../interfaces/IBlockHashProver.sol";
+import {IStateProver} from "../../interfaces/IStateProver.sol";
 import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 
 interface ILineaRollup {
@@ -16,13 +16,13 @@ interface ILineaRollup {
 /// @title Linea ParentToChildProver
 /// @notice Enables verification of Linea L2 state from Ethereum L1
 /// @dev Home chain: L1 (Ethereum). Target chain: L2 (Linea).
-///      On L1: getTargetBlockHash reads L2 state root directly from LineaRollup
-///      On L2: verifyTargetBlockHash proves L2 state root from L1 LineaRollup storage
+///      On L1: getTargetStateCommitment reads L2 state root directly from LineaRollup
+///      On L2: verifyTargetStateCommitment proves L2 state root from L1 LineaRollup storage
 ///      verifyStorageSlot: Verifies storage against the L2 state root using Sparse Merkle Tree proofs
 ///
 ///      Note: Linea uses Sparse Merkle Tree (SMT) with MiMC hashing, NOT Merkle-Patricia Trie (MPT).
 ///      The state root stored on L1 is the SMT root, which requires linea_getProof for verification.
-contract ParentToChildProver is IBlockHashProver {
+contract ParentToChildProver is IStateProver {
     /// @dev Address of the LineaRollup contract on L1
     address public immutable lineaRollup;
 
@@ -55,7 +55,7 @@ contract ParentToChildProver is IBlockHashProver {
     /// @param homeBlockHash The L1 block hash
     /// @param input ABI encoded (bytes rlpBlockHeader, uint256 l2BlockNumber, bytes accountProof, bytes storageProof)
     /// @return targetBlockHash The L2 state root (named "blockHash" for interface compatibility)
-    function verifyTargetBlockHash(bytes32 homeBlockHash, bytes calldata input)
+    function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
         external
         view
         returns (bytes32 targetBlockHash)
@@ -86,7 +86,7 @@ contract ParentToChildProver is IBlockHashProver {
     /// @dev Called on home chain (L1)
     /// @param input ABI encoded (uint256 l2BlockNumber)
     /// @return targetBlockHash The L2 state root
-    function getTargetBlockHash(bytes calldata input) external view returns (bytes32 targetBlockHash) {
+    function getTargetStateCommitment(bytes calldata input) external view returns (bytes32 targetBlockHash) {
         if (block.chainid != homeChainId) {
             revert CallNotOnHomeChain();
         }
@@ -112,7 +112,7 @@ contract ParentToChildProver is IBlockHashProver {
     ///      - accountProof: from accountProof.proof.proofRelatedNodes (42 elements)
     ///      - accountValue: from accountProof.proof.value (192 bytes)
     ///      - storageLeafIndex: from storageProofs[0].leafIndex
-    ///      - storageProof: from storageProofs[0].proof.proofRelatedNodes (42 elements)
+    ///      - proof: from storageProofs[0].proof.proofRelatedNodes (42 elements)
     ///      - storageValue: the claimed storage value (32 bytes, to verify)
     ///
     ///      Security: This function verifies that:
@@ -123,7 +123,7 @@ contract ParentToChildProver is IBlockHashProver {
     ///      5. The storage proof corresponds to the claimed slot (hKey check)
     ///      6. The storage value matches the proof's hValue
     ///
-    /// @param targetBlockHash The L2 SMT state root (from getTargetBlockHash or verifyTargetBlockHash)
+    /// @param targetBlockHash The L2 SMT state root (from getTargetStateCommitment or verifyTargetStateCommitment)
     /// @param input ABI encoded proof data from linea_getProof
     /// @return account The address of the account on L2
     /// @return slot The storage slot
@@ -141,8 +141,16 @@ contract ParentToChildProver is IBlockHashProver {
         bytes[] memory storageProof;
         bytes32 claimedStorageValue;
 
-        (account, slot, accountLeafIndex, accountProof, accountValue, storageLeafIndex, storageProof, claimedStorageValue)
-        = abi.decode(input, (address, uint256, uint256, bytes[], bytes, uint256, bytes[], bytes32));
+        (
+            account,
+            slot,
+            accountLeafIndex,
+            accountProof,
+            accountValue,
+            storageLeafIndex,
+            storageProof,
+            claimedStorageValue
+        ) = abi.decode(input, (address, uint256, uint256, bytes[], bytes, uint256, bytes[], bytes32));
 
         // Step 1: Verify account proof against L2 state root (SMT)
         bool accountValid = SparseMerkleProof.verifyProof(accountProof, accountLeafIndex, targetBlockHash);
@@ -152,8 +160,7 @@ contract ParentToChildProver is IBlockHashProver {
 
         // Step 2: Verify the account proof corresponds to the claimed account address
         // Extract the account leaf and verify its hKey matches the MiMC hash of the claimed address
-        SparseMerkleProof.Leaf memory accountLeaf =
-            SparseMerkleProof.getLeaf(accountProof[accountProof.length - 1]);
+        SparseMerkleProof.Leaf memory accountLeaf = SparseMerkleProof.getLeaf(accountProof[accountProof.length - 1]);
         bytes32 expectedAccountHKey = SparseMerkleProof.hashAccountKey(account);
         if (accountLeaf.hKey != expectedAccountHKey) {
             revert AccountKeyMismatch();
@@ -179,8 +186,7 @@ contract ParentToChildProver is IBlockHashProver {
 
         // Step 6: Verify the storage proof corresponds to the claimed slot
         // Extract the storage leaf and verify its hKey matches the MiMC hash of the claimed slot
-        SparseMerkleProof.Leaf memory storageLeaf =
-            SparseMerkleProof.getLeaf(storageProof[storageProof.length - 1]);
+        SparseMerkleProof.Leaf memory storageLeaf = SparseMerkleProof.getLeaf(storageProof[storageProof.length - 1]);
         bytes32 expectedStorageHKey = SparseMerkleProof.hashStorageKey(bytes32(slot));
         if (storageLeaf.hKey != expectedStorageHKey) {
             revert StorageKeyMismatch();
@@ -195,7 +201,7 @@ contract ParentToChildProver is IBlockHashProver {
         value = claimedStorageValue;
     }
 
-    /// @inheritdoc IBlockHashProver
+    /// @inheritdoc IStateProver
     function version() external pure returns (uint256) {
         return 1;
     }

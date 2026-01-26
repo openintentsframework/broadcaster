@@ -5,8 +5,8 @@
  * Run with: npx hardhat run scripts/generate-optimism-test-payloads.ts
  * 
  * Generates:
- * - calldata_get.hex: For getTargetBlockHash() test
- * - calldata_verify_target.hex: For verifyTargetBlockHash() test
+ * - calldata_get.hex: For getTargetStateCommitment() test
+ * - calldata_verify_target.hex: For verifyTargetStateCommitment() test
  * - calldata_verify_slot.hex: For verifyStorageSlot() test
  */
 

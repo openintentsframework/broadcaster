@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
-import {IBlockHashProver} from "../../interfaces/IBlockHashProver.sol";
+import {IStateProver} from "../../interfaces/IStateProver.sol";
 import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 
 import {MessageHashing, ProofData} from "./libraries/MessageHashing.sol";
@@ -54,14 +54,14 @@ struct ZkSyncProof {
     bytes32[] proof;
 }
 
-/// @notice ZkSync implementation of a parent to child IBlockHashProver.
+/// @notice ZkSync implementation of a parent to child IStateProver.
 /// @dev This contract verifies L2 logs root hashes from ZkSync child chains on the parent chain (L1).
-///      The `verifyTargetBlockHash` and `getTargetBlockHash` functions retrieve L2 logs root hashes
+///      The `verifyTargetStateCommitment` and `getTargetStateCommitment` functions retrieve L2 logs root hashes
 ///      from the child chain's ZkChain contract. The `verifyStorageSlot` function is implemented
 ///      to work against any ZkSync child chain with a standard Ethereum block header and state trie.
 ///      This implementation is used to verify zkChain L2 log hash inclusion on L1 for messages that
 ///      use the gateway as a middleware between the L2 and the L1.
-contract ParentToChildProver is IBlockHashProver {
+contract ParentToChildProver is IStateProver {
     /// @notice The ZkChain contract address on the gateway chain that stores L2 logs root hashes.
     IZkChain public immutable gatewayZkChain;
 
@@ -116,9 +116,9 @@ contract ParentToChildProver is IBlockHashProver {
     /// @param input ABI encoded tuple: (bytes rlpBlockHeader, uint256 batchNumber, bytes storageProof).
     ///              - rlpBlockHeader: RLP-encoded block header of the home chain.
     ///              - batchNumber: The batch number for which to retrieve the L2 logs root hash.
-    ///              - storageProof: Storage proof for the storage slot containing the L2 logs root hash.
+    ///              - proof: Storage proof for the storage slot containing the L2 logs root hash.
     /// @return targetL2LogsRootHash The L2 logs root hash for the specified batch number.
-    function verifyTargetBlockHash(bytes32 homeBlockHash, bytes calldata input)
+    function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
         external
         view
         returns (bytes32 targetL2LogsRootHash)
@@ -144,7 +144,7 @@ contract ParentToChildProver is IBlockHashProver {
     /// @param input ABI encoded uint256 batchNumber - the batch number for which to retrieve the L2 logs root hash.
     /// @return l2LogsRootHash The L2 logs root hash for the specified batch number.
     /// @custom:reverts L2LogsRootHashNotFound if the L2 logs root hash is not found (returns zero).
-    function getTargetBlockHash(bytes calldata input) external view returns (bytes32 l2LogsRootHash) {
+    function getTargetStateCommitment(bytes calldata input) external view returns (bytes32 l2LogsRootHash) {
         if (block.chainid != homeChainId) {
             revert NotInHomeChain();
         }
@@ -176,7 +176,8 @@ contract ParentToChildProver is IBlockHashProver {
         view
         returns (address account, uint256 slot, bytes32 value)
     {
-        (ZkSyncProof memory proof, address senderAccount, bytes32 message) = abi.decode(input, (ZkSyncProof, address, bytes32));
+        (ZkSyncProof memory proof, address senderAccount, bytes32 message) =
+            abi.decode(input, (ZkSyncProof, address, bytes32));
 
         account = senderAccount;
 
@@ -202,7 +203,7 @@ contract ParentToChildProver is IBlockHashProver {
 
         bytes32 expectedSlot = keccak256(abi.encode(message, account));
 
-        if(slotSent != expectedSlot) {
+        if (slotSent != expectedSlot) {
             revert SlotMismatch();
         }
 
@@ -275,7 +276,7 @@ contract ParentToChildProver is IBlockHashProver {
     }
 
     /// @notice Returns the version of this block hash prover implementation.
-    /// @inheritdoc IBlockHashProver
+    /// @inheritdoc IStateProver
     /// @return The version number (currently 1).
     function version() external pure returns (uint256) {
         return 1;

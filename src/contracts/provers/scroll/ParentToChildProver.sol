@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
-import {IBlockHashProver} from "../../interfaces/IBlockHashProver.sol";
+import {IStateProver} from "../../interfaces/IStateProver.sol";
 import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 
 /// @notice Interface for Scroll's ScrollChain contract on L1
@@ -18,17 +18,17 @@ interface IScrollChain {
     function isBatchFinalized(uint256 batchIndex) external view returns (bool);
 }
 
-/// @notice Scroll implementation of a parent to child IBlockHashProver.
+/// @notice Scroll implementation of a parent to child IStateProver.
 /// @dev    Home chain: L1 (Ethereum). Target chain: L2 (Scroll).
-///         getTargetBlockHash reads finalized L2 state roots directly from L1's ScrollChain.
-///         verifyTargetBlockHash verifies L2 state roots via storage proof against L1's ScrollChain.
+///         getTargetStateCommitment reads finalized L2 state roots directly from L1's ScrollChain.
+///         verifyTargetStateCommitment verifies L2 state roots via storage proof against L1's ScrollChain.
 ///         verifyStorageSlot verifies storage against the L2 state root using standard MPT proofs.
 ///
 ///         NOTE: Unlike other provers that return block hashes, Scroll stores STATE ROOTS directly
 ///         in the ScrollChain contract. The "targetBlockHash" returned by this prover is actually
 ///         the L2 state root, which can be used directly for MPT verification without needing
 ///         the L2 block header.
-contract ParentToChildProver is IBlockHashProver {
+contract ParentToChildProver is IStateProver {
     /// @dev Address of the ScrollChain contract on L1
     address public immutable scrollChain;
 
@@ -59,7 +59,7 @@ contract ParentToChildProver is IBlockHashProver {
     /// @param  homeBlockHash The L1 block hash
     /// @param  input ABI encoded (bytes rlpBlockHeader, uint256 batchIndex, bytes accountProof, bytes storageProof)
     /// @return targetBlockHash The L2 state root stored in L1's ScrollChain (NOTE: this is a state root, not a block hash)
-    function verifyTargetBlockHash(bytes32 homeBlockHash, bytes calldata input)
+    function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
         external
         view
         returns (bytes32 targetBlockHash)
@@ -90,7 +90,7 @@ contract ParentToChildProver is IBlockHashProver {
     /// @dev    Called on home chain (L1)
     /// @param  input ABI encoded (uint256 batchIndex)
     /// @return targetBlockHash The L2 state root (NOTE: this is a state root, not a block hash)
-    function getTargetBlockHash(bytes calldata input) external view returns (bytes32 targetBlockHash) {
+    function getTargetStateCommitment(bytes calldata input) external view returns (bytes32 targetBlockHash) {
         if (block.chainid != homeChainId) {
             revert CallNotOnHomeChain();
         }
@@ -135,7 +135,7 @@ contract ParentToChildProver is IBlockHashProver {
         );
     }
 
-    /// @inheritdoc IBlockHashProver
+    /// @inheritdoc IStateProver
     function version() external pure returns (uint256) {
         return 1;
     }

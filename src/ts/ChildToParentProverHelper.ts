@@ -16,7 +16,7 @@ import { childToParentProverAbi, iBufferAbi } from '../../wagmi/abi'
 
 /**
  * ChildToParentProverHelper is a class that provides helper methods for interacting
- * with the child to parent IBlockHashProver contract.
+ * with the child to parent IStateProver contract.
  *
  * It extends the BaseProverHelper class and implements the IProverHelper interface.
  *

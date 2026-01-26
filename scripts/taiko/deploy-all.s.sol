@@ -5,7 +5,7 @@ import { Script } from "forge-std/Script.sol";
 import { console } from "forge-std/console.sol";
 import { Broadcaster } from "../../src/contracts/Broadcaster.sol";
 import { Receiver } from "../../src/contracts/Receiver.sol";
-import { BlockHashProverPointer } from "../../src/contracts/BlockHashProverPointer.sol";
+import { StateProverPointer } from "../../src/contracts/StateProverPointer.sol";
 
 contract DeployAll is Script {
     function run() public {
@@ -15,13 +15,13 @@ contract DeployAll is Script {
         
         Broadcaster broadcaster = new Broadcaster();
         Receiver receiver = new Receiver();
-        BlockHashProverPointer pointer = new BlockHashProverPointer(owner);
+        StateProverPointer pointer = new StateProverPointer(owner);
         
         vm.stopBroadcast();
 
         console.log("Broadcaster:", address(broadcaster));
         console.log("Receiver:", address(receiver));
-        console.log("BlockHashProverPointer:", address(pointer));
+        console.log("StateProverPointer:", address(pointer));
     }
 }
 

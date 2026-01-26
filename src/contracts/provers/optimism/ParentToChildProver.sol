@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 import {Lib_SecureMerkleTrie} from "@eth-optimism/contracts/libraries/trie/Lib_SecureMerkleTrie.sol";
 import {Lib_RLPReader} from "@eth-optimism/contracts/libraries/rlp/Lib_RLPReader.sol";
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
-import {IBlockHashProver} from "../../interfaces/IBlockHashProver.sol";
+import {IStateProver} from "../../interfaces/IStateProver.sol";
 import {Bytes} from "@openzeppelin/contracts/utils/Bytes.sol";
 
 interface IAnchorStateRegistry {
@@ -15,10 +15,10 @@ interface IFaultDisputeGame {
     function rootClaim() external view returns (bytes32);
 }
 
-/// @notice OP-stack implementation of a parent to child IBlockHashProver.
-/// @dev    verifyTargetBlockHash and getTargetBlockHash get block hashes from a valid fault dispute game proxy contract.
+/// @notice OP-stack implementation of a parent to child IStateProver.
+/// @dev    verifyTargetStateCommitment and getTargetStateCommitment get block hashes from a valid fault dispute game proxy contract.
 ///         verifyStorageSlot is implemented to work against any OP-stack child chain with a standard Ethereum block header and state trie.
-contract ParentToChildProver is IBlockHashProver {
+contract ParentToChildProver is IStateProver {
     using Lib_RLPReader for Lib_RLPReader.RLPItem;
 
     struct OutputRootProof {
@@ -59,7 +59,7 @@ contract ParentToChildProver is IBlockHashProver {
     ///                            bytes gameProxyAccountProof,
     ///                            bytes gameProxyCode,
     ///                            bytes rootClaimPreimage)
-    function verifyTargetBlockHash(bytes32 homeBlockHash, bytes calldata input)
+    function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
         external
         view
         returns (bytes32 targetBlockHash)
@@ -117,7 +117,7 @@ contract ParentToChildProver is IBlockHashProver {
     ///         2. Verify the root claim preimage against the game's root claim.
     ///         3. Return the latest block hash from the root claim preimage.
     /// @param  input ABI encoded (address gameProxy, OutputRootProof rootClaimPreimage)
-    function getTargetBlockHash(bytes calldata input) external view returns (bytes32 targetBlockHash) {
+    function getTargetStateCommitment(bytes calldata input) external view returns (bytes32 targetBlockHash) {
         if (block.chainid != homeChainId) {
             revert CallNotOnHomeChain();
         }
@@ -155,7 +155,7 @@ contract ParentToChildProver is IBlockHashProver {
         );
     }
 
-    /// @inheritdoc IBlockHashProver
+    /// @inheritdoc IStateProver
     function version() external pure returns (uint256) {
         return 1;
     }

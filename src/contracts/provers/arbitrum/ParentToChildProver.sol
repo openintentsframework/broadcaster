@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
-import {IBlockHashProver} from "../../interfaces/IBlockHashProver.sol";
+import {IStateProver} from "../../interfaces/IStateProver.sol";
 import {IOutbox} from "@arbitrum/nitro-contracts/src/bridge/IOutbox.sol";
 import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 
-/// @notice Arbitrum implementation of a parent to child IBlockHashProver.
-/// @dev    verifyTargetBlockHash and getTargetBlockHash get block hashes from the child chain's Outbox contract.
+/// @notice Arbitrum implementation of a parent to child IStateProver.
+/// @dev    verifyTargetStateCommitment and getTargetStateCommitment get block hashes from the child chain's Outbox contract.
 ///         verifyStorageSlot is implemented to work against any Arbitrum child chain with a standard Ethereum block header and state trie.
-contract ParentToChildProver is IBlockHashProver {
+contract ParentToChildProver is IStateProver {
     /// @dev Address of the child chain's Outbox contract
     address public immutable outbox;
     /// @dev Storage slot the Outbox contract uses to store roots.
@@ -33,7 +33,7 @@ contract ParentToChildProver is IBlockHashProver {
     /// @notice Verify a target chain block hash given a home chain block hash and a proof.
     /// @param  homeBlockHash The block hash of the home chain.
     /// @param  input ABI encoded (bytes blockHeader, bytes32 sendRoot, bytes accountProof, bytes storageProof)
-    function verifyTargetBlockHash(bytes32 homeBlockHash, bytes calldata input)
+    function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
         external
         view
         returns (bytes32 targetBlockHash)
@@ -61,7 +61,7 @@ contract ParentToChildProver is IBlockHashProver {
 
     /// @notice Get a target chain block hash given a target chain sendRoot
     /// @param  input ABI encoded (bytes32 sendRoot)
-    function getTargetBlockHash(bytes calldata input) external view returns (bytes32 targetBlockHash) {
+    function getTargetStateCommitment(bytes calldata input) external view returns (bytes32 targetBlockHash) {
         if (block.chainid != homeChainId) {
             revert CallNotOnHomeChain();
         }
@@ -71,7 +71,7 @@ contract ParentToChildProver is IBlockHashProver {
         // get the target block hash from the outbox
         targetBlockHash = IOutbox(outbox).roots(sendRoot);
 
-        if(targetBlockHash == bytes32(0)) {
+        if (targetBlockHash == bytes32(0)) {
             revert TargetBlockHashNotFound();
         }
     }
@@ -97,7 +97,7 @@ contract ParentToChildProver is IBlockHashProver {
         );
     }
 
-    /// @inheritdoc IBlockHashProver
+    /// @inheritdoc IStateProver
     function version() external pure returns (uint256) {
         return 1;
     }

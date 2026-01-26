@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 import {Test, console} from "forge-std/Test.sol";
 import {stdJson} from "forge-std/StdJson.sol";
@@ -84,18 +84,18 @@ contract ArbitrumParentToChildProverTest is Test {
         mockOutbox.updateSendRoot(sendRoot, targetBlockHashFromProof);
     }
 
-    function test_getTargetBlockHash() public {
+    function test_getTargetStateCommitment() public {
         vm.selectFork(parentForkId);
 
         // Test with the sendRoot from the proof data
         bytes32 sendRoot = 0x7995a5be000a0212a46f7f128e5ffd6f6a99fa9c72046d9e9b0668bd080712cd;
         ParentToChildProver mockProver = new ParentToChildProver(address(mockOutbox), rootSlot, block.chainid);
-        bytes32 result = mockProver.getTargetBlockHash(abi.encode(sendRoot));
+        bytes32 result = mockProver.getTargetStateCommitment(abi.encode(sendRoot));
         bytes32 expectedTargetBlockHash = 0xa97ce065a04d2abfec36a459db323721847718d3159d51c4256d271ee3b37e42;
-        assertEq(result, expectedTargetBlockHash, "getTargetBlockHash should return correct Arbitrum block hash");
+        assertEq(result, expectedTargetBlockHash, "getTargetStateCommitment should return correct Arbitrum block hash");
     }
 
-    function test_verifyTargetBlockHash() public {
+    function test_verifyTargetStateCommitment() public {
         vm.selectFork(parentForkId);
         uint256 proverHomeChainId = block.chainid;
         ParentToChildProver prover = new ParentToChildProver(address(outbox), rootSlot, proverHomeChainId);
@@ -116,11 +116,13 @@ contract ArbitrumParentToChildProverTest is Test {
         bytes memory input = abi.encode(rlpBlockHeader, sendRoot, rlpAccountProof, rlpStorageProof);
         bytes32 expectedTargetBlockHash = 0xcb53c786e7e875d7e3b1d3a770adbe02877ee5daab2ebfa55b935798b3ee9d24;
 
-        // verifyTargetBlockHash MUST be called off the prover's home chain.
+        // verifyTargetStateCommitment MUST be called off the prover's home chain.
         vm.chainId(proverHomeChainId + 1);
 
-        bytes32 result = prover.verifyTargetBlockHash(homeBlockHash, input);
-        assertEq(result, expectedTargetBlockHash, "verifyTargetBlockHash should return correct Arbitrum block hash");
+        bytes32 result = prover.verifyTargetStateCommitment(homeBlockHash, input);
+        assertEq(
+            result, expectedTargetBlockHash, "verifyTargetStateCommitment should return correct Arbitrum block hash"
+        );
     }
 
     function test_verifyStorageSlot() public {
