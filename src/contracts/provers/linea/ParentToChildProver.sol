@@ -54,11 +54,11 @@ contract ParentToChildProver is IStateProver {
     ///      Uses standard MPT proof for L1 state (Ethereum uses MPT)
     /// @param homeBlockHash The L1 block hash
     /// @param input ABI encoded (bytes rlpBlockHeader, uint256 l2BlockNumber, bytes accountProof, bytes storageProof)
-    /// @return targetBlockHash The L2 state root (named "blockHash" for interface compatibility)
+    /// @return targetStateCommitment The L2 state root (named "blockHash" for interface compatibility)
     function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
         external
         view
-        returns (bytes32 targetBlockHash)
+        returns (bytes32 targetStateCommitment)
     {
         if (block.chainid == homeChainId) {
             revert CallOnHomeChain();
@@ -73,11 +73,11 @@ contract ParentToChildProver is IStateProver {
 
         // Verify proofs and get the L2 state root from L1's LineaRollup
         // Note: L1 (Ethereum) uses MPT, so we use ProverUtils here
-        targetBlockHash = ProverUtils.getSlotFromBlockHeader(
+        targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
             homeBlockHash, rlpBlockHeader, lineaRollup, slot, accountProof, storageProof
         );
 
-        if (targetBlockHash == bytes32(0)) {
+        if (targetStateCommitment == bytes32(0)) {
             revert TargetStateRootNotFound();
         }
     }
@@ -85,8 +85,8 @@ contract ParentToChildProver is IStateProver {
     /// @notice Get L2 state root directly from L1 LineaRollup
     /// @dev Called on home chain (L1)
     /// @param input ABI encoded (uint256 l2BlockNumber)
-    /// @return targetBlockHash The L2 state root
-    function getTargetStateCommitment(bytes calldata input) external view returns (bytes32 targetBlockHash) {
+    /// @return targetStateCommitment The L2 state root
+    function getTargetStateCommitment(bytes calldata input) external view returns (bytes32 targetStateCommitment) {
         if (block.chainid != homeChainId) {
             revert CallNotOnHomeChain();
         }
@@ -95,16 +95,16 @@ contract ParentToChildProver is IStateProver {
         uint256 l2BlockNumber = abi.decode(input, (uint256));
 
         // Get the state root from LineaRollup
-        targetBlockHash = ILineaRollup(lineaRollup).stateRootHashes(l2BlockNumber);
+        targetStateCommitment = ILineaRollup(lineaRollup).stateRootHashes(l2BlockNumber);
 
-        if (targetBlockHash == bytes32(0)) {
+        if (targetStateCommitment == bytes32(0)) {
             revert TargetStateRootNotFound();
         }
     }
 
     /// @notice Verify a storage slot given a target chain state root and a Sparse Merkle Tree proof
     /// @dev Works on any chain. Uses Linea's SMT verification with MiMC hashing.
-    ///      IMPORTANT: For Linea, targetBlockHash is the L2 SMT STATE ROOT (not block hash)
+    ///      IMPORTANT: For Linea, targetStateCommitment is the L2 SMT STATE ROOT (not block hash)
     ///      Proofs must be generated using linea_getProof RPC method.
     ///
     ///      Input format from linea_getProof:
@@ -123,12 +123,12 @@ contract ParentToChildProver is IStateProver {
     ///      5. The storage proof corresponds to the claimed slot (hKey check)
     ///      6. The storage value matches the proof's hValue
     ///
-    /// @param targetBlockHash The L2 SMT state root (from getTargetStateCommitment or verifyTargetStateCommitment)
+    /// @param targetStateCommitment The L2 SMT state root (from getTargetStateCommitment or verifyTargetStateCommitment)
     /// @param input ABI encoded proof data from linea_getProof
     /// @return account The address of the account on L2
     /// @return slot The storage slot
     /// @return value The value at the storage slot
-    function verifyStorageSlot(bytes32 targetBlockHash, bytes calldata input)
+    function verifyStorageSlot(bytes32 targetStateCommitment, bytes calldata input)
         external
         pure
         returns (address account, uint256 slot, bytes32 value)
@@ -153,7 +153,7 @@ contract ParentToChildProver is IStateProver {
         ) = abi.decode(input, (address, uint256, uint256, bytes[], bytes, uint256, bytes[], bytes32));
 
         // Step 1: Verify account proof against L2 state root (SMT)
-        bool accountValid = SparseMerkleProof.verifyProof(accountProof, accountLeafIndex, targetBlockHash);
+        bool accountValid = SparseMerkleProof.verifyProof(accountProof, accountLeafIndex, targetStateCommitment);
         if (!accountValid) {
             revert InvalidAccountProof();
         }

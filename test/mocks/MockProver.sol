@@ -10,18 +10,18 @@ contract MockProver is IStateProver {
     )
         external
         pure
-        returns (bytes32 targetBlockHash)
+        returns (bytes32 targetStateCommitment)
     {
         return homeBlockHash;
     }
 
-    function getTargetStateCommitment(bytes calldata input) external pure returns (bytes32 targetBlockHash) {
-        targetBlockHash = abi.decode(input, (bytes32));
+    function getTargetStateCommitment(bytes calldata input) external pure returns (bytes32 targetStateCommitment) {
+        targetStateCommitment = abi.decode(input, (bytes32));
     }
 
     function verifyStorageSlot(
         bytes32,
-        /*targetBlockHash*/
+        /*targetStateCommitment*/
         bytes calldata input
     )
         external

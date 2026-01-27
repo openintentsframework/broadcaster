@@ -13,7 +13,7 @@ export interface IProverHelper {
    */
   buildInputForGetTargetBlockHash(): Promise<{
     input: Hex
-    targetBlockHash: Hash
+    targetStateCommitment: Hash
   }>
 
   /**
@@ -23,23 +23,23 @@ export interface IProverHelper {
    */
   buildInputForVerifyTargetBlockHash(
     homeBlockHash: Hash
-  ): Promise<{ input: Hex; targetBlockHash: Hash }>
+  ): Promise<{ input: Hex; targetStateCommitment: Hash }>
 
   /**
    * Build the bytes input argument for the IStateProver::verifyStorageSlot function.
-   * @param targetBlockHash Target chain block hash that will be passed to the prover and proven against
+   * @param targetStateCommitment Target chain block hash that will be passed to the prover and proven against
    * @param account The account to prove the storage slot for
    * @param slot The storage slot to prove
    * @returns The input bytes and the slot value
    */
   buildInputForVerifyStorageSlot(
-    targetBlockHash: Hash,
+    targetStateCommitment: Hash,
     account: Address,
     slot: bigint
   ): Promise<{ input: Hex; slotValue: Hash }>
 
   buildInputForGetTargetBlockHashByBlockNumber(blockNumber: bigint): Promise<{
     input: Hex
-    targetBlockHash: Hash
+    targetStateCommitment: Hash
   }>
 }

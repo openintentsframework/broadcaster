@@ -36,7 +36,7 @@ contract ChildToParentProver is IStateProver {
     function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
         external
         view
-        returns (bytes32 targetBlockHash)
+        returns (bytes32 targetStateCommitment)
     {
         if (block.chainid == homeChainId) {
             revert CallOnHomeChain();
@@ -49,7 +49,7 @@ contract ChildToParentProver is IStateProver {
         (rlpBlockHeader, accountProof, storageProof) = abi.decode(input, (bytes, bytes, bytes));
 
         // verify proofs and get the value
-        targetBlockHash = ProverUtils.getSlotFromBlockHeader(
+        targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
             homeBlockHash, rlpBlockHeader, l1BlockPredeploy, l1BlockHashSlot, accountProof, storageProof
         );
     }
@@ -63,7 +63,7 @@ contract ChildToParentProver is IStateProver {
     ///         If the L1Block is consistently updated too frequently, calls to the Receiver may be DoS'd.
     ///         In this case, this prover contract may need to be modified to use a different source of block hashes,
     ///         such as a backup contract that calls the L1Block predeploy and caches the latest block hash.
-    function getTargetStateCommitment(bytes calldata) external view returns (bytes32 targetBlockHash) {
+    function getTargetStateCommitment(bytes calldata) external view returns (bytes32 targetStateCommitment) {
         if (block.chainid != homeChainId) {
             revert CallNotOnHomeChain();
         }
@@ -71,9 +71,9 @@ contract ChildToParentProver is IStateProver {
     }
 
     /// @notice Verify a storage slot given a target chain block hash and a proof.
-    /// @param  targetBlockHash The block hash of the target chain.
+    /// @param  targetStateCommitment The block hash of the target chain.
     /// @param  input ABI encoded (bytes blockHeader, address account, uint256 slot, bytes accountProof, bytes storageProof)
-    function verifyStorageSlot(bytes32 targetBlockHash, bytes calldata input)
+    function verifyStorageSlot(bytes32 targetStateCommitment, bytes calldata input)
         external
         pure
         returns (address account, uint256 slot, bytes32 value)
@@ -87,7 +87,7 @@ contract ChildToParentProver is IStateProver {
 
         // verify proofs and get the value
         value = ProverUtils.getSlotFromBlockHeader(
-            targetBlockHash, rlpBlockHeader, account, slot, accountProof, storageProof
+            targetStateCommitment, rlpBlockHeader, account, slot, accountProof, storageProof
         );
     }
 

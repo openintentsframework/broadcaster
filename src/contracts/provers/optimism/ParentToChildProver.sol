@@ -62,7 +62,7 @@ contract ParentToChildProver is IStateProver {
     function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
         external
         view
-        returns (bytes32 targetBlockHash)
+        returns (bytes32 targetStateCommitment)
     {
         if (block.chainid == homeChainId) {
             revert CallOnHomeChain();
@@ -117,7 +117,7 @@ contract ParentToChildProver is IStateProver {
     ///         2. Verify the root claim preimage against the game's root claim.
     ///         3. Return the latest block hash from the root claim preimage.
     /// @param  input ABI encoded (address gameProxy, OutputRootProof rootClaimPreimage)
-    function getTargetStateCommitment(bytes calldata input) external view returns (bytes32 targetBlockHash) {
+    function getTargetStateCommitment(bytes calldata input) external view returns (bytes32 targetStateCommitment) {
         if (block.chainid != homeChainId) {
             revert CallNotOnHomeChain();
         }
@@ -135,9 +135,9 @@ contract ParentToChildProver is IStateProver {
     }
 
     /// @notice Verify a storage slot given a target chain block hash and a proof.
-    /// @param  targetBlockHash The block hash of the target chain.
+    /// @param  targetStateCommitment The block hash of the target chain.
     /// @param  input ABI encoded (bytes blockHeader, address account, uint256 slot, bytes accountProof, bytes storageProof)
-    function verifyStorageSlot(bytes32 targetBlockHash, bytes calldata input)
+    function verifyStorageSlot(bytes32 targetStateCommitment, bytes calldata input)
         external
         pure
         returns (address account, uint256 slot, bytes32 value)
@@ -151,7 +151,7 @@ contract ParentToChildProver is IStateProver {
 
         // verify proofs and get the value
         value = ProverUtils.getSlotFromBlockHeader(
-            targetBlockHash, rlpBlockHeader, account, slot, accountProof, storageProof
+            targetStateCommitment, rlpBlockHeader, account, slot, accountProof, storageProof
         );
     }
 

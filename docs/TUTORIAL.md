@@ -212,7 +212,7 @@ const arbHelper = new ChildToParentProverHelper(
   mainnetClient
 );
 
-const { input: scpInput0, targetBlockHash: ethBlockHash } = 
+const { input: scpInput0, targetStateCommitment: ethBlockHash } = 
   await arbHelper.buildInputForGetTargetBlockHash();
 ```
 
@@ -471,7 +471,7 @@ async function generateProofs(
     mainnetClient    // target
   );
   
-  const { input: scpInput0, targetBlockHash: ethBlockHash } = 
+  const { input: scpInput0, targetStateCommitment: ethBlockHash } = 
     await opToEthHelper.buildInputForGetTargetBlockHash();
 
   // Step 2: Get Arbitrum block hash from Ethereum
@@ -481,7 +481,7 @@ async function generateProofs(
     arbitrumClient   // target
   );
   
-  const { input: scpInput1, targetBlockHash: arbBlockHash } = 
+  const { input: scpInput1, targetStateCommitment: arbBlockHash } = 
     await ethToArbHelper.buildInputForVerifyTargetBlockHash(ethBlockHash);
 
   // Step 3: Generate storage proof for the broadcaster slot
