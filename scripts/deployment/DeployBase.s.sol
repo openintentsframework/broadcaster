@@ -8,11 +8,11 @@ contract DeployBase is Script {
     error InvalidChainId(uint256 chainId);
 
     function _chainName(uint256 chainId) internal view returns (string memory) {
-        if (chainId == vm.envUint("ETHEREUM_SEPOLIA_CHAIN_ID")) return "ethereum-sepolia";
-        if (chainId == vm.envUint("ARBITRUM_SEPOLIA_CHAIN_ID")) return "arbitrum-sepolia";
-        if (chainId == vm.envUint("LINEA_SEPOLIA_CHAIN_ID")) return "linea-sepolia";
-        if (chainId == vm.envUint("SCROLL_SEPOLIA_CHAIN_ID")) return "scroll-sepolia";
-        if (chainId == vm.envUint("OPTIMISM_SEPOLIA_CHAIN_ID")) return "optimism-sepolia";
+        if (chainId == 11155111) return "ethereum-sepolia";
+        if (chainId == 421614) return "arbitrum-sepolia";
+        if (chainId == 59141) return "linea-sepolia";
+        if (chainId == 534351) return "scroll-sepolia";
+        if (chainId == 11155420) return "optimism-sepolia";
         revert InvalidChainId(chainId);
     }
 
