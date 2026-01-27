@@ -18,13 +18,12 @@ contract Deploy is DeployBase {
 
         address broadcasterAddress;
 
-
         vm.startBroadcast();
 
         if(chainType == "zksync") {
             address l1Messenger = 0x0000000000000000000000000000000000008008;
 
-            broadcasterAddress = new ZkSyncBroadcaster(l1Messenger);
+            broadcasterAddress = address(new ZkSyncBroadcaster(l1Messenger));
 
         }
 
@@ -32,7 +31,7 @@ contract Deploy is DeployBase {
         Receiver receiver = new Receiver();
         vm.stopBroadcast();
         
-        _writeContract("broadcaster", address(broadcaster));
+        _writeContract("broadcaster", broadcasterAddress);
         _writeContract("receiver", address(receiver));
         
     }
