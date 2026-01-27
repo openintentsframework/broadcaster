@@ -6,7 +6,7 @@ import { DeployBase } from "../DeployBase.s.sol";
 
 import { console } from "forge-std/console.sol";
 import { ParentToChildProver } from "src/contracts/provers/optimism/ParentToChildProver.sol";
-import { BlockHashProverPointer } from "src/contracts/BlockHashProverPointer.sol";
+import { StateProverPointer } from "src/contracts/StateProverPointer.sol";
 
 
 contract DeployArbitrumParentToChild is DeployBase {
@@ -31,10 +31,10 @@ contract DeployArbitrumParentToChild is DeployBase {
         // Only deploy the pointer on the "canonical" chain, i.e., the chain where the pointer will be called from the receiver directly. 
         // The other prover deployments are copies.
         if(block.chainid == homeChainId){
-            pointer = address(new BlockHashProverPointer(owner));
+            pointer = address(new StateProverPointer(owner));
 
             // This will only work if `msg.sender` is the owner of the pointer.
-            BlockHashProverPointer(pointer).setImplementationAddress(address(prover));
+            StateProverPointer(pointer).setImplementationAddress(address(prover));
         }
         vm.stopBroadcast();
 
