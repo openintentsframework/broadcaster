@@ -35,21 +35,21 @@ export class ParentToChildProverHelper
    */
   async buildInputForGetTargetBlockHash(): Promise<{
     input: Hex
-    targetBlockHash: Hash
+    targetStateCommitment: Hash
   }> {
-    const { targetBlockHash, sendRoot } =
+    const { targetStateCommitment, sendRoot } =
       await this._findLatestAvailableTargetChainBlock(
         await this.homeChainClient.getBlockNumber()
       )
     return {
       input: encodeAbiParameters([{ type: 'bytes32' }], [sendRoot]),
-      targetBlockHash,
+      targetStateCommitment,
     }
   }
 
   async buildInputForGetTargetBlockHashByBlockNumber(blockNumber: bigint): Promise<{
     input: Hex
-    targetBlockHash: Hash
+    targetStateCommitment: Hash
   }> {
     console.log("blockNumber", blockNumber);
 
@@ -58,12 +58,12 @@ export class ParentToChildProverHelper
     // // @ts-ignore
     // console.log("sendRoot", targetBlock.sendRoot);
 
-    const { targetBlockHash, sendRoot } =  await this._findLatestAvailableTargetChainBlock(blockNumber);
+    const { targetStateCommitment, sendRoot } =  await this._findLatestAvailableTargetChainBlock(blockNumber);
 
     return {
       // @ts-ignore
       input: encodeAbiParameters([{ type: 'bytes32' }], [sendRoot]),
-      targetBlockHash: targetBlockHash,
+      targetStateCommitment: targetStateCommitment,
     }
   }
 
@@ -72,8 +72,8 @@ export class ParentToChildProverHelper
    */
   async buildInputForVerifyTargetBlockHash(
     homeBlockHash: Hash
-  ): Promise<{ input: Hex; targetBlockHash: Hash }> {
-    const { targetBlockHash, sendRoot } =
+  ): Promise<{ input: Hex; targetStateCommitment: Hash }> {
+    const { targetStateCommitment, sendRoot } =
       await this._findLatestAvailableTargetChainBlock(
         (await this.homeChainClient.getBlock({ blockHash: homeBlockHash }))
           .number
@@ -111,7 +111,7 @@ export class ParentToChildProverHelper
 
     return {
       input,
-      targetBlockHash,
+      targetStateCommitment,
     }
   }
 
@@ -119,18 +119,18 @@ export class ParentToChildProverHelper
    * @see IProverHelper.buildInputForVerifyStorageSlot
    */
   async buildInputForVerifyStorageSlot(
-    targetBlockHash: Hash,
+    targetStateCommitment: Hash,
     account: Address,
     slot: bigint
   ): Promise<{ input: Hex; slotValue: Hash }> {
     const rlpBlockHeader = await this._getRlpBlockHeader(
       'target',
-      targetBlockHash
+      targetStateCommitment
     )
     const { rlpAccountProof, rlpStorageProof, slotValue } =
       await this._getRlpStorageAndAccountProof(
         'target',
-        targetBlockHash,
+        targetStateCommitment,
         account,
         slot
       )
@@ -162,7 +162,7 @@ export class ParentToChildProverHelper
     overrides?: { logBlockRangeSize?: bigint; maxLogLookback?: bigint }
   ): Promise<{
     sendRoot: Hash
-    targetBlockHash: Hash
+    targetStateCommitment: Hash
   }> {
     const logBlockRangeSize =
       overrides?.logBlockRangeSize ?? this.defaultLogBlockRangeSize
@@ -207,7 +207,7 @@ export class ParentToChildProverHelper
 
     return {
       sendRoot: latestEvent.args.outputRoot!,
-      targetBlockHash: latestEvent.args.l2BlockHash!,
+      targetStateCommitment: latestEvent.args.l2BlockHash!,
     }
   }
 

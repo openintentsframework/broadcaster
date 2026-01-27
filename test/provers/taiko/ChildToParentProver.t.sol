@@ -109,9 +109,9 @@ contract TaikoChildToParentProverTest is Test {
         mockSignalService.setCheckpoint(uint48(L1_BLOCK_NUMBER), L1_BLOCK_HASH, L1_STATE_ROOT);
 
         bytes memory input = abi.encode(uint48(L1_BLOCK_NUMBER));
-        bytes32 targetBlockHash = prover.getTargetStateCommitment(input);
+        bytes32 targetStateCommitment = prover.getTargetStateCommitment(input);
 
-        assertEq(targetBlockHash, L1_BLOCK_HASH, "targetBlockHash mismatch");
+        assertEq(targetStateCommitment, L1_BLOCK_HASH, "targetStateCommitment mismatch");
     }
 
     function test_getTargetStateCommitment_revertsWhenNotFound() public {

@@ -126,7 +126,7 @@ contract ScrollChainMock is IScrollChain {
             // Input: abi.encode(address account, uint256 slot, bytes accountProof, bytes storageProof)
             bytes memory input = abi.encode(account, slot, rlpAccountProof, rlpStorageProof);
 
-            // The "targetBlockHash" for Scroll is actually the state root
+            // The "targetStateCommitment" for Scroll is actually the state root
             (address actualAccount, uint256 actualSlot, bytes32 actualValue) =
                 parentToChildProver.verifyStorageSlot(stateRoot, input);
 

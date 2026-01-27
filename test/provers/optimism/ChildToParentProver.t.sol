@@ -93,17 +93,17 @@ contract OptimismChildToParentProverTest is Test {
         assertGt(payload.length, 64, "Payload should be > 64 bytes");
 
         bytes32 homeBlockHash;
-        bytes32 targetBlockHash;
+        bytes32 targetStateCommitment;
         bytes memory input = Bytes.slice(payload, 64);
 
         assembly {
             homeBlockHash := mload(add(payload, 0x20))
-            targetBlockHash := mload(add(payload, 0x40))
+            targetStateCommitment := mload(add(payload, 0x40))
         }
 
         bytes32 result = childToParentProverCopy.verifyTargetStateCommitment(homeBlockHash, input);
 
-        assertEq(result, targetBlockHash, "Target block hash should match");
+        assertEq(result, targetStateCommitment, "Target block hash should match");
     }
 
     /// @notice Test verifyTargetStateCommitment() reverts when called on home chain (Optimism)
@@ -146,17 +146,17 @@ contract OptimismChildToParentProverTest is Test {
 
         assertGt(payload.length, 64, "Payload should be > 64 bytes");
 
-        bytes32 targetBlockHash;
+        bytes32 targetStateCommitment;
         bytes32 storageSlotValue;
         bytes memory input = Bytes.slice(payload, 64);
 
         assembly {
-            targetBlockHash := mload(add(payload, 0x20))
+            targetStateCommitment := mload(add(payload, 0x20))
             storageSlotValue := mload(add(payload, 0x40))
         }
 
         (address account, uint256 slot, bytes32 value) =
-            childToParentProverCopy.verifyStorageSlot(targetBlockHash, input);
+            childToParentProverCopy.verifyStorageSlot(targetStateCommitment, input);
 
         assertEq(account, knownAccount, "Account should match");
         assertEq(slot, knownSlot, "Slot should match");
