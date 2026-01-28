@@ -4,7 +4,6 @@ pragma solidity 0.8.30;
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
 import {IStateProver} from "../../interfaces/IStateProver.sol";
 import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
-
 import {MessageHashing, ProofData} from "./libraries/MessageHashing.sol";
 
 /// @notice Interface for interacting with ZkChain contracts to retrieve L2 logs root hashes.

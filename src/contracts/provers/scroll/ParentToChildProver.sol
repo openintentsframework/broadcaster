@@ -4,19 +4,7 @@ pragma solidity 0.8.30;
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
 import {IStateProver} from "../../interfaces/IStateProver.sol";
 import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
-
-/// @notice Interface for Scroll's ScrollChain contract on L1
-interface IScrollChain {
-    /// @notice Returns the finalized state root for a given batch index
-    /// @param batchIndex The index of the batch
-    /// @return The state root of the finalized batch
-    function finalizedStateRoots(uint256 batchIndex) external view returns (bytes32);
-
-    /// @notice Returns whether a batch is finalized
-    /// @param batchIndex The index of the batch
-    /// @return Whether the batch is finalized
-    function isBatchFinalized(uint256 batchIndex) external view returns (bool);
-}
+import {IScrollChain} from "@scroll-tech/scroll-contracts/L1/rollup/IScrollChain.sol";
 
 /// @notice Scroll implementation of a parent to child IStateProver.
 /// @dev    Home chain: L1 (Ethereum). Target chain: L2 (Scroll).
