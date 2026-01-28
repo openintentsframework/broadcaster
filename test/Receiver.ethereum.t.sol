@@ -10,7 +10,7 @@ import {IOutbox} from "@arbitrum/nitro-contracts/src/bridge/IOutbox.sol";
 import {IStateProverPointer} from "../src/contracts/interfaces/IStateProverPointer.sol";
 import {STATE_PROVER_POINTER_SLOT} from "../src/contracts/StateProverPointer.sol";
 import {BlockHeaders} from "./utils/BlockHeaders.sol";
-import {IBuffer} from "block-hash-pusher/contracts/interfaces/IBuffer.sol";
+import {IBuffer} from "../src/contracts/block-hash-pusher/interfaces/IBuffer.sol";
 import {BufferMock} from "./mocks/BufferMock.sol";
 
 import {ChildToParentProver as ArbChildToParentProver} from "../src/contracts/provers/arbitrum/ChildToParentProver.sol";

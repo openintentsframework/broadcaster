@@ -19,22 +19,14 @@ abstract contract BaseBuffer is IBuffer {
     /// @dev The block number of the newest block in the buffer.
     uint256 private _newestBlockNumber;
 
-    struct BufferSlot {
-        uint256 blockNumber;
-        bytes32 blockHash;
-    }
+    /// @dev Mapping of block numbers to block hashes.
+    mapping(uint256 blockNumber => bytes32 blockHash) private _blockHashes;
 
-    BufferSlot[_BUFFER_SIZE] private _buffer;
+    uint256[_BUFFER_SIZE] private _blockNumberBuffer;
 
     /// @inheritdoc IBuffer
     function parentChainBlockHash(uint256 parentChainBlockNumber) external view returns (bytes32) {
-        BufferSlot storage s = _buffer[parentChainBlockNumber % _BUFFER_SIZE];
-
-        if (s.blockNumber != parentChainBlockNumber) {
-            revert UnknownParentChainBlockHash(parentChainBlockNumber);
-        }
-
-        bytes32 blockHash = s.blockHash;
+        bytes32 blockHash = _blockHashes[parentChainBlockNumber];
         if (blockHash == 0) {
             revert UnknownParentChainBlockHash(parentChainBlockNumber);
         }
@@ -54,19 +46,22 @@ abstract contract BaseBuffer is IBuffer {
             revert EmptyBlockHashes();
         }
 
-        // write the hashes to the buffer, evicting old hashes as necessary
+        // write the hashes to both the mapping and circular buffer
         for (uint256 i = 0; i < blockHashesLength; i++) {
             uint256 blockNumber = firstBlockNumber + i;
             uint256 bufferIndex = blockNumber % _BUFFER_SIZE;
+            uint256 existingBlockNumber = _blockNumberBuffer[bufferIndex];
 
-            BufferSlot storage bufferSlot = _buffer[bufferIndex];
-            if (blockNumber <= bufferSlot.blockNumber) {
-                // noop
+            if (blockNumber <= existingBlockNumber) {
                 continue;
             }
 
-            bufferSlot.blockNumber = blockNumber;
-            bufferSlot.blockHash = blockHashes[i];
+            if (existingBlockNumber != 0) {
+                _blockHashes[existingBlockNumber] = 0;
+            }
+
+            _blockHashes[blockNumber] = blockHashes[i];
+            _blockNumberBuffer[bufferIndex] = blockNumber;
         }
 
         uint256 lastBlockNumber = firstBlockNumber + blockHashesLength - 1;

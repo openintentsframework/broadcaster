@@ -3,7 +3,7 @@ pragma solidity 0.8.30;
 
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
 import {IStateProver} from "../../interfaces/IStateProver.sol";
-import {IBuffer} from "block-hash-pusher/contracts/interfaces/IBuffer.sol";
+import {IBuffer} from "../../block-hash-pusher/interfaces/IBuffer.sol";
 import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 
 /// @notice Linea implementation of a child to parent IStateProver.
@@ -14,7 +14,7 @@ contract ChildToParentProver is IStateProver {
     address public immutable blockHashBuffer;
     /// @dev Storage slot the buffer contract uses to store block hashes.
     ///      See https://github.com/openintentsframework/broadcaster/blob/main/src/contracts/block-hash-pusher/BaseBuffer.sol
-    uint256 public constant blockHashMappingSlot = 51;
+    uint256 public constant blockHashMappingSlot = 1;
 
     /// @dev The chain ID of the home chain (child chain).
     uint256 public immutable homeChainId;
