@@ -57,7 +57,7 @@ contract ChildToParentProver is IStateProver {
         if (block.chainid != homeChainId) {
             revert CallNotOnHomeChain();
         }
-        //decode the input
+        // decode the input
         uint256 targetBlockNumber = abi.decode(input, (uint256));
 
         // get the block hash from the buffer

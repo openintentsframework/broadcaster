@@ -153,7 +153,7 @@ contract ZkSyncParentToChildProverTest is Test {
 
         ParentToChildProver prover = new ParentToChildProver(address(mockZkChain), 0, 300, 32657, parentChainId);
 
-        vm.expectRevert(ParentToChildProver.NotInHomeChain.selector);
+        vm.expectRevert(ParentToChildProver.CallNotOnHomeChain.selector);
         prover.getTargetStateCommitment(abi.encode(43985));
     }
 }

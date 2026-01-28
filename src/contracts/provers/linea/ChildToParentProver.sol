@@ -6,6 +6,9 @@ import {IStateProver} from "../../interfaces/IStateProver.sol";
 import {IBuffer} from "block-hash-pusher/contracts/interfaces/IBuffer.sol";
 import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 
+/// @notice Linea implementation of a child to parent IStateProver.
+/// @dev    verifyTargetStateCommitment and getTargetStateCommitment get block hashes from the block hash buffer.
+///         verifyStorageSlot is implemented to work against any parent chain with a standard Ethereum block header and state trie.
 contract ChildToParentProver is IStateProver {
     address public immutable blockHashBuffer;
     /// @dev Storage slot the buffer contract uses to store block hashes.
@@ -53,7 +56,7 @@ contract ChildToParentProver is IStateProver {
         if (block.chainid != homeChainId) {
             revert CallNotOnHomeChain();
         }
-        //decode the input
+        // decode the input
         uint256 targetBlockNumber = abi.decode(input, (uint256));
 
         // get the block hash from the buffer

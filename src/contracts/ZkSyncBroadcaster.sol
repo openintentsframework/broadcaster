@@ -37,8 +37,8 @@ contract ZkSyncBroadcaster is IBroadcaster {
     /// @dev The broadcast timestamp is stored in a deterministic storage slot calculated from hash(message, msg.sender).
     ///      This ensures that each (message, publisher) pair can only be broadcast once.
     ///      A MessageBroadcast event is emitted for off-chain indexing. Additionally, this ZkSync-specific
-    ///      implementation sends an L2->L1 message via the L1Messenger containing the original message and
-    ///      timestamp ABI encoded together (bytes32 message, bytes32 timestamp).
+    ///      implementation sends an L2->L1 message via the L1Messenger containing the message slot and
+    ///      timestamp ABI encoded together (bytes32 slot, uint256 timestamp).
     /// @param message The 32-byte message to broadcast.
     /// @custom:throws MessageAlreadyBroadcasted if this exact message has already been broadcast by the sender.
     function broadcastMessage(bytes32 message) external {
