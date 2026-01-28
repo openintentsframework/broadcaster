@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
+pragma solidity 0.8.30;
 
 import {SparseMerkleProof} from "../../libraries/linea/SparseMerkleProof.sol";
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
@@ -52,10 +52,10 @@ contract ParentToChildProver is IStateProver {
     /// @notice Verify L2 state root using L1 LineaRollup storage proof
     /// @dev Called on non-home chains (e.g., for two-hop L2→L2 verification)
     ///      Uses standard MPT proof for L1 state (Ethereum uses MPT)
-    /// @param homeBlockHash The L1 block hash
+    /// @param homeStateCommitment The L1 block hash
     /// @param input ABI encoded (bytes rlpBlockHeader, uint256 l2BlockNumber, bytes accountProof, bytes storageProof)
-    /// @return targetStateCommitment The L2 state root (named "blockHash" for interface compatibility)
-    function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
+    /// @return targetStateCommitment The L2 state root
+    function verifyTargetStateCommitment(bytes32 homeStateCommitment, bytes calldata input)
         external
         view
         returns (bytes32 targetStateCommitment)
@@ -74,7 +74,7 @@ contract ParentToChildProver is IStateProver {
         // Verify proofs and get the L2 state root from L1's LineaRollup
         // Note: L1 (Ethereum) uses MPT, so we use ProverUtils here
         targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
-            homeBlockHash, rlpBlockHeader, lineaRollup, slot, accountProof, storageProof
+            homeStateCommitment, rlpBlockHeader, lineaRollup, slot, accountProof, storageProof
         );
 
         if (targetStateCommitment == bytes32(0)) {

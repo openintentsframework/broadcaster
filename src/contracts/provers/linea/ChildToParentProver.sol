@@ -1,17 +1,22 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
+pragma solidity 0.8.30;
 
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
 import {IStateProver} from "../../interfaces/IStateProver.sol";
 import {IBuffer} from "block-hash-pusher/contracts/interfaces/IBuffer.sol";
 import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 
+/// @notice Linea implementation of a child to parent IStateProver.
+/// @dev    verifyTargetStateCommitment and getTargetStateCommitment get block hashes from the block hash buffer.
+///         verifyStorageSlot is implemented to work against any parent chain with a standard Ethereum block header and state trie.
 contract ChildToParentProver is IStateProver {
+    /// @dev Address of the block hash buffer contract.
     address public immutable blockHashBuffer;
     /// @dev Storage slot the buffer contract uses to store block hashes.
     ///      See https://github.com/OffchainLabs/block-hash-pusher/blob/a1e26f2e42e6306d1e7f03c5d20fa6aa64ff7a12/contracts/Buffer.sol#L32
     uint256 public constant blockHashMappingSlot = 51;
 
+    /// @dev The chain ID of the home chain (child chain).
     uint256 public immutable homeChainId;
 
     error CallNotOnHomeChain();
@@ -53,7 +58,7 @@ contract ChildToParentProver is IStateProver {
         if (block.chainid != homeChainId) {
             revert CallNotOnHomeChain();
         }
-        //decode the input
+        // decode the input
         uint256 targetBlockNumber = abi.decode(input, (uint256));
 
         // get the block hash from the buffer

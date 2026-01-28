@@ -81,7 +81,7 @@ contract ParentToChildProver is IStateProver {
     error L2LogsRootHashNotFound();
 
     /// @notice Error thrown when an operation is attempted on a chain that is not the home chain.
-    error NotInHomeChain();
+    error CallNotOnHomeChain();
 
     /// @notice Error thrown when the batch settlement root does not match the expected target batch root.
     error BatchSettlementRootMismatch();
@@ -112,16 +112,16 @@ contract ParentToChildProver is IStateProver {
     /// @notice Verify a target chain L2 logs root hash given a home chain block hash and a proof.
     /// @dev Verifies that the L2 logs root hash for a specific batch is stored in the gateway ZkChain contract
     ///      by checking the storage slot using storage proofs against the home chain block header.
-    /// @param homeBlockHash The block hash of the home chain (L1) containing the gateway ZkChain state.
+    /// @param homeStateCommitment The block hash of the home chain (L1) containing the gateway ZkChain state.
     /// @param input ABI encoded tuple: (bytes rlpBlockHeader, uint256 batchNumber, bytes storageProof).
     ///              - rlpBlockHeader: RLP-encoded block header of the home chain.
     ///              - batchNumber: The batch number for which to retrieve the L2 logs root hash.
     ///              - proof: Storage proof for the storage slot containing the L2 logs root hash.
-    /// @return targetL2LogsRootHash The L2 logs root hash for the specified batch number.
-    function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
+    /// @return targetStateCommitment The L2 logs root hash for the specified batch number.
+    function verifyTargetStateCommitment(bytes32 homeStateCommitment, bytes calldata input)
         external
         view
-        returns (bytes32 targetL2LogsRootHash)
+        returns (bytes32 targetStateCommitment)
     {
         if (block.chainid == homeChainId) {
             revert CallOnHomeChain();
@@ -132,9 +132,9 @@ contract ParentToChildProver is IStateProver {
 
         uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(l2LogsRootHashSlot), batchNumber));
 
-        // verify proofs and get the block hash
-        targetL2LogsRootHash = ProverUtils.getSlotFromBlockHeader(
-            homeBlockHash, rlpBlockHeader, address(gatewayZkChain), slot, accountProof, storageProof
+        // verify proofs and get the L2 logs root hash
+        targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
+            homeStateCommitment, rlpBlockHeader, address(gatewayZkChain), slot, accountProof, storageProof
         );
     }
 
@@ -142,17 +142,17 @@ contract ParentToChildProver is IStateProver {
     /// @dev Directly queries the gateway ZkChain contract on the home chain to retrieve the L2 logs root hash.
     ///      This function must be called on the home chain where the gateway ZkChain contract is deployed.
     /// @param input ABI encoded uint256 batchNumber - the batch number for which to retrieve the L2 logs root hash.
-    /// @return l2LogsRootHash The L2 logs root hash for the specified batch number.
+    /// @return targetStateCommitment The L2 logs root hash for the specified batch number.
     /// @custom:reverts L2LogsRootHashNotFound if the L2 logs root hash is not found (returns zero).
-    function getTargetStateCommitment(bytes calldata input) external view returns (bytes32 l2LogsRootHash) {
+    function getTargetStateCommitment(bytes calldata input) external view returns (bytes32 targetStateCommitment) {
         if (block.chainid != homeChainId) {
-            revert NotInHomeChain();
+            revert CallNotOnHomeChain();
         }
 
         uint256 batchNumber = abi.decode(input, (uint256));
-        l2LogsRootHash = gatewayZkChain.l2LogsRootHash(batchNumber);
+        targetStateCommitment = gatewayZkChain.l2LogsRootHash(batchNumber);
 
-        if (l2LogsRootHash == bytes32(0)) {
+        if (targetStateCommitment == bytes32(0)) {
             revert L2LogsRootHashNotFound();
         }
     }
@@ -161,7 +161,7 @@ contract ParentToChildProver is IStateProver {
     /// @dev Verifies that an L2 message is included in a batch by checking its inclusion in the L2 logs Merkle tree.
     ///      The message data is expected to contain a message hash and timestamp, which are used to derive
     ///      the storage slot and value on the target chain.
-    /// @param targetL2LogRootHash The L2 logs root hash of the target chain batch to verify against.
+    /// @param targetStateCommitment The L2 logs root hash of the target chain batch to verify against.
     /// @param input ABI encoded ZkSyncProof containing:
     ///              - batchNumber: The batch number containing the message.
     ///              - index: The leaf proof mask for the message in the Merkle tree.
@@ -171,7 +171,7 @@ contract ParentToChildProver is IStateProver {
     /// @return slot The storage slot derived from the account address and message hash.
     /// @return value The timestamp value stored in the message data.
     /// @custom:reverts BatchSettlementRootMismatch if the message is not included in the batch.
-    function verifyStorageSlot(bytes32 targetL2LogRootHash, bytes calldata input)
+    function verifyStorageSlot(bytes32 targetStateCommitment, bytes calldata input)
         external
         view
         returns (address account, uint256 slot, bytes32 value)
@@ -194,7 +194,7 @@ contract ParentToChildProver is IStateProver {
                 _leafProofMask: proof.index,
                 _leaf: hashedLog,
                 _proof: proof.proof,
-                _targetBatchRoot: targetL2LogRootHash
+                _targetBatchRoot: targetStateCommitment
             })) {
             revert BatchSettlementRootMismatch();
         }
@@ -275,9 +275,7 @@ contract ParentToChildProver is IStateProver {
         });
     }
 
-    /// @notice Returns the version of this block hash prover implementation.
     /// @inheritdoc IStateProver
-    /// @return The version number (currently 1).
     function version() external pure returns (uint256) {
         return 1;
     }
