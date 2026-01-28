@@ -275,9 +275,7 @@ contract ParentToChildProver is IStateProver {
         });
     }
 
-    /// @notice Returns the version of this block hash prover implementation.
     /// @inheritdoc IStateProver
-    /// @return The version number (currently 1).
     function version() external pure returns (uint256) {
         return 1;
     }

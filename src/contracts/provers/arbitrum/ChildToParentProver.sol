@@ -21,9 +21,7 @@ contract ChildToParentProver is IStateProver {
     /// @dev The chain Id of the home chain, i.e., the child chain.
     uint256 public immutable homeChainId;
 
-    /// @dev Error thrown when the function is called on the home chain.
     error CallNotOnHomeChain();
-    /// @dev Error thrown when the function is called on a non-home chain.
     error CallOnHomeChain();
 
     constructor(uint256 _homeChainId) {
