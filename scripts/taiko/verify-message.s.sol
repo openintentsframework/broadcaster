@@ -29,13 +29,13 @@ contract VerifyMessage is Script {
         address[] memory route = new address[](1);
         route[0] = proverPointerAddress;
 
-        bytes[] memory bhpInputs = new bytes[](1);
-        bhpInputs[0] = abi.encode(uint48(blockNumber));
+        bytes[] memory scpInputs = new bytes[](1);
+        scpInputs[0] = abi.encode(uint48(blockNumber));
 
         IReceiver.RemoteReadArgs memory remoteReadArgs = IReceiver.RemoteReadArgs({
             route: route,
-            bhpInputs: bhpInputs,
-            storageProof: storageProofInput
+            scpInputs: scpInputs,
+            proof: storageProofInput
         });
         
         bytes32 message = 0xd9222d7d84eefb8570069f30ab4a850423ba57a374c593b67a224c430f9736df;

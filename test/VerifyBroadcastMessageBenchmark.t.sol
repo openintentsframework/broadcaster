@@ -5,7 +5,7 @@ import {Test, console} from "forge-std/Test.sol";
 import {stdJson} from "forge-std/StdJson.sol";
 import {Receiver} from "../src/contracts/Receiver.sol";
 import {IReceiver} from "../src/contracts/interfaces/IReceiver.sol";
-import {BlockHashProverPointer} from "../src/contracts/BlockHashProverPointer.sol";
+import {StateProverPointer} from "../src/contracts/StateProverPointer.sol";
 
 // Provers
 import {ParentToChildProver as TaikoP2C} from "../src/contracts/provers/taiko/ParentToChildProver.sol";
@@ -50,7 +50,7 @@ contract VerifyBroadcastMessageBenchmark is Test {
 
         receiver = new Receiver();
         TaikoP2C prover = new TaikoP2C(address(uint160(SIGNAL_SERVICE)), CHECKPOINTS_SLOT, L1_CHAIN_ID);
-        BlockHashProverPointer pointer = new BlockHashProverPointer(owner);
+        StateProverPointer pointer = new StateProverPointer(owner);
 
         vm.prank(owner);
         pointer.setImplementationAddress(address(prover));
@@ -83,11 +83,11 @@ contract VerifyBroadcastMessageBenchmark is Test {
         address[] memory route = new address[](1);
         route[0] = address(pointer);
 
-        bytes[] memory bhpInputs = new bytes[](1);
-        bhpInputs[0] = abi.encode(uint48(blockNumber));
+        bytes[] memory scpInputs = new bytes[](1);
+        scpInputs[0] = abi.encode(uint48(blockNumber));
 
         IReceiver.RemoteReadArgs memory args =
-            IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProof});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProof});
 
         // Call and snapshot
         receiver.verifyBroadcastMessage(args, message, publisher);
@@ -105,7 +105,7 @@ contract VerifyBroadcastMessageBenchmark is Test {
 
         receiver = new Receiver();
         ScrollP2C prover = new ScrollP2C(SCROLL_CHAIN, STATE_ROOTS_SLOT, HOME_CHAIN_ID);
-        BlockHashProverPointer pointer = new BlockHashProverPointer(owner);
+        StateProverPointer pointer = new StateProverPointer(owner);
 
         vm.prank(owner);
         pointer.setImplementationAddress(address(prover));
@@ -132,11 +132,11 @@ contract VerifyBroadcastMessageBenchmark is Test {
         address[] memory route = new address[](1);
         route[0] = address(pointer);
 
-        bytes[] memory bhpInputs = new bytes[](1);
-        bhpInputs[0] = abi.encode(batchIndex);
+        bytes[] memory scpInputs = new bytes[](1);
+        scpInputs[0] = abi.encode(batchIndex);
 
         IReceiver.RemoteReadArgs memory args =
-            IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProof});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProof});
 
         // Call and snapshot
         receiver.verifyBroadcastMessage(args, message, publisher);
@@ -154,7 +154,7 @@ contract VerifyBroadcastMessageBenchmark is Test {
 
         receiver = new Receiver();
         LineaP2C prover = new LineaP2C(LINEA_ROLLUP, STATE_ROOT_SLOT, HOME_CHAIN_ID);
-        BlockHashProverPointer pointer = new BlockHashProverPointer(owner);
+        StateProverPointer pointer = new StateProverPointer(owner);
 
         vm.prank(owner);
         pointer.setImplementationAddress(address(prover));
@@ -180,11 +180,11 @@ contract VerifyBroadcastMessageBenchmark is Test {
         address[] memory route = new address[](1);
         route[0] = address(pointer);
 
-        bytes[] memory bhpInputs = new bytes[](1);
-        bhpInputs[0] = abi.encode(l2BlockNumber);
+        bytes[] memory scpInputs = new bytes[](1);
+        scpInputs[0] = abi.encode(l2BlockNumber);
 
         IReceiver.RemoteReadArgs memory args =
-            IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: smtProof});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: smtProof});
 
         // Call and snapshot
         receiver.verifyBroadcastMessage(args, message, publisher);
@@ -254,10 +254,10 @@ contract VerifyBroadcastMessageBenchmark is Test {
         receiver = new Receiver();
         ZksyncP2C parentToChildProver = new ZksyncP2C(address(mockZkChain), 0, 300, 32657, block.chainid);
 
-        BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
+        StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
-        blockHashProverPointer.setImplementationAddress(address(parentToChildProver));
+        stateProverPointer.setImplementationAddress(address(parentToChildProver));
 
         bytes32 message = 0x0000000000000000000000000000000000000000000000000000000074657374; // "test"
         address publisher = 0x9a56fFd72F4B526c523C733F1F74197A51c495E1;
@@ -267,15 +267,15 @@ contract VerifyBroadcastMessageBenchmark is Test {
         bytes memory input = abi.encode(proof, publisher, message);
 
         address[] memory route = new address[](1);
-        route[0] = address(blockHashProverPointer);
+        route[0] = address(stateProverPointer);
 
-        bytes[] memory bhpInputs = new bytes[](1);
-        bhpInputs[0] = abi.encode(47506);
+        bytes[] memory scpInputs = new bytes[](1);
+        scpInputs[0] = abi.encode(47506);
 
         bytes memory storageProofToLastProver = input;
 
         IReceiver.RemoteReadArgs memory remoteReadArgs =
-            IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProofToLastProver});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProofToLastProver});
 
         receiver.verifyBroadcastMessage(remoteReadArgs, message, publisher);
         vm.snapshotGasLastCall("verifyBroadcastMessage", "ZkSyncL2ToEthereum");
@@ -296,7 +296,7 @@ contract VerifyBroadcastMessageBenchmark is Test {
 
         receiver = new Receiver();
         TaikoC2P prover = new TaikoC2P(address(uint160(SIGNAL_SERVICE)), CHECKPOINTS_SLOT, L2_CHAIN_ID);
-        BlockHashProverPointer pointer = new BlockHashProverPointer(owner);
+        StateProverPointer pointer = new StateProverPointer(owner);
 
         vm.prank(owner);
         pointer.setImplementationAddress(address(prover));
@@ -329,11 +329,11 @@ contract VerifyBroadcastMessageBenchmark is Test {
         address[] memory route = new address[](1);
         route[0] = address(pointer);
 
-        bytes[] memory bhpInputs = new bytes[](1);
-        bhpInputs[0] = abi.encode(uint48(blockNumber));
+        bytes[] memory scpInputs = new bytes[](1);
+        scpInputs[0] = abi.encode(uint48(blockNumber));
 
         IReceiver.RemoteReadArgs memory args =
-            IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProof});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProof});
 
         // Call and snapshot
         receiver.verifyBroadcastMessage(args, message, publisher);
@@ -349,7 +349,7 @@ contract VerifyBroadcastMessageBenchmark is Test {
 
         receiver = new Receiver();
         OptimismC2P prover = new OptimismC2P(L2_CHAIN_ID);
-        BlockHashProverPointer pointer = new BlockHashProverPointer(owner);
+        StateProverPointer pointer = new StateProverPointer(owner);
 
         vm.prank(owner);
         pointer.setImplementationAddress(address(prover));
@@ -378,11 +378,11 @@ contract VerifyBroadcastMessageBenchmark is Test {
         address[] memory route = new address[](1);
         route[0] = address(pointer);
 
-        bytes[] memory bhpInputs = new bytes[](1);
-        bhpInputs[0] = bytes("");
+        bytes[] memory scpInputs = new bytes[](1);
+        scpInputs[0] = bytes("");
 
         IReceiver.RemoteReadArgs memory args =
-            IReceiver.RemoteReadArgs({route: route, bhpInputs: bhpInputs, storageProof: storageProof});
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProof});
 
         // Call and snapshot
         receiver.verifyBroadcastMessage(args, message, publisher);
@@ -409,7 +409,7 @@ contract VerifyBroadcastMessageBenchmark is Test {
 
         // First hop prover: Optimism C2P (gets Ethereum block hash on OP L2)
         OptimismC2P opC2PProver = new OptimismC2P(OP_L2_CHAIN_ID);
-        BlockHashProverPointer opPointer = new BlockHashProverPointer(owner);
+        StateProverPointer opPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
         opPointer.setImplementationAddress(address(opC2PProver));
@@ -424,9 +424,9 @@ contract VerifyBroadcastMessageBenchmark is Test {
 
         // Register the Scroll prover copy in receiver's mapping
         bytes32 acc1 = keccak256(abi.encode(bytes32(0), address(opPointer)));
-        bytes32 bhpPointerId = keccak256(abi.encode(acc1, scrollPointerAddress));
+        bytes32 scpPointerId = keccak256(abi.encode(acc1, scrollPointerAddress));
 
-        bytes32 mappingSlot = keccak256(abi.encode(bhpPointerId, uint256(0)));
+        bytes32 mappingSlot = keccak256(abi.encode(scpPointerId, uint256(0)));
         vm.store(address(receiver), mappingSlot, bytes32(uint256(uint160(address(scrollP2CProverCopy)))));
 
         // Load Ethereum proof for first hop
@@ -463,7 +463,7 @@ contract VerifyBroadcastMessageBenchmark is Test {
         vm.startSnapshotGas("verifyBroadcastMessage", "ScrollToOptimism");
 
         // First: get Ethereum block hash via OP C2P (simulates first hop verification)
-        opC2PProver.getTargetBlockHash(bytes(""));
+        opC2PProver.getTargetStateCommitment(bytes(""));
 
         // Second: verify Scroll storage using Scroll P2C (simulates second hop verification)
         scrollP2CProverCopy.verifyStorageSlot(scrollStateRoot, scrollStorageProof);

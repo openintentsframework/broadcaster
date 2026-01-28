@@ -5,8 +5,8 @@
  * Run with: npx hardhat run scripts/generate-optimism-test-payloads.ts
  * 
  * Generates:
- * - calldata_get.hex: For getTargetBlockHash() test
- * - calldata_verify_target.hex: For verifyTargetBlockHash() test
+ * - calldata_get.hex: For getTargetStateCommitment() test
+ * - calldata_verify_target.hex: For verifyTargetStateCommitment() test
  * - calldata_verify_slot.hex: For verifyStorageSlot() test
  */
 
@@ -52,17 +52,17 @@ async function main() {
   // 1. Generate calldata_get.hex
   console.log('1️⃣  Generating calldata_get.hex...')
   try {
-    const { input, targetBlockHash } = await helper.buildInputForGetTargetBlockHash()
+    const { input, targetStateCommitment } = await helper.buildInputForGetTargetBlockHash()
     
-    // Format: [input (32 bytes), targetBlockHash (32 bytes)]
+    // Format: [input (32 bytes), targetStateCommitment (32 bytes)]
     const payload = encodeAbiParameters(
       [{ type: 'bytes32' }, { type: 'bytes32' }],
-      [input.padEnd(66, '0') as Hash, targetBlockHash]
+      [input.padEnd(66, '0') as Hash, targetStateCommitment]
     )
     
     fs.writeFileSync(path.join(outputDir, 'calldata_get.hex'), payload)
     console.log(`   ✅ Input: ${input}`)
-    console.log(`   ✅ Target block hash: ${targetBlockHash}\n`)
+    console.log(`   ✅ Target block hash: ${targetStateCommitment}\n`)
   } catch (error) {
     console.error(`   ❌ Error: ${error}\n`)
   }
@@ -70,17 +70,17 @@ async function main() {
   // 2. Generate calldata_verify_target.hex
   console.log('2️⃣  Generating calldata_verify_target.hex...')
   try {
-    const { input, targetBlockHash } = await helper.buildInputForVerifyTargetBlockHash(optimismBlockHash)
+    const { input, targetStateCommitment } = await helper.buildInputForVerifyTargetBlockHash(optimismBlockHash)
     
-    // Format: [homeBlockHash (32 bytes), targetBlockHash (32 bytes), input (variable)]
+    // Format: [homeBlockHash (32 bytes), targetStateCommitment (32 bytes), input (variable)]
     const payload = encodeAbiParameters(
       [{ type: 'bytes32' }, { type: 'bytes32' }, { type: 'bytes' }],
-      [optimismBlockHash, targetBlockHash, input]
+      [optimismBlockHash, targetStateCommitment, input]
     )
     
     fs.writeFileSync(path.join(outputDir, 'calldata_verify_target.hex'), payload)
     console.log(`   ✅ Home block hash: ${optimismBlockHash}`)
-    console.log(`   ✅ Target block hash: ${targetBlockHash}`)
+    console.log(`   ✅ Target block hash: ${targetStateCommitment}`)
     console.log(`   ✅ Input length: ${input.length / 2 - 1} bytes\n`)
   } catch (error) {
     console.error(`   ❌ Error: ${error}\n`)
@@ -95,22 +95,22 @@ async function main() {
 
     // Use a RECENT L1 block instead of the one from L1Block (which might be too old for Infura)
     const recentL1Block = await sepoliaClient.getBlock({ blockTag: 'latest' })
-    const targetBlockHash = recentL1Block.hash
+    const targetStateCommitment = recentL1Block.hash
 
     const { input, slotValue } = await helper.buildInputForVerifyStorageSlot(
-      targetBlockHash,
+      targetStateCommitment,
       knownAccount,
       knownSlot
     )
     
-    // Format: [targetBlockHash (32 bytes), slotValue (32 bytes), input (variable)]
+    // Format: [targetStateCommitment (32 bytes), slotValue (32 bytes), input (variable)]
     const payload = encodeAbiParameters(
       [{ type: 'bytes32' }, { type: 'bytes32' }, { type: 'bytes' }],
-      [targetBlockHash, slotValue, input]
+      [targetStateCommitment, slotValue, input]
     )
     
     fs.writeFileSync(path.join(outputDir, 'calldata_verify_slot.hex'), payload)
-    console.log(`   ✅ Target block hash: ${targetBlockHash}`)
+    console.log(`   ✅ Target block hash: ${targetStateCommitment}`)
     console.log(`   ✅ Account: ${knownAccount}`)
     console.log(`   ✅ Slot: ${knownSlot}`)
     console.log(`   ✅ Slot value: ${slotValue}`)

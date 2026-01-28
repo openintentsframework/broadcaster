@@ -77,25 +77,25 @@ contract ArbitrumParentToChildProverTest is Test {
         parentForkId = vm.createFork(vm.envString("ETHEREUM_RPC_URL"));
         vm.selectFork(parentForkId);
 
-        // Mock Outbox holds the expected sendRoot -> targetBlockHash mapping for stability
+        // Mock Outbox holds the expected sendRoot -> targetStateCommitment mapping for stability
         mockOutbox = new ArbitrumOutputMock();
         bytes32 sendRoot = 0x7995a5be000a0212a46f7f128e5ffd6f6a99fa9c72046d9e9b0668bd080712cd;
-        bytes32 targetBlockHashFromProof = 0xa97ce065a04d2abfec36a459db323721847718d3159d51c4256d271ee3b37e42;
-        mockOutbox.updateSendRoot(sendRoot, targetBlockHashFromProof);
+        bytes32 targetStateCommitmentFromProof = 0xa97ce065a04d2abfec36a459db323721847718d3159d51c4256d271ee3b37e42;
+        mockOutbox.updateSendRoot(sendRoot, targetStateCommitmentFromProof);
     }
 
-    function test_getTargetBlockHash() public {
+    function test_getTargetStateCommitment() public {
         vm.selectFork(parentForkId);
 
         // Test with the sendRoot from the proof data
         bytes32 sendRoot = 0x7995a5be000a0212a46f7f128e5ffd6f6a99fa9c72046d9e9b0668bd080712cd;
         ParentToChildProver mockProver = new ParentToChildProver(address(mockOutbox), rootSlot, block.chainid);
-        bytes32 result = mockProver.getTargetBlockHash(abi.encode(sendRoot));
+        bytes32 result = mockProver.getTargetStateCommitment(abi.encode(sendRoot));
         bytes32 expectedTargetBlockHash = 0xa97ce065a04d2abfec36a459db323721847718d3159d51c4256d271ee3b37e42;
-        assertEq(result, expectedTargetBlockHash, "getTargetBlockHash should return correct Arbitrum block hash");
+        assertEq(result, expectedTargetBlockHash, "getTargetStateCommitment should return correct Arbitrum block hash");
     }
 
-    function test_verifyTargetBlockHash() public {
+    function test_verifyTargetStateCommitment() public {
         vm.selectFork(parentForkId);
         uint256 proverHomeChainId = block.chainid;
         ParentToChildProver prover = new ParentToChildProver(address(outbox), rootSlot, proverHomeChainId);
@@ -116,11 +116,13 @@ contract ArbitrumParentToChildProverTest is Test {
         bytes memory input = abi.encode(rlpBlockHeader, sendRoot, rlpAccountProof, rlpStorageProof);
         bytes32 expectedTargetBlockHash = 0xcb53c786e7e875d7e3b1d3a770adbe02877ee5daab2ebfa55b935798b3ee9d24;
 
-        // verifyTargetBlockHash MUST be called off the prover's home chain.
+        // verifyTargetStateCommitment MUST be called off the prover's home chain.
         vm.chainId(proverHomeChainId + 1);
 
-        bytes32 result = prover.verifyTargetBlockHash(homeBlockHash, input);
-        assertEq(result, expectedTargetBlockHash, "verifyTargetBlockHash should return correct Arbitrum block hash");
+        bytes32 result = prover.verifyTargetStateCommitment(homeBlockHash, input);
+        assertEq(
+            result, expectedTargetBlockHash, "verifyTargetStateCommitment should return correct Arbitrum block hash"
+        );
     }
 
     function test_verifyStorageSlot() public {
@@ -135,7 +137,7 @@ contract ArbitrumParentToChildProverTest is Test {
         RLP.Encoder memory enc = RLP.encoder().push(bytes32(0)).push(bytes32(0)).push(bytes32(0)).push(stateRoot);
 
         bytes memory rlpBlockHeader = enc.encode();
-        bytes32 targetBlockHash = keccak256(rlpBlockHeader);
+        bytes32 targetStateCommitment = keccak256(rlpBlockHeader);
 
         // Outbox contract and storage slot from proof.json
         address outboxAddress = 0x65f07C7D521164a4d5DaC6eB8Fac8DA067A3B78F;
@@ -144,7 +146,7 @@ contract ArbitrumParentToChildProverTest is Test {
         bytes memory rlpStorageProof = _getStorageProof();
         bytes memory input = abi.encode(rlpBlockHeader, outboxAddress, storageSlot, rlpAccountProof, rlpStorageProof);
 
-        (address account, uint256 slot, bytes32 value) = prover.verifyStorageSlot(targetBlockHash, input);
+        (address account, uint256 slot, bytes32 value) = prover.verifyStorageSlot(targetStateCommitment, input);
 
         assertEq(account, outboxAddress, "Account should match Outbox address");
         assertEq(slot, storageSlot, "Slot should match roots mapping slot");

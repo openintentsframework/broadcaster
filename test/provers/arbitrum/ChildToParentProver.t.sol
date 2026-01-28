@@ -81,56 +81,56 @@ contract BroadcasterTest is Test {
         payload = vm.parseBytes(vm.readFile(string.concat(vm.projectRoot(), "/", path)));
     }
 
-    function test_getTargetBlockHash() public {
+    function test_getTargetStateCommitment() public {
         vm.selectFork(childForkId);
         bytes memory payload = _loadPayload("test/payloads/arbitrum/calldata_get.hex");
 
         assertEq(payload.length, 64);
 
         uint256 input;
-        bytes32 targetBlockHash;
+        bytes32 targetStateCommitment;
 
         assembly {
             input := mload(add(payload, 0x20))
-            targetBlockHash := mload(add(payload, 0x40))
+            targetStateCommitment := mload(add(payload, 0x40))
         }
 
-        bytes32 result = childToParentProver.getTargetBlockHash(abi.encode(input));
+        bytes32 result = childToParentProver.getTargetStateCommitment(abi.encode(input));
 
-        assertEq(result, targetBlockHash);
+        assertEq(result, targetStateCommitment);
     }
 
-    function test_getTargetBlockHash_broadcast() public {
+    function test_getTargetStateCommitment_broadcast() public {
         vm.selectFork(childForkId);
 
-        bytes32 targetBlockHash = 0x57845b0a97194c2869580ed8857fee67c91f2bb9cdf54368685c0ea5bf25f6c2;
+        bytes32 targetStateCommitment = 0x57845b0a97194c2869580ed8857fee67c91f2bb9cdf54368685c0ea5bf25f6c2;
         uint256 blockNumber = 9043658;
 
-        bytes32 result = childToParentProver.getTargetBlockHash(abi.encode(blockNumber));
+        bytes32 result = childToParentProver.getTargetStateCommitment(abi.encode(blockNumber));
 
-        assertEq(result, targetBlockHash);
+        assertEq(result, targetStateCommitment);
     }
 
-    function test_getTargetBlockHash_broadcaster() public {
+    function test_getTargetStateCommitment_broadcaster() public {
         vm.selectFork(childForkId);
         bytes memory payload = _loadPayload("test/payloads/arbitrum/broadcaster_get.hex");
 
         assertEq(payload.length, 64);
 
         bytes32 input;
-        bytes32 targetBlockHash;
+        bytes32 targetStateCommitment;
 
         assembly {
             input := mload(add(payload, 0x20))
-            targetBlockHash := mload(add(payload, 0x40))
+            targetStateCommitment := mload(add(payload, 0x40))
         }
 
-        bytes32 result = childToParentProver.getTargetBlockHash(abi.encode(input));
+        bytes32 result = childToParentProver.getTargetStateCommitment(abi.encode(input));
 
-        assertEq(result, targetBlockHash);
+        assertEq(result, targetStateCommitment);
     }
 
-    function test_reverts_getTargetBlockHash_on_target_chain() public {
+    function test_reverts_getTargetStateCommitment_on_target_chain() public {
         vm.selectFork(parentForkId);
         bytes memory payload = _loadPayload("test/payloads/arbitrum/calldata_get.hex");
 
@@ -139,27 +139,27 @@ contract BroadcasterTest is Test {
         assertEq(payload.length, 64);
 
         bytes32 input;
-        bytes32 targetBlockHash;
+        bytes32 targetStateCommitment;
 
         assembly {
             input := mload(add(payload, 0x20))
-            targetBlockHash := mload(add(payload, 0x40))
+            targetStateCommitment := mload(add(payload, 0x40))
         }
 
         vm.expectRevert(ChildToParentProver.CallNotOnHomeChain.selector);
-        newChildToParentProver.getTargetBlockHash(abi.encode(input));
+        newChildToParentProver.getTargetStateCommitment(abi.encode(input));
     }
 
-    function test_reverts_getTargetBlockHash_reverts_not_found() public {
+    function test_reverts_getTargetStateCommitment_reverts_not_found() public {
         vm.selectFork(childForkId);
 
         uint256 input = type(uint256).max;
 
         vm.expectRevert(abi.encodeWithSelector(IBuffer.UnknownParentChainBlockHash.selector, input));
-        childToParentProver.getTargetBlockHash(abi.encode(input));
+        childToParentProver.getTargetStateCommitment(abi.encode(input));
     }
 
-    function test_verifyTargetBlockHash() public {
+    function test_verifyTargetStateCommitment() public {
         vm.selectFork(parentForkId);
 
         bytes memory payload = _loadPayload("test/payloads/arbitrum/calldata_verify_target.hex");
@@ -169,21 +169,21 @@ contract BroadcasterTest is Test {
         assertGt(payload.length, 64);
 
         bytes32 homeBlockHash;
-        bytes32 targetBlockHash;
+        bytes32 targetStateCommitment;
 
         bytes memory input = Bytes.slice(payload, 64);
 
         assembly {
             homeBlockHash := mload(add(payload, 0x20))
-            targetBlockHash := mload(add(payload, 0x40))
+            targetStateCommitment := mload(add(payload, 0x40))
         }
 
-        bytes32 result = childToParentProverCopy.verifyTargetBlockHash(homeBlockHash, input);
+        bytes32 result = childToParentProverCopy.verifyTargetStateCommitment(homeBlockHash, input);
 
-        assertEq(result, targetBlockHash);
+        assertEq(result, targetStateCommitment);
     }
 
-    function test_verifyTargetBlockHash_reverts_on_home_chain() public {
+    function test_verifyTargetStateCommitment_reverts_on_home_chain() public {
         vm.selectFork(childForkId);
 
         bytes memory payload = _loadPayload("test/payloads/arbitrum/calldata_verify_target.hex");
@@ -193,17 +193,17 @@ contract BroadcasterTest is Test {
         assertGt(payload.length, 64);
 
         bytes32 homeBlockHash;
-        bytes32 targetBlockHash;
+        bytes32 targetStateCommitment;
 
         bytes memory input = Bytes.slice(payload, 64);
 
         assembly {
             homeBlockHash := mload(add(payload, 0x20))
-            targetBlockHash := mload(add(payload, 0x40))
+            targetStateCommitment := mload(add(payload, 0x40))
         }
 
         vm.expectRevert(ChildToParentProver.CallOnHomeChain.selector);
-        childToParentProverCopy.verifyTargetBlockHash(homeBlockHash, input);
+        childToParentProverCopy.verifyTargetStateCommitment(homeBlockHash, input);
     }
 
     function test_verifyStorageSlot() public {
@@ -218,17 +218,17 @@ contract BroadcasterTest is Test {
 
         assertGt(payload.length, 64);
 
-        bytes32 targetBlockHash;
+        bytes32 targetStateCommitment;
         bytes32 storageSlotValue;
         bytes memory input = Bytes.slice(payload, 64);
 
         assembly {
-            targetBlockHash := mload(add(payload, 0x20))
+            targetStateCommitment := mload(add(payload, 0x20))
             storageSlotValue := mload(add(payload, 0x40))
         }
 
         (address account, uint256 slot, bytes32 value) =
-            childToParentProverCopy.verifyStorageSlot(targetBlockHash, input);
+            childToParentProverCopy.verifyStorageSlot(targetStateCommitment, input);
 
         assertEq(account, knownAccount);
         assertEq(slot, knownSlot);

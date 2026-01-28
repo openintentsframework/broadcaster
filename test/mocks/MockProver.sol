@@ -1,27 +1,27 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.30;
 
-import {IBlockHashProver} from "src/contracts/interfaces/IBlockHashProver.sol";
+import {IStateProver} from "src/contracts/interfaces/IStateProver.sol";
 
-contract MockProver is IBlockHashProver {
-    function verifyTargetBlockHash(
+contract MockProver is IStateProver {
+    function verifyTargetStateCommitment(
         bytes32 homeBlockHash,
         bytes calldata /*input*/
     )
         external
         pure
-        returns (bytes32 targetBlockHash)
+        returns (bytes32 targetStateCommitment)
     {
         return homeBlockHash;
     }
 
-    function getTargetBlockHash(bytes calldata input) external pure returns (bytes32 targetBlockHash) {
-        targetBlockHash = abi.decode(input, (bytes32));
+    function getTargetStateCommitment(bytes calldata input) external pure returns (bytes32 targetStateCommitment) {
+        targetStateCommitment = abi.decode(input, (bytes32));
     }
 
     function verifyStorageSlot(
         bytes32,
-        /*targetBlockHash*/
+        /*targetStateCommitment*/
         bytes calldata input
     )
         external

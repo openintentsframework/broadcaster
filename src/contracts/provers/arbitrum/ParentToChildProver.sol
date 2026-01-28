@@ -2,14 +2,14 @@
 pragma solidity 0.8.30;
 
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
-import {IBlockHashProver} from "../../interfaces/IBlockHashProver.sol";
+import {IStateProver} from "../../interfaces/IStateProver.sol";
 import {IOutbox} from "@arbitrum/nitro-contracts/src/bridge/IOutbox.sol";
 import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 
-/// @notice Arbitrum implementation of a parent to child IBlockHashProver.
-/// @dev    verifyTargetBlockHash and getTargetBlockHash get block hashes from the child chain's Outbox contract.
+/// @notice Arbitrum implementation of a parent to child IStateProver.
+/// @dev    verifyTargetStateCommitment and getTargetStateCommitment get block hashes from the child chain's Outbox contract.
 ///         verifyStorageSlot is implemented to work against any Arbitrum child chain with a standard Ethereum block header and state trie.
-contract ParentToChildProver is IBlockHashProver {
+contract ParentToChildProver is IStateProver {
     /// @dev Address of the child chain's Outbox contract
     address public immutable outbox;
     /// @dev Storage slot the Outbox contract uses to store roots.
@@ -33,10 +33,10 @@ contract ParentToChildProver is IBlockHashProver {
     /// @notice Verify a target chain block hash given a home chain block hash and a proof.
     /// @param  homeBlockHash The block hash of the home chain.
     /// @param  input ABI encoded (bytes blockHeader, bytes32 sendRoot, bytes accountProof, bytes storageProof)
-    function verifyTargetBlockHash(bytes32 homeBlockHash, bytes calldata input)
+    function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
         external
         view
-        returns (bytes32 targetBlockHash)
+        returns (bytes32 targetStateCommitment)
     {
         if (block.chainid == homeChainId) {
             revert CallOnHomeChain();
@@ -51,17 +51,17 @@ contract ParentToChildProver is IBlockHashProver {
         uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(rootsSlot), sendRoot));
 
         // verify proofs and get the block hash
-        targetBlockHash =
+        targetStateCommitment =
             ProverUtils.getSlotFromBlockHeader(homeBlockHash, rlpBlockHeader, outbox, slot, accountProof, storageProof);
 
-        if (targetBlockHash == bytes32(0)) {
+        if (targetStateCommitment == bytes32(0)) {
             revert TargetBlockHashNotFound();
         }
     }
 
     /// @notice Get a target chain block hash given a target chain sendRoot
     /// @param  input ABI encoded (bytes32 sendRoot)
-    function getTargetBlockHash(bytes calldata input) external view returns (bytes32 targetBlockHash) {
+    function getTargetStateCommitment(bytes calldata input) external view returns (bytes32 targetStateCommitment) {
         if (block.chainid != homeChainId) {
             revert CallNotOnHomeChain();
         }
@@ -69,17 +69,17 @@ contract ParentToChildProver is IBlockHashProver {
         // decode the input
         bytes32 sendRoot = abi.decode(input, (bytes32));
         // get the target block hash from the outbox
-        targetBlockHash = IOutbox(outbox).roots(sendRoot);
+        targetStateCommitment = IOutbox(outbox).roots(sendRoot);
 
-        if (targetBlockHash == bytes32(0)) {
+        if (targetStateCommitment == bytes32(0)) {
             revert TargetBlockHashNotFound();
         }
     }
 
     /// @notice Verify a storage slot given a target chain block hash and a proof.
-    /// @param  targetBlockHash The block hash of the target chain.
+    /// @param  targetStateCommitment The block hash of the target chain.
     /// @param  input ABI encoded (bytes blockHeader, address account, uint256 slot, bytes accountProof, bytes storageProof)
-    function verifyStorageSlot(bytes32 targetBlockHash, bytes calldata input)
+    function verifyStorageSlot(bytes32 targetStateCommitment, bytes calldata input)
         external
         pure
         returns (address account, uint256 slot, bytes32 value)
@@ -93,11 +93,11 @@ contract ParentToChildProver is IBlockHashProver {
 
         // verify proofs and get the value
         value = ProverUtils.getSlotFromBlockHeader(
-            targetBlockHash, rlpBlockHeader, account, slot, accountProof, storageProof
+            targetStateCommitment, rlpBlockHeader, account, slot, accountProof, storageProof
         );
     }
 
-    /// @inheritdoc IBlockHashProver
+    /// @inheritdoc IStateProver
     function version() external pure returns (uint256) {
         return 1;
     }

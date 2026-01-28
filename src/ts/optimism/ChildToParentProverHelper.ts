@@ -24,40 +24,40 @@ export class OptimismChildToParentProverHelper
   readonly l1BlockHashSlot: bigint = 2n  // hash is at slot 2
 
   /**
-   * Build input for getTargetBlockHash()
+   * Build input for getTargetStateCommitment()
    * For Optimism, this reads the L1Block predeploy directly, so input can be empty
    */
   async buildInputForGetTargetBlockHash(): Promise<{
     input: Hex
-    targetBlockHash: Hash
+    targetStateCommitment: Hash
   }> {
     // Read the L1 block hash directly from the L1Block predeploy
-    const targetBlockHash = await this.homeChainClient.getStorageAt({
+    const targetStateCommitment = await this.homeChainClient.getStorageAt({
       address: this.l1BlockPredeploy,
       slot: `0x${this.l1BlockHashSlot.toString(16)}` as Hex,
     }) as Hash
 
-    // getTargetBlockHash() on Optimism doesn't need any input
+    // getTargetStateCommitment() on Optimism doesn't need any input
     // It reads the predeploy directly
     return {
       input: '0x' as Hex,
-      targetBlockHash,
+      targetStateCommitment,
     }
   }
 
   /**
-   * Build input for verifyTargetBlockHash()
+   * Build input for verifyTargetStateCommitment()
    * This requires Merkle proofs of the L1Block predeploy's storage
    */
   async buildInputForVerifyTargetBlockHash(
     homeBlockHash: Hash
-  ): Promise<{ input: Hex; targetBlockHash: Hash }> {
+  ): Promise<{ input: Hex; targetStateCommitment: Hash }> {
     const homeBlockNumber = (
       await this.homeChainClient.getBlock({ blockHash: homeBlockHash })
     ).number
 
     // Read the L1 block hash from the predeploy at this specific block
-    const targetBlockHash = await this.homeChainClient.getStorageAt({
+    const targetStateCommitment = await this.homeChainClient.getStorageAt({
       address: this.l1BlockPredeploy,
       slot: `0x${this.l1BlockHashSlot.toString(16)}` as Hex,
       blockNumber: homeBlockNumber,
@@ -87,7 +87,7 @@ export class OptimismChildToParentProverHelper
 
     return {
       input,
-      targetBlockHash,
+      targetStateCommitment,
     }
   }
 
@@ -96,18 +96,18 @@ export class OptimismChildToParentProverHelper
    * This verifies a storage slot on the target chain (Ethereum L1)
    */
   async buildInputForVerifyStorageSlot(
-    targetBlockHash: Hash,
+    targetStateCommitment: Hash,
     account: Address,
     slot: bigint
   ): Promise<{ input: Hex; slotValue: Hash }> {
     const rlpBlockHeader = await this._getRlpBlockHeader(
       'target',
-      targetBlockHash
+      targetStateCommitment
     )
     const { rlpAccountProof, rlpStorageProof, slotValue } =
       await this._getRlpStorageAndAccountProof(
         'target',
-        targetBlockHash,
+        targetStateCommitment,
         account,
         slot
       )

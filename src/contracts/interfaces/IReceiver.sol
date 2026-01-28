@@ -1,27 +1,29 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.30;
 
-import {IBlockHashProver} from "./IBlockHashProver.sol";
+import {IStateProver} from "./IStateProver.sol";
 
 /// @notice Reads messages from a broadcaster.
 interface IReceiver {
-    /// @notice Arguments required to read storage of an account on a remote chain.
-    /// @dev    The storage proof is always for a single slot, if the proof is for multiple slots the IReceiver MUST revert
-    /// @param  route The home chain addresses of the BlockHashProverPointers along the route to the remote chain.
-    /// @param  bhpInputs The inputs to the BlockHashProver / BlockHashProverCopies.
-    /// @param  storageProof Proof passed to the last BlockHashProver / BlockHashProverCopy
-    ///                      to verify a storage slot given a target block hash.
+    /// @notice Arguments required to read state of an account on a remote chain.
+    /// @dev    The proof is always for a single storage slot. If the proof is for multiple slots the IReceiver MUST revert.
+    ///         The proof format depends on the state commitment scheme used by the StateProver (e.g., storage proofs).
+    ///         While messages MUST be stored in storage slots, alternative reading mechanisms may be used in some cases.
+    /// @param  route The home chain addresses of the StateProverPointers along the route to the remote chain.
+    /// @param  scpInputs The inputs to the StateProver / StateProverCopies.
+    /// @param  proof Proof passed to the last StateProver / StateProverCopy
+    ///               to verify a storage slot given a target state commitment.
     struct RemoteReadArgs {
         address[] route;
-        bytes[] bhpInputs;
-        bytes storageProof;
+        bytes[] scpInputs;
+        bytes proof;
     }
 
     /// @notice Reads a broadcast message from a remote chain.
     /// @param  broadcasterReadArgs A RemoteReadArgs object:
     ///         - The route points to the broadcasting chain
     ///         - The account proof is for the broadcaster's account
-    ///         - The storage proof is for the message slot
+    ///         - The proof is for the message storage slot (MAY accept proofs of other transmission mechanisms (e.g., child-to-parent native bridges) if the broadcaster contract uses other transmission mechanisms)
     /// @param  message The message to read.
     /// @param  publisher The address of the publisher who broadcast the message.
     /// @return broadcasterId The broadcaster's unique identifier.
@@ -31,22 +33,20 @@ interface IReceiver {
         view
         returns (bytes32 broadcasterId, uint256 timestamp);
 
-    /// @notice Updates the block hash prover copy in storage.
-    ///         Checks that BlockHashProverCopy has the same code hash as stored in the BlockHashProverPointer
+    /// @notice Updates the state commitment prover copy in storage.
+    ///         Checks that StateProverCopy has the same code hash as stored in the StateProverPointer
     ///         Checks that the version is increasing.
-    /// @param  bhpPointerReadArgs A RemoteReadArgs object:
-    ///         - The route points to the BlockHashProverPointer's home chain
-    ///         - The account proof is for the BlockHashProverPointer's account
-    ///         - The storage proof is for the BLOCK_HASH_PROVER_POINTER_SLOT
-    /// @param  bhpCopy The BlockHashProver copy on the local chain.
-    /// @return bhpPointerId The ID of the BlockHashProverPointer
-    function updateBlockHashProverCopy(RemoteReadArgs calldata bhpPointerReadArgs, IBlockHashProver bhpCopy)
+    /// @param  scpPointerReadArgs A RemoteReadArgs object:
+    ///         - The route points to the StateProverPointer's home chain
+    ///         - The account proof is for the StateProverPointer's account
+    ///         - The proof is for the STATE_PROVER_POINTER_SLOT
+    /// @param  scpCopy The StateProver copy on the local chain.
+    /// @return scpPointerId The ID of the StateProverPointer
+    function updateStateProverCopy(RemoteReadArgs calldata scpPointerReadArgs, IStateProver scpCopy)
         external
-        returns (bytes32 bhpPointerId);
+        returns (bytes32 scpPointerId);
 
-    /// @notice The BlockHashProverCopy on the local chain corresponding to the bhpPointerId
-    ///         MUST return 0 if the BlockHashProverPointer does not exist.
-    /// @param bhpPointerId The unique identifier of the BlockHashProverPointer.
-    /// @return bhpCopy The BlockHashProver copy stored on the local chain, or address(0) if not found.
-    function blockHashProverCopy(bytes32 bhpPointerId) external view returns (IBlockHashProver bhpCopy);
+    /// @notice The StateProverCopy on the local chain corresponding to the scpPointerId
+    ///         MUST return 0 if the StateProverPointer does not exist.
+    function stateProverCopy(bytes32 scpPointerId) external view returns (IStateProver scpCopy);
 }

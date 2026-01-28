@@ -2,33 +2,21 @@
 pragma solidity 0.8.30;
 
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
-import {IBlockHashProver} from "../../interfaces/IBlockHashProver.sol";
+import {IStateProver} from "../../interfaces/IStateProver.sol";
 import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
+import {IScrollChain} from "@scroll-tech/scroll-contracts/L1/rollup/IScrollChain.sol";
 
-/// @notice Interface for Scroll's ScrollChain contract on L1
-interface IScrollChain {
-    /// @notice Returns the finalized state root for a given batch index
-    /// @param batchIndex The index of the batch
-    /// @return The state root of the finalized batch
-    function finalizedStateRoots(uint256 batchIndex) external view returns (bytes32);
-
-    /// @notice Returns whether a batch is finalized
-    /// @param batchIndex The index of the batch
-    /// @return Whether the batch is finalized
-    function isBatchFinalized(uint256 batchIndex) external view returns (bool);
-}
-
-/// @notice Scroll implementation of a parent to child IBlockHashProver.
+/// @notice Scroll implementation of a parent to child IStateProver.
 /// @dev    Home chain: L1 (Ethereum). Target chain: L2 (Scroll).
-///         getTargetBlockHash reads finalized L2 state roots directly from L1's ScrollChain.
-///         verifyTargetBlockHash verifies L2 state roots via storage proof against L1's ScrollChain.
+///         getTargetStateCommitment reads finalized L2 state roots directly from L1's ScrollChain.
+///         verifyTargetStateCommitment verifies L2 state roots via storage proof against L1's ScrollChain.
 ///         verifyStorageSlot verifies storage against the L2 state root using standard MPT proofs.
 ///
 ///         NOTE: Unlike other provers that return block hashes, Scroll stores STATE ROOTS directly
-///         in the ScrollChain contract. The "targetBlockHash" returned by this prover is actually
+///         in the ScrollChain contract. The "targetStateCommitment" returned by this prover is actually
 ///         the L2 state root, which can be used directly for MPT verification without needing
 ///         the L2 block header.
-contract ParentToChildProver is IBlockHashProver {
+contract ParentToChildProver is IStateProver {
     /// @dev Address of the ScrollChain contract on L1
     address public immutable scrollChain;
 
@@ -58,11 +46,11 @@ contract ParentToChildProver is IBlockHashProver {
     /// @dev    Called on non-home chains (e.g., another L2 that has L1 block hashes)
     /// @param  homeBlockHash The L1 block hash
     /// @param  input ABI encoded (bytes rlpBlockHeader, uint256 batchIndex, bytes accountProof, bytes storageProof)
-    /// @return targetBlockHash The L2 state root stored in L1's ScrollChain (NOTE: this is a state root, not a block hash)
-    function verifyTargetBlockHash(bytes32 homeBlockHash, bytes calldata input)
+    /// @return targetStateCommitment The L2 state root stored in L1's ScrollChain (NOTE: this is a state root, not a block hash)
+    function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
         external
         view
-        returns (bytes32 targetBlockHash)
+        returns (bytes32 targetStateCommitment)
     {
         if (block.chainid == homeChainId) {
             revert CallOnHomeChain();
@@ -77,11 +65,11 @@ contract ParentToChildProver is IBlockHashProver {
         uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(finalizedStateRootsSlot), batchIndex));
 
         // Verify proofs and get the L2 state root from L1's ScrollChain
-        targetBlockHash = ProverUtils.getSlotFromBlockHeader(
+        targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
             homeBlockHash, rlpBlockHeader, scrollChain, slot, accountProof, storageProof
         );
 
-        if (targetBlockHash == bytes32(0)) {
+        if (targetStateCommitment == bytes32(0)) {
             revert StateRootNotFound();
         }
     }
@@ -89,8 +77,8 @@ contract ParentToChildProver is IBlockHashProver {
     /// @notice Get L2 state root directly from L1 ScrollChain
     /// @dev    Called on home chain (L1)
     /// @param  input ABI encoded (uint256 batchIndex)
-    /// @return targetBlockHash The L2 state root (NOTE: this is a state root, not a block hash)
-    function getTargetBlockHash(bytes calldata input) external view returns (bytes32 targetBlockHash) {
+    /// @return targetStateCommitment The L2 state root (NOTE: this is a state root, not a block hash)
+    function getTargetStateCommitment(bytes calldata input) external view returns (bytes32 targetStateCommitment) {
         if (block.chainid != homeChainId) {
             revert CallNotOnHomeChain();
         }
@@ -99,9 +87,9 @@ contract ParentToChildProver is IBlockHashProver {
         uint256 batchIndex = abi.decode(input, (uint256));
 
         // Get the state root from ScrollChain
-        targetBlockHash = IScrollChain(scrollChain).finalizedStateRoots(batchIndex);
+        targetStateCommitment = IScrollChain(scrollChain).finalizedStateRoots(batchIndex);
 
-        if (targetBlockHash == bytes32(0)) {
+        if (targetStateCommitment == bytes32(0)) {
             revert StateRootNotFound();
         }
     }
@@ -109,17 +97,17 @@ contract ParentToChildProver is IBlockHashProver {
     /// @notice Verify a storage slot given an L2 state root and a proof
     /// @dev    Since Scroll stores state roots directly (not block hashes), we can verify
     ///         the storage proof directly against the state root without needing the block header.
-    /// @param  targetBlockHash The L2 state root (NOTE: despite the name, this is a state root)
+    /// @param  targetStateCommitment The L2 state root (NOTE: despite the name, this is a state root)
     /// @param  input ABI encoded (address account, uint256 slot, bytes accountProof, bytes storageProof)
     /// @return account The address of the account on L2
     /// @return slot The storage slot
     /// @return value The value of the storage slot
-    function verifyStorageSlot(bytes32 targetBlockHash, bytes calldata input)
+    function verifyStorageSlot(bytes32 targetStateCommitment, bytes calldata input)
         external
         pure
         returns (address account, uint256 slot, bytes32 value)
     {
-        // Decode the input - note: no block header needed since targetBlockHash IS the state root
+        // Decode the input - note: no block header needed since targetStateCommitment IS the state root
         bytes memory accountProof;
         bytes memory storageProof;
         (account, slot, accountProof, storageProof) = abi.decode(input, (address, uint256, bytes, bytes));
@@ -127,7 +115,7 @@ contract ParentToChildProver is IBlockHashProver {
         // Verify proofs directly against the state root
         // This works because ScrollChain stores state roots, not block hashes
         value = ProverUtils.getStorageSlotFromStateRoot(
-            targetBlockHash, // This is actually the state root
+            targetStateCommitment, // This is actually the state root
             accountProof,
             storageProof,
             account,
@@ -135,7 +123,7 @@ contract ParentToChildProver is IBlockHashProver {
         );
     }
 
-    /// @inheritdoc IBlockHashProver
+    /// @inheritdoc IStateProver
     function version() external pure returns (uint256) {
         return 1;
     }

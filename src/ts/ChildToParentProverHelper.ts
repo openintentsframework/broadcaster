@@ -16,7 +16,7 @@ import { childToParentProverAbi, iBufferAbi } from '../../wagmi/abi'
 
 /**
  * ChildToParentProverHelper is a class that provides helper methods for interacting
- * with the child to parent IBlockHashProver contract.
+ * with the child to parent IStateProver contract.
  *
  * It extends the BaseProverHelper class and implements the IProverHelper interface.
  *
@@ -38,27 +38,27 @@ export class ChildToParentProverHelper
    */
   async buildInputForGetTargetBlockHash(): Promise<{
     input: Hex
-    targetBlockHash: Hash
+    targetStateCommitment: Hash
   }> {
-    const { targetBlockHash, targetBlockNumber } =
+    const { targetStateCommitment, targetBlockNumber } =
       await this._findLatestAvailableTargetChainBlock(
         await this.homeChainClient.getBlockNumber()
       )
     return {
       input: encodeAbiParameters([{ type: 'uint256' }], [targetBlockNumber]),
-      targetBlockHash,
+      targetStateCommitment,
     }
   }
 
   async buildInputForGetTargetBlockHashByBlockNumber(blockNumber: bigint): Promise<{
     input: Hex
-    targetBlockHash: Hash
+    targetStateCommitment: Hash
   }> {
     //// TODO
 
     return {
       input: encodeAbiParameters([{ type: 'uint256' }], [blockNumber]),
-      targetBlockHash: '0x' as `0x${string}`,
+      targetStateCommitment: '0x' as `0x${string}`,
     }
   }
 
@@ -67,11 +67,11 @@ export class ChildToParentProverHelper
    */
   async buildInputForVerifyTargetBlockHash(
     homeBlockHash: Hash
-  ): Promise<{ input: Hex; targetBlockHash: Hash }> {
+  ): Promise<{ input: Hex; targetStateCommitment: Hash }> {
     const homeBlockNumber = (
       await this.homeChainClient.getBlock({ blockHash: homeBlockHash })
     ).number
-    const { targetBlockHash, targetBlockNumber } =
+    const { targetStateCommitment, targetBlockNumber } =
       await this._findLatestAvailableTargetChainBlock(homeBlockNumber)
 
     const slot = hexToBigInt(
@@ -104,7 +104,7 @@ export class ChildToParentProverHelper
 
     return {
       input,
-      targetBlockHash,
+      targetStateCommitment,
     }
   }
 
@@ -112,18 +112,18 @@ export class ChildToParentProverHelper
    * @see IProverHelper.buildInputForVerifyStorageSlot
    */
   async buildInputForVerifyStorageSlot(
-    targetBlockHash: Hash,
+    targetStateCommitment: Hash,
     account: Address,
     slot: bigint
   ): Promise<{ input: Hex; slotValue: Hash }> {
     const rlpBlockHeader = await this._getRlpBlockHeader(
       'target',
-      targetBlockHash
+      targetStateCommitment
     )
     const { rlpAccountProof, rlpStorageProof, slotValue } =
       await this._getRlpStorageAndAccountProof(
         'target',
-        targetBlockHash,
+        targetStateCommitment,
         account,
         slot
       )
@@ -146,20 +146,20 @@ export class ChildToParentProverHelper
 
   async _findLatestAvailableTargetChainBlock(homeBlockNumber: bigint): Promise<{
     targetBlockNumber: bigint
-    targetBlockHash: Hash
+    targetStateCommitment: Hash
   }> {
     const bufferContract = this._bufferContract()
     const targetBlockNumber = await bufferContract.read.newestBlockNumber({
       blockNumber: homeBlockNumber,
     })
-    const targetBlockHash = await bufferContract.read.parentChainBlockHash(
+    const targetStateCommitment = await bufferContract.read.parentChainBlockHash(
       [targetBlockNumber],
       { blockNumber: homeBlockNumber }
     )
 
     return {
       targetBlockNumber,
-      targetBlockHash,
+      targetStateCommitment,
     }
   }
 

@@ -122,7 +122,7 @@ contract ZkSyncParentToChildProverTest is Test {
         prover.verifyStorageSlot(expectedL2LogsRootHash, abi.encode(proof));
     }
 
-    function test_getTargetBlockHash() public {
+    function test_getTargetStateCommitment() public {
         vm.selectFork(parentForkId);
 
         MockZkChain mockZkChain = new MockZkChain();
@@ -130,7 +130,7 @@ contract ZkSyncParentToChildProverTest is Test {
 
         ParentToChildProver prover = new ParentToChildProver(address(mockZkChain), 0, 300, 32657, parentChainId);
 
-        bytes32 targetL2LogsRootHash = prover.getTargetBlockHash(abi.encode(43984));
+        bytes32 targetL2LogsRootHash = prover.getTargetStateCommitment(abi.encode(43984));
         assertEq(
             targetL2LogsRootHash,
             0x4cbeceb2a95a01369ab104ec6a305e37cb22d3717abb91da6880e038c3160470,
@@ -138,22 +138,22 @@ contract ZkSyncParentToChildProverTest is Test {
         );
     }
 
-    function test_getTargetBlockHash_revertsWithNotFound() public {
+    function test_getTargetStateCommitment_revertsWithNotFound() public {
         vm.selectFork(parentForkId);
         MockZkChain mockZkChain = new MockZkChain();
 
         ParentToChildProver prover = new ParentToChildProver(address(mockZkChain), 0, 300, 32657, parentChainId);
 
         vm.expectRevert(ParentToChildProver.L2LogsRootHashNotFound.selector);
-        prover.getTargetBlockHash(abi.encode(43985));
+        prover.getTargetStateCommitment(abi.encode(43985));
     }
 
-    function test_getTargetBlockHash_revertsWithNotInHomeChain() public {
+    function test_getTargetStateCommitment_revertsWithNotInHomeChain() public {
         MockZkChain mockZkChain = new MockZkChain();
 
         ParentToChildProver prover = new ParentToChildProver(address(mockZkChain), 0, 300, 32657, parentChainId);
 
-        vm.expectRevert(ParentToChildProver.NotInHomeChain.selector);
-        prover.getTargetBlockHash(abi.encode(43985));
+        vm.expectRevert(ParentToChildProver.CallNotOnHomeChain.selector);
+        prover.getTargetStateCommitment(abi.encode(43985));
     }
 }

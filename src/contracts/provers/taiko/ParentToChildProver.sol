@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
+pragma solidity 0.8.30;
 
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
-import {IBlockHashProver} from "../../interfaces/IBlockHashProver.sol";
+import {IStateProver} from "../../interfaces/IStateProver.sol";
 import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 
 interface ICheckpointStore {
@@ -15,12 +15,12 @@ interface ICheckpointStore {
     function getCheckpoint(uint48 _blockNumber) external view returns (Checkpoint memory);
 }
 
-/// @notice Taiko implementation of a parent to child IBlockHashProver.
+/// @notice Taiko implementation of a parent to child IStateProver.
 /// @dev    Home chain: L1 (Ethereum). Target chain: L2 (Taiko).
-///         verifyTargetBlockHash gets L2 block hashes from L1's SignalService checkpoint storage.
-///         getTargetBlockHash reads L2 block hashes directly from L1's SignalService.
+///         verifyTargetStateCommitment gets L2 block hashes from L1's SignalService checkpoint storage.
+///         getTargetStateCommitment reads L2 block hashes directly from L1's SignalService.
 ///         verifyStorageSlot works against any Ethereum-compatible chain with standard block headers.
-contract ParentToChildProver is IBlockHashProver {
+contract ParentToChildProver is IStateProver {
     /// @dev Address of the L1 SignalService contract
     address public immutable signalService;
 
@@ -46,11 +46,11 @@ contract ParentToChildProver is IBlockHashProver {
     /// @dev    Called on non-home chains (e.g., Taiko L2)
     /// @param  homeBlockHash The L1 block hash
     /// @param  input ABI encoded (bytes rlpBlockHeader, uint48 l2BlockNumber, bytes accountProof, bytes storageProof)
-    /// @return targetBlockHash The L2 block hash stored in L1's SignalService
-    function verifyTargetBlockHash(bytes32 homeBlockHash, bytes calldata input)
+    /// @return targetStateCommitment The L2 block hash stored in L1's SignalService
+    function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
         external
         view
-        returns (bytes32 targetBlockHash)
+        returns (bytes32 targetStateCommitment)
     {
         if (block.chainid == homeChainId) {
             revert CallOnHomeChain();
@@ -66,11 +66,11 @@ contract ParentToChildProver is IBlockHashProver {
 
         // Verify proofs and get the L2 block hash from L1's SignalService
         // CheckpointRecord.blockHash is stored at the base slot
-        targetBlockHash = ProverUtils.getSlotFromBlockHeader(
+        targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
             homeBlockHash, rlpBlockHeader, signalService, slot, accountProof, storageProof
         );
 
-        if (targetBlockHash == bytes32(0)) {
+        if (targetStateCommitment == bytes32(0)) {
             revert TargetBlockHashNotFound();
         }
     }
@@ -78,8 +78,8 @@ contract ParentToChildProver is IBlockHashProver {
     /// @notice Get L2 block hash directly from L1 SignalService
     /// @dev    Called on home chain (L1)
     /// @param  input ABI encoded (uint48 l2BlockNumber)
-    /// @return targetBlockHash The L2 block hash
-    function getTargetBlockHash(bytes calldata input) external view returns (bytes32 targetBlockHash) {
+    /// @return targetStateCommitment The L2 block hash
+    function getTargetStateCommitment(bytes calldata input) external view returns (bytes32 targetStateCommitment) {
         if (block.chainid != homeChainId) {
             revert CallNotOnHomeChain();
         }
@@ -90,20 +90,20 @@ contract ParentToChildProver is IBlockHashProver {
         // Get the checkpoint from SignalService
         ICheckpointStore.Checkpoint memory checkpoint = ICheckpointStore(signalService).getCheckpoint(l2BlockNumber);
 
-        targetBlockHash = checkpoint.blockHash;
+        targetStateCommitment = checkpoint.blockHash;
 
-        if (targetBlockHash == bytes32(0)) {
+        if (targetStateCommitment == bytes32(0)) {
             revert TargetBlockHashNotFound();
         }
     }
 
     /// @notice Verify a storage slot given a target chain block hash and a proof
-    /// @param  targetBlockHash The block hash of the target chain (L2)
+    /// @param  targetStateCommitment The block hash of the target chain (L2)
     /// @param  input ABI encoded (bytes blockHeader, address account, uint256 slot, bytes accountProof, bytes storageProof)
     /// @return account The address of the account on the target chain
     /// @return slot The storage slot of the account on the target chain
     /// @return value The value of the storage slot
-    function verifyStorageSlot(bytes32 targetBlockHash, bytes calldata input)
+    function verifyStorageSlot(bytes32 targetStateCommitment, bytes calldata input)
         external
         pure
         returns (address account, uint256 slot, bytes32 value)
@@ -117,11 +117,11 @@ contract ParentToChildProver is IBlockHashProver {
 
         // Verify proofs and get the value
         value = ProverUtils.getSlotFromBlockHeader(
-            targetBlockHash, rlpBlockHeader, account, slot, accountProof, storageProof
+            targetStateCommitment, rlpBlockHeader, account, slot, accountProof, storageProof
         );
     }
 
-    /// @inheritdoc IBlockHashProver
+    /// @inheritdoc IStateProver
     function version() external pure returns (uint256) {
         return 1;
     }

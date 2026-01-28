@@ -3,15 +3,30 @@ pragma solidity ^0.8.28;
 
 import {Test} from "forge-std/Test.sol";
 import {console} from "forge-std/console.sol";
-import {ParentToChildProver, ILineaRollup} from "../../../src/contracts/provers/linea/ParentToChildProver.sol";
+import {ParentToChildProver} from "../../../src/contracts/provers/linea/ParentToChildProver.sol";
+import {ZkEvmV2} from "@linea-contracts/rollup/ZkEvmV2.sol";
 import {stdJson} from "forge-std/StdJson.sol";
 
 /// @notice Mock LineaRollup contract for testing
-contract MockLineaRollup {
-    mapping(uint256 => bytes32) public stateRootHashes;
-
+contract MockLineaRollup is ZkEvmV2 {
     function setStateRootHash(uint256 blockNumber, bytes32 stateRootHash) external {
         stateRootHashes[blockNumber] = stateRootHash;
+    }
+
+    function sendMessage(address _to, uint256 _fee, bytes calldata _calldata) external payable {
+        if (_fee > msg.value) {
+            revert ValueSentTooLow();
+        }
+
+        bytes32 messageHash = keccak256(abi.encode(msg.sender, _to, _fee, msg.value - _fee, 0, _calldata));
+
+        emit MessageSent(msg.sender, _to, _fee, msg.value - _fee, 0, _calldata, messageHash);
+
+        // no-op
+    }
+
+    function sender() external view returns (address) {
+        return TRANSIENT_MESSAGE_SENDER;
     }
 }
 
@@ -73,68 +88,68 @@ contract LineaParentToChildProverTest is Test {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // getTargetBlockHash Tests (Home Chain - L1)
+    // getTargetStateCommitment Tests (Home Chain - L1)
     // ═══════════════════════════════════════════════════════════════════════════
 
-    function test_getTargetBlockHash_success() public {
+    function test_getTargetStateCommitment_success() public {
         // Set up mock to return a state root
         mockLineaRollup.setStateRootHash(L2_BLOCK_NUMBER, L2_STATE_ROOT);
 
         // We're on L1 (home chain) by default in tests
         vm.chainId(ETH_MAINNET_CHAIN_ID);
 
-        bytes32 stateRoot = prover.getTargetBlockHash(abi.encode(L2_BLOCK_NUMBER));
+        bytes32 stateRoot = prover.getTargetStateCommitment(abi.encode(L2_BLOCK_NUMBER));
 
         assertEq(stateRoot, L2_STATE_ROOT);
     }
 
-    function test_getTargetBlockHash_revertsWhenNotFound() public {
+    function test_getTargetStateCommitment_revertsWhenNotFound() public {
         // State root not set (returns bytes32(0))
         vm.chainId(ETH_MAINNET_CHAIN_ID);
 
         vm.expectRevert(ParentToChildProver.TargetStateRootNotFound.selector);
-        prover.getTargetBlockHash(abi.encode(L2_BLOCK_NUMBER));
+        prover.getTargetStateCommitment(abi.encode(L2_BLOCK_NUMBER));
     }
 
-    function test_getTargetBlockHash_revertsOffHomeChain() public {
+    function test_getTargetStateCommitment_revertsOffHomeChain() public {
         // Switch to Linea L2 (not home chain)
         vm.chainId(LINEA_MAINNET_CHAIN_ID);
 
         vm.expectRevert(ParentToChildProver.CallNotOnHomeChain.selector);
-        prover.getTargetBlockHash(abi.encode(L2_BLOCK_NUMBER));
+        prover.getTargetStateCommitment(abi.encode(L2_BLOCK_NUMBER));
     }
 
-    function test_getTargetBlockHash_zeroBlockNumber() public {
+    function test_getTargetStateCommitment_zeroBlockNumber() public {
         mockLineaRollup.setStateRootHash(0, L2_STATE_ROOT);
         vm.chainId(ETH_MAINNET_CHAIN_ID);
 
-        bytes32 stateRoot = prover.getTargetBlockHash(abi.encode(uint256(0)));
+        bytes32 stateRoot = prover.getTargetStateCommitment(abi.encode(uint256(0)));
         assertEq(stateRoot, L2_STATE_ROOT);
     }
 
-    function testFuzz_getTargetBlockHash_revertsOnUnknownBlock(uint48 blockNumber) public {
+    function testFuzz_getTargetStateCommitment_revertsOnUnknownBlock(uint48 blockNumber) public {
         // Don't set any state root
         vm.chainId(ETH_MAINNET_CHAIN_ID);
 
         vm.expectRevert(ParentToChildProver.TargetStateRootNotFound.selector);
-        prover.getTargetBlockHash(abi.encode(uint256(blockNumber)));
+        prover.getTargetStateCommitment(abi.encode(uint256(blockNumber)));
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // verifyTargetBlockHash Tests (Non-Home Chain)
+    // verifyTargetStateCommitment Tests (Non-Home Chain)
     // ═══════════════════════════════════════════════════════════════════════════
 
-    function test_verifyTargetBlockHash_revertsOnHomeChain() public {
-        // On L1 (home chain), verifyTargetBlockHash should revert
+    function test_verifyTargetStateCommitment_revertsOnHomeChain() public {
+        // On L1 (home chain), verifyTargetStateCommitment should revert
         vm.chainId(ETH_MAINNET_CHAIN_ID);
 
         vm.expectRevert(ParentToChildProver.CallOnHomeChain.selector);
-        prover.verifyTargetBlockHash(bytes32(0), bytes(""));
+        prover.verifyTargetStateCommitment(bytes32(0), bytes(""));
     }
 
     /// @dev This test requires a real storage proof from L1 LineaRollup
     ///      For now, we test that the function reverts with invalid proofs
-    function test_verifyTargetBlockHash_revertsWithInvalidProof() public {
+    function test_verifyTargetStateCommitment_revertsWithInvalidProof() public {
         vm.chainId(LINEA_MAINNET_CHAIN_ID);
 
         bytes memory input = abi.encode(
@@ -146,7 +161,7 @@ contract LineaParentToChildProverTest is Test {
 
         // Should revert due to invalid proof
         vm.expectRevert();
-        prover.verifyTargetBlockHash(bytes32(uint256(1)), input);
+        prover.verifyTargetStateCommitment(bytes32(uint256(1)), input);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════

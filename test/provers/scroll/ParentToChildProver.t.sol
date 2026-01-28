@@ -3,7 +3,8 @@ pragma solidity ^0.8.27;
 
 import {console, Test} from "forge-std/Test.sol";
 import {stdJson} from "forge-std/StdJson.sol";
-import {ParentToChildProver, IScrollChain} from "../../../src/contracts/provers/scroll/ParentToChildProver.sol";
+import {ParentToChildProver} from "../../../src/contracts/provers/scroll/ParentToChildProver.sol";
+import {IScrollChain} from "@scroll-tech/scroll-contracts/L1/rollup/IScrollChain.sol";
 import {Bytes} from "@openzeppelin/contracts/utils/Bytes.sol";
 import {RLP} from "@openzeppelin/contracts/utils/RLP.sol";
 
@@ -19,6 +20,43 @@ contract ScrollChainMock is IScrollChain {
 
     function isBatchFinalized(uint256 batchIndex) external view override returns (bool) {
         return _isBatchFinalized[batchIndex];
+    }
+
+    // no-ops
+    function lastFinalizedBatchIndex() external view returns (uint256) {
+        return 0;
+    }
+
+    function committedBatches(uint256 batchIndex) external view returns (bytes32) {
+        return bytes32(0);
+    }
+
+    function withdrawRoots(uint256 batchIndex) external view returns (bytes32) {
+        return bytes32(0);
+    }
+
+    function commitBatches(uint8 version, bytes32 parentBatchHash, bytes32 lastBatchHash) external {
+        return;
+    }
+
+    function revertBatch(bytes calldata batchHeader) external {
+        return;
+    }
+
+    function finalizeBundlePostEuclidV2(
+        bytes calldata batchHeader,
+        uint256 totalL1MessagesPoppedOverall,
+        bytes32 postStateRoot,
+        bytes32 withdrawRoot,
+        bytes calldata aggrProof
+    ) external {
+        return;
+    }
+
+    function commitAndFinalizeBatch(uint8 version, bytes32 parentBatchHash, FinalizeStruct calldata finalizeStruct)
+        external
+    {
+        return;
     }
 }
 
@@ -59,8 +97,8 @@ contract ScrollChainMock is IScrollChain {
             l2ChainId = 534352; // Scroll mainnet chain ID
         }
 
-        /// @notice Test getTargetBlockHash returns state root when called on home chain
-        function test_getTargetBlockHash_success() public {
+        /// @notice Test getTargetStateCommitment returns state root when called on home chain
+        function test_getTargetStateCommitment_success() public {
             vm.selectFork(l1ForkId);
 
             uint256 batchIndex = 12345;
@@ -69,15 +107,15 @@ contract ScrollChainMock is IScrollChain {
             // Set up the mock
             scrollChainMock.setFinalizedStateRoot(batchIndex, expectedStateRoot);
 
-            // Call getTargetBlockHash
+            // Call getTargetStateCommitment
             bytes memory input = abi.encode(batchIndex);
-            bytes32 stateRoot = parentToChildProver.getTargetBlockHash(input);
+            bytes32 stateRoot = parentToChildProver.getTargetStateCommitment(input);
 
             assertEq(stateRoot, expectedStateRoot, "State root mismatch");
         }
 
-        /// @notice Test getTargetBlockHash reverts when batch is not finalized
-        function test_getTargetBlockHash_stateRootNotFound() public {
+        /// @notice Test getTargetStateCommitment reverts when batch is not finalized
+        function test_getTargetStateCommitment_stateRootNotFound() public {
             vm.selectFork(l1ForkId);
 
             uint256 batchIndex = 99999; // Non-existent batch
@@ -85,11 +123,11 @@ contract ScrollChainMock is IScrollChain {
             bytes memory input = abi.encode(batchIndex);
 
             vm.expectRevert(ParentToChildProver.StateRootNotFound.selector);
-            parentToChildProver.getTargetBlockHash(input);
+            parentToChildProver.getTargetStateCommitment(input);
         }
 
-        /// @notice Test getTargetBlockHash reverts when not on home chain
-        function test_getTargetBlockHash_notOnHomeChain() public {
+        /// @notice Test getTargetStateCommitment reverts when not on home chain
+        function test_getTargetStateCommitment_notOnHomeChain() public {
             // Simulate being on a different chain (Scroll L2)
             vm.chainId(l2ChainId);
 
@@ -97,7 +135,7 @@ contract ScrollChainMock is IScrollChain {
             bytes memory input = abi.encode(batchIndex);
 
             vm.expectRevert(ParentToChildProver.CallNotOnHomeChain.selector);
-            parentToChildProver.getTargetBlockHash(input);
+            parentToChildProver.getTargetStateCommitment(input);
         }
 
         /// @notice Test verifyStorageSlot with real proof data
@@ -126,7 +164,7 @@ contract ScrollChainMock is IScrollChain {
             // Input: abi.encode(address account, uint256 slot, bytes accountProof, bytes storageProof)
             bytes memory input = abi.encode(account, slot, rlpAccountProof, rlpStorageProof);
 
-            // The "targetBlockHash" for Scroll is actually the state root
+            // The "targetStateCommitment" for Scroll is actually the state root
             (address actualAccount, uint256 actualSlot, bytes32 actualValue) =
                 parentToChildProver.verifyStorageSlot(stateRoot, input);
 
@@ -180,7 +218,7 @@ contract ScrollChainMock is IScrollChain {
 
             // Step 2: Get the state root (simulating what happens on L1)
             bytes memory getInput = abi.encode(batchIndex);
-            bytes32 retrievedStateRoot = parentToChildProver.getTargetBlockHash(getInput);
+            bytes32 retrievedStateRoot = parentToChildProver.getTargetStateCommitment(getInput);
 
             assertEq(retrievedStateRoot, stateRoot, "Retrieved state root should match");
 
@@ -194,8 +232,8 @@ contract ScrollChainMock is IScrollChain {
             assertEq(actualValue, expectedValue, "value mismatch");
         }
 
-        /// @notice Test verifyTargetBlockHash reverts when called on home chain
-        function test_verifyTargetBlockHash_onHomeChain() public {
+        /// @notice Test verifyTargetStateCommitment reverts when called on home chain
+        function test_verifyTargetStateCommitment_onHomeChain() public {
             vm.selectFork(l1ForkId);
 
             bytes32 homeBlockHash = bytes32(uint256(1));
@@ -207,7 +245,7 @@ contract ScrollChainMock is IScrollChain {
             );
 
             vm.expectRevert(ParentToChildProver.CallOnHomeChain.selector);
-            parentToChildProver.verifyTargetBlockHash(homeBlockHash, input);
+            parentToChildProver.verifyTargetStateCommitment(homeBlockHash, input);
         }
 
         /// @notice Test version returns 1

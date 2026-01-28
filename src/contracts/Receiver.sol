@@ -2,38 +2,38 @@
 pragma solidity 0.8.30;
 
 import {IReceiver} from "./interfaces/IReceiver.sol";
-import {IBlockHashProver} from "./interfaces/IBlockHashProver.sol";
-import {IBlockHashProverPointer} from "./interfaces/IBlockHashProverPointer.sol";
-import {BLOCK_HASH_PROVER_POINTER_SLOT} from "./BlockHashProverPointer.sol";
+import {IStateProver} from "./interfaces/IStateProver.sol";
+import {IStateProverPointer} from "./interfaces/IStateProverPointer.sol";
+import {STATE_PROVER_POINTER_SLOT} from "./StateProverPointer.sol";
 
 /// @title Receiver
 /// @notice Verifies broadcast messages from remote chains using cryptographic storage proofs
 /// @dev This contract enables cross-chain message verification by:
-///      1. Maintaining local copies of BlockHashProver contracts for different chains
+///      1. Maintaining local copies of StateProver contracts for different chains
 ///      2. Using these provers to verify storage proofs from remote Broadcaster contracts
 ///      3. Following a proof route that can span multiple chain hops
 ///      The verification process ensures that a message was actually broadcast on a remote chain
 ///      at a specific timestamp without requiring trust in intermediaries.
 contract Receiver is IReceiver {
-    mapping(bytes32 blockHashProverPointerId => IBlockHashProver blockHashProverCopy) private _blockHashProverCopies;
+    mapping(bytes32 stateProverPointerId => IStateProver stateProverCopy) private _stateProverCopies;
 
     error InvalidRouteLength();
     error EmptyRoute();
     error ProverCopyNotFound();
     error MessageNotFound();
     error WrongMessageSlot();
-    error WrongBlockHashProverPointerSlot();
+    error WrongStateProverPointerSlot();
     error DifferentCodeHash();
     error NewerProverVersion();
 
     /// @notice Verifies that a message was broadcast on a remote chain
-    /// @dev This function uses a chain of BlockHashProvers to verify a storage proof that demonstrates
+    /// @dev This function uses a chain of StateProvers to verify a storage proof that demonstrates
     ///      a message was broadcast. The verification route can span multiple chains, with each hop
     ///      proving the next chain's state. The function verifies:
     ///      1. The storage slot matches the expected slot for (message, publisher)
     ///      2. The slot value is non-zero (message was broadcast)
     ///      3. The entire proof chain is valid
-    /// @param broadcasterReadArgs Contains the route (chain of addresses), BlockHashProver inputs for each hop,
+    /// @param broadcasterReadArgs Contains the route (chain of addresses), StateProver inputs for each hop,
     ///                             and the final storage proof for the broadcaster contract
     /// @param message The 32-byte message that was allegedly broadcast
     /// @param publisher The address that allegedly broadcast the message
@@ -63,51 +63,51 @@ contract Receiver is IReceiver {
         timestamp = uint256(slotValue);
     }
 
-    /// @notice Updates the local copy of a BlockHashProver for a specific remote chain
-    /// @dev This function verifies and stores a local copy of a BlockHashProver contract from a remote chain.
+    /// @notice Updates the local copy of a StateProver for a specific remote chain
+    /// @dev This function verifies and stores a local copy of a StateProver contract from a remote chain.
     ///      The verification process ensures:
-    ///      1. The provided proof reads from the correct storage slot (BLOCK_HASH_PROVER_POINTER_SLOT)
+    ///      1. The provided proof reads from the correct storage slot (STATE_PROVER_POINTER_SLOT)
     ///      2. The code hash of the local copy matches the code hash stored in the remote pointer
     ///      3. The new version is newer than any existing local copy (version monotonicity)
-    ///      This allows the Receiver to trustlessly obtain and update BlockHashProver implementations
+    ///      This allows the Receiver to trustlessly obtain and update StateProver implementations
     ///      needed for cross-chain message verification.
-    /// @param bhpPointerReadArgs Contains the route and proofs to read the remote BlockHashProverPointer's storage
-    /// @param bhpCopy The local deployed copy of the BlockHashProver contract
-    /// @return bhpPointerId A unique identifier for the remote BlockHashProverPointer (accumulated hash of route)
-    /// @custom:throws WrongBlockHashProverPointerSlot if the proof doesn't read from the expected slot
+    /// @param scpPointerReadArgs Contains the route and proofs to read the remote StateProverPointer's storage
+    /// @param scpCopy The local deployed copy of the StateProver contract
+    /// @return scpPointerId A unique identifier for the remote StateProverPointer (accumulated hash of route)
+    /// @custom:throws WrongStateProverPointerSlot if the proof doesn't read from the expected slot
     /// @custom:throws DifferentCodeHash if the local copy's code hash doesn't match the remote pointer's stored hash
     /// @custom:throws NewerProverVersion if an existing local copy has a version >= the new copy's version
-    function updateBlockHashProverCopy(RemoteReadArgs calldata bhpPointerReadArgs, IBlockHashProver bhpCopy)
+    function updateStateProverCopy(RemoteReadArgs calldata scpPointerReadArgs, IStateProver scpCopy)
         external
-        returns (bytes32 bhpPointerId)
+        returns (bytes32 scpPointerId)
     {
         uint256 slot;
-        bytes32 bhpCodeHash;
-        (bhpPointerId, slot, bhpCodeHash) = _readRemoteSlot(bhpPointerReadArgs);
+        bytes32 scpCodeHash;
+        (scpPointerId, slot, scpCodeHash) = _readRemoteSlot(scpPointerReadArgs);
 
-        if (slot != uint256(BLOCK_HASH_PROVER_POINTER_SLOT)) {
-            revert WrongBlockHashProverPointerSlot();
+        if (slot != uint256(STATE_PROVER_POINTER_SLOT)) {
+            revert WrongStateProverPointerSlot();
         }
 
-        if (address(bhpCopy).codehash != bhpCodeHash) {
+        if (address(scpCopy).codehash != scpCodeHash) {
             revert DifferentCodeHash();
         }
 
-        IBlockHashProver oldProverCopy = _blockHashProverCopies[bhpPointerId];
+        IStateProver oldProverCopy = _stateProverCopies[scpPointerId];
 
-        if (address(oldProverCopy) != address(0) && oldProverCopy.version() >= bhpCopy.version()) {
+        if (address(oldProverCopy) != address(0) && oldProverCopy.version() >= scpCopy.version()) {
             revert NewerProverVersion();
         }
 
-        _blockHashProverCopies[bhpPointerId] = bhpCopy;
+        _stateProverCopies[scpPointerId] = scpCopy;
     }
 
-    /// @notice The BlockHashProverCopy on the local chain corresponding to the bhpPointerId
-    ///         MUST return 0 if the BlockHashProverPointer does not exist.
-    /// @param bhpPointerId The unique identifier of the BlockHashProverPointer.
-    /// @return bhpCopy The BlockHashProver copy stored on the local chain, or address(0) if not found.
-    function blockHashProverCopy(bytes32 bhpPointerId) external view returns (IBlockHashProver bhpCopy) {
-        bhpCopy = _blockHashProverCopies[bhpPointerId];
+    /// @notice The StateProverCopy on the local chain corresponding to the scpPointerId
+    ///         MUST return 0 if the StateProverPointer does not exist.
+    /// @param scpPointerId The unique identifier of the StateProverPointer.
+    /// @return scpCopy The StateProver copy stored on the local chain, or address(0) if not found.
+    function stateProverCopy(bytes32 scpPointerId) external view returns (IStateProver scpCopy) {
+        scpCopy = _stateProverCopies[scpPointerId];
     }
 
     function _readRemoteSlot(RemoteReadArgs calldata readArgs)
@@ -115,7 +115,7 @@ contract Receiver is IReceiver {
         view
         returns (bytes32 remoteAccountId, uint256 slot, bytes32 slotValue)
     {
-        if (readArgs.route.length != readArgs.bhpInputs.length) {
+        if (readArgs.route.length != readArgs.scpInputs.length) {
             revert InvalidRouteLength();
         }
 
@@ -123,28 +123,28 @@ contract Receiver is IReceiver {
             revert EmptyRoute();
         }
 
-        IBlockHashProver prover;
-        bytes32 blockHash;
+        IStateProver prover;
+        bytes32 stateCommitment;
 
         for (uint256 i = 0; i < readArgs.route.length; i++) {
             remoteAccountId = accumulator(remoteAccountId, readArgs.route[i]);
 
             if (i == 0) {
-                prover = IBlockHashProver(IBlockHashProverPointer(readArgs.route[0]).implementationAddress());
-                blockHash = prover.getTargetBlockHash(readArgs.bhpInputs[0]);
+                prover = IStateProver(IStateProverPointer(readArgs.route[0]).implementationAddress());
+                stateCommitment = prover.getTargetStateCommitment(readArgs.scpInputs[0]);
             } else {
-                prover = _blockHashProverCopies[remoteAccountId];
+                prover = _stateProverCopies[remoteAccountId];
                 if (address(prover) == address(0)) {
                     revert ProverCopyNotFound();
                 }
 
-                blockHash = prover.verifyTargetBlockHash(blockHash, readArgs.bhpInputs[i]);
+                stateCommitment = prover.verifyTargetStateCommitment(stateCommitment, readArgs.scpInputs[i]);
             }
         }
 
         address remoteAccount;
 
-        (remoteAccount, slot, slotValue) = prover.verifyStorageSlot(blockHash, readArgs.storageProof);
+        (remoteAccount, slot, slotValue) = prover.verifyStorageSlot(stateCommitment, readArgs.proof);
 
         remoteAccountId = accumulator(remoteAccountId, remoteAccount);
     }
