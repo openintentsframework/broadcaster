@@ -22,7 +22,7 @@ abstract contract BaseBuffer is IBuffer {
     /// @dev Mapping of block numbers to block hashes.
     mapping(uint256 blockNumber => bytes32 blockHash) private _blockHashes;
 
-    uint256[_BUFFER_SIZE] private _buffer;
+    uint256[_BUFFER_SIZE] private _blockNumberBuffer;
 
     /// @inheritdoc IBuffer
     function parentChainBlockHash(uint256 parentChainBlockNumber) external view returns (bytes32) {
@@ -50,7 +50,7 @@ abstract contract BaseBuffer is IBuffer {
         for (uint256 i = 0; i < blockHashesLength; i++) {
             uint256 blockNumber = firstBlockNumber + i;
             uint256 bufferIndex = blockNumber % _BUFFER_SIZE;
-            uint256 existingBlockNumber = _buffer[bufferIndex];
+            uint256 existingBlockNumber = _blockNumberBuffer[bufferIndex];
 
             if (blockNumber <= existingBlockNumber) {
                 continue;
@@ -61,7 +61,7 @@ abstract contract BaseBuffer is IBuffer {
             }
 
             _blockHashes[blockNumber] = blockHashes[i];
-            _buffer[bufferIndex] = blockNumber;
+            _blockNumberBuffer[bufferIndex] = blockNumber;
         }
 
         uint256 lastBlockNumber = firstBlockNumber + blockHashesLength - 1;
