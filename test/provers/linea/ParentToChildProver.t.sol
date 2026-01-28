@@ -3,15 +3,30 @@ pragma solidity ^0.8.28;
 
 import {Test} from "forge-std/Test.sol";
 import {console} from "forge-std/console.sol";
-import {ParentToChildProver, ILineaRollup} from "../../../src/contracts/provers/linea/ParentToChildProver.sol";
+import {ParentToChildProver} from "../../../src/contracts/provers/linea/ParentToChildProver.sol";
+import {ZkEvmV2} from "@linea-contracts/rollup/ZkEvmV2.sol";
 import {stdJson} from "forge-std/StdJson.sol";
 
 /// @notice Mock LineaRollup contract for testing
-contract MockLineaRollup {
-    mapping(uint256 => bytes32) public stateRootHashes;
-
+contract MockLineaRollup is ZkEvmV2 {
     function setStateRootHash(uint256 blockNumber, bytes32 stateRootHash) external {
         stateRootHashes[blockNumber] = stateRootHash;
+    }
+
+    function sendMessage(address _to, uint256 _fee, bytes calldata _calldata) external payable {
+        if (_fee > msg.value) {
+            revert ValueSentTooLow();
+        }
+
+        bytes32 messageHash = keccak256(abi.encode(msg.sender, _to, _fee, msg.value - _fee, 0, _calldata));
+
+        emit MessageSent(msg.sender, _to, _fee, msg.value - _fee, 0, _calldata, messageHash);
+
+        // no-op
+    }
+
+    function sender() external view returns (address) {
+        return TRANSIENT_MESSAGE_SENDER;
     }
 }
 

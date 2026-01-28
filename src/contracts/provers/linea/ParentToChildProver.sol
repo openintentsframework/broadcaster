@@ -5,13 +5,7 @@ import {SparseMerkleProof} from "../../libraries/linea/SparseMerkleProof.sol";
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
 import {IStateProver} from "../../interfaces/IStateProver.sol";
 import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
-
-interface ILineaRollup {
-    /// @notice Returns the state root hash for a given L2 block number
-    /// @param blockNumber The L2 block number
-    /// @return The state root hash (bytes32(0) if not finalized)
-    function stateRootHashes(uint256 blockNumber) external view returns (bytes32);
-}
+import {ZkEvmV2} from "@linea-contracts/rollup/ZkEvmV2.sol";
 
 /// @title Linea ParentToChildProver
 /// @notice Enables verification of Linea L2 state from Ethereum L1
@@ -95,7 +89,7 @@ contract ParentToChildProver is IStateProver {
         uint256 l2BlockNumber = abi.decode(input, (uint256));
 
         // Get the state root from LineaRollup
-        targetStateCommitment = ILineaRollup(lineaRollup).stateRootHashes(l2BlockNumber);
+        targetStateCommitment = ZkEvmV2(lineaRollup).stateRootHashes(l2BlockNumber);
 
         if (targetStateCommitment == bytes32(0)) {
             revert TargetStateRootNotFound();
