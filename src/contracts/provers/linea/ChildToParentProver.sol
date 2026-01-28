@@ -3,7 +3,7 @@ pragma solidity 0.8.30;
 
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
 import {IStateProver} from "../../interfaces/IStateProver.sol";
-import {IBuffer} from "block-hash-pusher/contracts/interfaces/IBuffer.sol";
+import {IBuffer} from "../../block-hash-pusher/interfaces/IBuffer.sol";
 import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 
 /// @notice Linea implementation of a child to parent IStateProver.
