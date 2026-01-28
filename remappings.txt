@@ -3,6 +3,5 @@ forge-std/=lib/forge-std/src/
 @openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/
 @eth-optimism/=node_modules/@eth-optimism/
 @arbitrum/nitro-contracts/=node_modules/@arbitrum/nitro-contracts
-block-hash-pusher/=lib/block-hash-pusher/
 @scroll-tech/scroll-contracts/=lib/scroll-contracts/src/
 @linea-contracts/=lib/linea-monorepo/contracts/src/

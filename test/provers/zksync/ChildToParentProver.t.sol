@@ -8,7 +8,7 @@ import {IBroadcaster} from "../../../src/contracts/interfaces/IBroadcaster.sol";
 import {IOutbox} from "@arbitrum/nitro-contracts/src/bridge/IOutbox.sol";
 import {ChildToParentProver} from "../../../src/contracts/provers/zksync/ChildToParentProver.sol";
 import {Bytes} from "@openzeppelin/contracts/utils/Bytes.sol";
-import {IBuffer} from "../../block-hash-pusher/interfaces/IBuffer.sol";
+import {IBuffer} from "../../../src/contracts/block-hash-pusher/interfaces/IBuffer.sol";
 import {BufferMock} from "../../mocks/BufferMock.sol";
 import {RLP} from "@openzeppelin/contracts/utils/RLP.sol";
 import {BlockHeaders} from "../../utils/BlockHeaders.sol";
