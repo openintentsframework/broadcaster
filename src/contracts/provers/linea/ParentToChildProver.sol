@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
+pragma solidity 0.8.30;
 
 import {SparseMerkleProof} from "../../libraries/linea/SparseMerkleProof.sol";
 import {ProverUtils} from "../../libraries/ProverUtils.sol";

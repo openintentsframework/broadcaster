@@ -2,7 +2,7 @@
 // Copyright 2023 Consensys Software Inc.
 // Adapted for use in ERC-7888 provers
 
-pragma solidity ^0.8.28;
+pragma solidity 0.8.30;
 
 import {Mimc} from "./Mimc.sol";
 
