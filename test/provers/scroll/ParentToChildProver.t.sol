@@ -3,7 +3,8 @@ pragma solidity ^0.8.27;
 
 import {console, Test} from "forge-std/Test.sol";
 import {stdJson} from "forge-std/StdJson.sol";
-import {ParentToChildProver, IScrollChain} from "../../../src/contracts/provers/scroll/ParentToChildProver.sol";
+import {ParentToChildProver} from "../../../src/contracts/provers/scroll/ParentToChildProver.sol";
+import {IScrollChain} from "@scroll-tech/scroll-contracts/L1/rollup/IScrollChain.sol";
 import {Bytes} from "@openzeppelin/contracts/utils/Bytes.sol";
 import {RLP} from "@openzeppelin/contracts/utils/RLP.sol";
 
@@ -19,6 +20,43 @@ contract ScrollChainMock is IScrollChain {
 
     function isBatchFinalized(uint256 batchIndex) external view override returns (bool) {
         return _isBatchFinalized[batchIndex];
+    }
+
+    // no-ops
+    function lastFinalizedBatchIndex() external view returns (uint256) {
+        return 0;
+    }
+
+    function committedBatches(uint256 batchIndex) external view returns (bytes32) {
+        return bytes32(0);
+    }
+
+    function withdrawRoots(uint256 batchIndex) external view returns (bytes32) {
+        return bytes32(0);
+    }
+
+    function commitBatches(uint8 version, bytes32 parentBatchHash, bytes32 lastBatchHash) external {
+        return;
+    }
+
+    function revertBatch(bytes calldata batchHeader) external {
+        return;
+    }
+
+    function finalizeBundlePostEuclidV2(
+        bytes calldata batchHeader,
+        uint256 totalL1MessagesPoppedOverall,
+        bytes32 postStateRoot,
+        bytes32 withdrawRoot,
+        bytes calldata aggrProof
+    ) external {
+        return;
+    }
+
+    function commitAndFinalizeBatch(uint8 version, bytes32 parentBatchHash, FinalizeStruct calldata finalizeStruct)
+        external
+    {
+        return;
     }
 }
 
