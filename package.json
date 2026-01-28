@@ -23,7 +23,6 @@
     "@openzeppelin/contracts": "5.5.0-rc.0",
     "@types/chai": "^4.2.0",
     "@types/chai-as-promised": "^7.1.6",
-    "@types/minimatch": "^6.0.0",
     "@types/mocha": ">=9.1.0",
     "@types/node": ">=18.0.0",
     "@wagmi/cli": "^2.5.1",
@@ -31,9 +30,10 @@
     "dotenv": "^16.5.0",
     "hardhat": "^2.24.0",
     "hardhat-gas-reporter": "^1.0.8",
+    "husky": "^9.1.7",
     "solidity-coverage": "^0.8.0",
     "ts-node": ">=8.0.0",
-    "typescript": "~5.0.4",
+    "typescript": "^5.0.4",
     "viem": "^2.7.6"
   },
   "scripts": {
@@ -42,9 +42,6 @@
     "lint": "forge fmt --check",
     "lint:fix": "forge fmt",
     "test": "yarn build && hardhat test"
-  },
-  "dependencies": {
-    "husky": "^9.1.7"
   },
   "lint-staged": {
     "**/*.sol": [
