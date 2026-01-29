@@ -168,17 +168,17 @@ contract BroadcasterTest is Test {
 
         assertGt(payload.length, 64);
 
-        bytes32 homeBlockHash;
+        bytes32 homeStateCommitment;
         bytes32 targetStateCommitment;
 
         bytes memory input = Bytes.slice(payload, 64);
 
         assembly {
-            homeBlockHash := mload(add(payload, 0x20))
+            homeStateCommitment := mload(add(payload, 0x20))
             targetStateCommitment := mload(add(payload, 0x40))
         }
 
-        bytes32 result = childToParentProverCopy.verifyTargetStateCommitment(homeBlockHash, input);
+        bytes32 result = childToParentProverCopy.verifyTargetStateCommitment(homeStateCommitment, input);
 
         assertEq(result, targetStateCommitment);
     }
@@ -192,18 +192,18 @@ contract BroadcasterTest is Test {
 
         assertGt(payload.length, 64);
 
-        bytes32 homeBlockHash;
+        bytes32 homeStateCommitment;
         bytes32 targetStateCommitment;
 
         bytes memory input = Bytes.slice(payload, 64);
 
         assembly {
-            homeBlockHash := mload(add(payload, 0x20))
+            homeStateCommitment := mload(add(payload, 0x20))
             targetStateCommitment := mload(add(payload, 0x40))
         }
 
         vm.expectRevert(ChildToParentProver.CallOnHomeChain.selector);
-        childToParentProverCopy.verifyTargetStateCommitment(homeBlockHash, input);
+        childToParentProverCopy.verifyTargetStateCommitment(homeStateCommitment, input);
     }
 
     function test_verifyStorageSlot() public {

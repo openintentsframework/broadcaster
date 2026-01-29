@@ -5,14 +5,14 @@ import {IStateProver} from "src/contracts/interfaces/IStateProver.sol";
 
 contract MockProver is IStateProver {
     function verifyTargetStateCommitment(
-        bytes32 homeBlockHash,
+        bytes32 homeStateCommitment,
         bytes calldata /*input*/
     )
         external
         pure
         returns (bytes32 targetStateCommitment)
     {
-        return homeBlockHash;
+        return homeStateCommitment;
     }
 
     function getTargetStateCommitment(bytes calldata input) external pure returns (bytes32 targetStateCommitment) {

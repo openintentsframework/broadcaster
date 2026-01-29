@@ -101,7 +101,7 @@ function getTargetStateCommitment(bytes calldata input)
 **Returns**: Ethereum block hash
 
 ```solidity
-function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
+function verifyTargetStateCommitment(bytes32 homeStateCommitment, bytes calldata input)
     external view returns (bytes32 targetStateCommitment)
 {
     (
@@ -117,7 +117,7 @@ function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input
     );
 
     targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
-        homeBlockHash, rlpBlockHeader, blockHashBuffer, slot, accountProof, storageProof
+        homeStateCommitment, rlpBlockHeader, blockHashBuffer, slot, accountProof, storageProof
     );
 }
 ```
@@ -192,7 +192,7 @@ function getTargetStateCommitment(bytes calldata input)
 **Returns**: Scroll state root
 
 ```solidity
-function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
+function verifyTargetStateCommitment(bytes32 homeStateCommitment, bytes calldata input)
     external view returns (bytes32 targetStateCommitment)
 {
     (
@@ -208,7 +208,7 @@ function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input
     );
 
     targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
-        homeBlockHash, rlpBlockHeader, scrollChain, slot, accountProof, storageProof
+        homeStateCommitment, rlpBlockHeader, scrollChain, slot, accountProof, storageProof
     );
 
     if (targetStateCommitment == bytes32(0)) {

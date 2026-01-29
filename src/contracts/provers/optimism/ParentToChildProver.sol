@@ -52,14 +52,14 @@ contract ParentToChildProver is IStateProver {
     ///         3. The game's root claim hash is extracted from the game proxy code.
     ///         4. The root claim preimage is verified against the root claim hash.
     ///         5. The target block hash is returned from the root claim preimage.
-    /// @param  homeBlockHash The block hash of the home chain.
+    /// @param  homeStateCommitment The block hash of the home chain.
     /// @param  input ABI encoded (bytes blockHeader,
     ///                            bytes asrAccountProof,
     ///                            bytes asrStorageProof,
     ///                            bytes gameProxyAccountProof,
     ///                            bytes gameProxyCode,
     ///                            bytes rootClaimPreimage)
-    function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
+    function verifyTargetStateCommitment(bytes32 homeStateCommitment, bytes calldata input)
         external
         view
         returns (bytes32 targetStateCommitment)
@@ -79,7 +79,7 @@ contract ParentToChildProver is IStateProver {
         ) = abi.decode(input, (bytes, bytes, bytes, bytes, bytes, OutputRootProof));
 
         // check the block hash
-        require(homeBlockHash == keccak256(rlpBlockHeader), "Invalid home block header");
+        require(homeStateCommitment == keccak256(rlpBlockHeader), "Invalid home block header");
         bytes32 stateRoot = ProverUtils.extractStateRootFromBlockHeader(rlpBlockHeader);
 
         // grab the anchor game address

@@ -92,7 +92,7 @@ function getTargetStateCommitment(bytes calldata)
 **Returns**: Ethereum block hash (proven from Optimism state)
 
 ```solidity
-function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
+function verifyTargetStateCommitment(bytes32 homeStateCommitment, bytes calldata input)
     external view returns (bytes32 targetStateCommitment)
 {
     (
@@ -103,7 +103,7 @@ function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input
 
     // Verify proof against L1Block predeploy's storage
     targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
-        homeBlockHash, 
+        homeStateCommitment, 
         rlpBlockHeader, 
         l1BlockPredeploy, 
         l1BlockHashSlot,  // slot 2
@@ -245,7 +245,7 @@ This function performs a complex verification:
 5. Return the L2 block hash from the preimage
 
 ```solidity
-function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
+function verifyTargetStateCommitment(bytes32 homeStateCommitment, bytes calldata input)
     external view returns (bytes32 targetStateCommitment)
 {
     (
@@ -258,7 +258,7 @@ function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input
     ) = abi.decode(input, (bytes, bytes, bytes, bytes, bytes, OutputRootProof));
 
     // Verify block header
-    require(homeBlockHash == keccak256(rlpBlockHeader), "Invalid home block header");
+    require(homeStateCommitment == keccak256(rlpBlockHeader), "Invalid home block header");
     bytes32 stateRoot = ProverUtils.extractStateRootFromBlockHeader(rlpBlockHeader);
 
     // Get anchor game address from AnchorStateRegistry

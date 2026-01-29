@@ -44,10 +44,10 @@ contract ParentToChildProver is IStateProver {
 
     /// @notice Verify L2 state root using L1 ScrollChain storage proof
     /// @dev    Called on non-home chains (e.g., another L2 that has L1 block hashes)
-    /// @param  homeBlockHash The L1 block hash
+    /// @param  homeStateCommitment The L1 block hash
     /// @param  input ABI encoded (bytes rlpBlockHeader, uint256 batchIndex, bytes accountProof, bytes storageProof)
     /// @return targetStateCommitment The L2 state root stored in L1's ScrollChain (NOTE: this is a state root, not a block hash)
-    function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
+    function verifyTargetStateCommitment(bytes32 homeStateCommitment, bytes calldata input)
         external
         view
         returns (bytes32 targetStateCommitment)
@@ -66,7 +66,7 @@ contract ParentToChildProver is IStateProver {
 
         // Verify proofs and get the L2 state root from L1's ScrollChain
         targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
-            homeBlockHash, rlpBlockHeader, scrollChain, slot, accountProof, storageProof
+            homeStateCommitment, rlpBlockHeader, scrollChain, slot, accountProof, storageProof
         );
 
         if (targetStateCommitment == bytes32(0)) {

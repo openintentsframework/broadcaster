@@ -72,7 +72,7 @@ async function main() {
   try {
     const { input, targetStateCommitment } = await helper.buildInputForVerifyTargetBlockHash(optimismBlockHash)
     
-    // Format: [homeBlockHash (32 bytes), targetStateCommitment (32 bytes), input (variable)]
+    // Format: [homeStateCommitment (32 bytes), targetStateCommitment (32 bytes), input (variable)]
     const payload = encodeAbiParameters(
       [{ type: 'bytes32' }, { type: 'bytes32' }, { type: 'bytes' }],
       [optimismBlockHash, targetStateCommitment, input]

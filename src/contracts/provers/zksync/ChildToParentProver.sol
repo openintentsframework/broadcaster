@@ -29,9 +29,9 @@ contract ChildToParentProver is IStateProver {
     }
 
     /// @notice Get a parent chain block hash from the buffer at `blockHashBuffer` using a storage proof
-    /// @param  homeBlockHash The block hash of the home chain.
+    /// @param  homeStateCommitment The block hash of the home chain.
     /// @param  input ABI encoded (bytes blockHeader, uint256 targetBlockNumber, bytes accountProof, bytes storageProof)
-    function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
+    function verifyTargetStateCommitment(bytes32 homeStateCommitment, bytes calldata input)
         external
         view
         returns (bytes32 targetStateCommitment)
@@ -49,7 +49,7 @@ contract ChildToParentProver is IStateProver {
 
         // verify proofs and get the block hash
         targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
-            homeBlockHash, rlpBlockHeader, blockHashBuffer, slot, accountProof, storageProof
+            homeStateCommitment, rlpBlockHeader, blockHashBuffer, slot, accountProof, storageProof
         );
     }
 
