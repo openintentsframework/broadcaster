@@ -92,16 +92,16 @@ contract OptimismChildToParentProverTest is Test {
 
         assertGt(payload.length, 64, "Payload should be > 64 bytes");
 
-        bytes32 homeBlockHash;
+        bytes32 homeStateCommitment;
         bytes32 targetStateCommitment;
         bytes memory input = Bytes.slice(payload, 64);
 
         assembly {
-            homeBlockHash := mload(add(payload, 0x20))
+            homeStateCommitment := mload(add(payload, 0x20))
             targetStateCommitment := mload(add(payload, 0x40))
         }
 
-        bytes32 result = childToParentProverCopy.verifyTargetStateCommitment(homeBlockHash, input);
+        bytes32 result = childToParentProverCopy.verifyTargetStateCommitment(homeStateCommitment, input);
 
         assertEq(result, targetStateCommitment, "Target block hash should match");
     }
@@ -116,16 +116,16 @@ contract OptimismChildToParentProverTest is Test {
 
         assertGt(payload.length, 64);
 
-        bytes32 homeBlockHash;
+        bytes32 homeStateCommitment;
         bytes memory input = Bytes.slice(payload, 64);
 
         assembly {
-            homeBlockHash := mload(add(payload, 0x20))
+            homeStateCommitment := mload(add(payload, 0x20))
         }
 
         // Should revert because we're on Optimism (home chain)
         vm.expectRevert(ChildToParentProver.CallOnHomeChain.selector);
-        childToParentProverCopy.verifyTargetStateCommitment(homeBlockHash, input);
+        childToParentProverCopy.verifyTargetStateCommitment(homeStateCommitment, input);
     }
 
     /// @notice Test verifyStorageSlot() - verifies Ethereum storage from Optimism

@@ -236,7 +236,7 @@ contract ScrollChainMock is IScrollChain {
         function test_verifyTargetStateCommitment_onHomeChain() public {
             vm.selectFork(l1ForkId);
 
-            bytes32 homeBlockHash = bytes32(uint256(1));
+            bytes32 homeStateCommitment = bytes32(uint256(1));
             bytes memory input = abi.encode(
                 hex"", // rlpBlockHeader
                 uint256(100), // batchIndex
@@ -245,7 +245,7 @@ contract ScrollChainMock is IScrollChain {
             );
 
             vm.expectRevert(ParentToChildProver.CallOnHomeChain.selector);
-            parentToChildProver.verifyTargetStateCommitment(homeBlockHash, input);
+            parentToChildProver.verifyTargetStateCommitment(homeStateCommitment, input);
         }
 
         /// @notice Test version returns 1

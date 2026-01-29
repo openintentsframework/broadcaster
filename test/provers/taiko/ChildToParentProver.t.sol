@@ -183,7 +183,7 @@ contract TaikoChildToParentProverTest is Test {
         vm.chainId(L1_CHAIN_ID);
 
         // For verifyTargetStateCommitment, we need:
-        // 1. An L2 block hash (homeBlockHash) - the trusted anchor
+        // 1. An L2 block hash (homeStateCommitment) - the trusted anchor
         // 2. Proof that L2's SignalService contains the L1 checkpoint
 
         // This is a simplified test - in production you'd need actual L2 proofs

@@ -44,10 +44,10 @@ contract ChildToParentProver is IStateProver {
 
     /// @notice Verify L1 block hash using L2 SignalService checkpoint with storage proof
     /// @dev    Called on non-home chains (e.g., Ethereum L1)
-    /// @param  homeBlockHash The L2 block hash
+    /// @param  homeStateCommitment The L2 block hash
     /// @param  input ABI encoded (bytes rlpBlockHeader, uint48 l1BlockNumber, bytes accountProof, bytes storageProof)
     /// @return targetStateCommitment The L1 block hash stored in L2's SignalService
-    function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
+    function verifyTargetStateCommitment(bytes32 homeStateCommitment, bytes calldata input)
         external
         view
         returns (bytes32 targetStateCommitment)
@@ -67,7 +67,7 @@ contract ChildToParentProver is IStateProver {
         // Verify proofs and get the L1 block hash from L2's SignalService
         // CheckpointRecord.blockHash is stored at the base slot
         targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
-            homeBlockHash, rlpBlockHeader, signalService, slot, accountProof, storageProof
+            homeStateCommitment, rlpBlockHeader, signalService, slot, accountProof, storageProof
         );
 
         if (targetStateCommitment == bytes32(0)) {

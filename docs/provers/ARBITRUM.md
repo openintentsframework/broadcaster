@@ -76,7 +76,7 @@ function getTargetStateCommitment(bytes calldata input)
 **Returns**: Ethereum block hash (proven from Arbitrum state)
 
 ```solidity
-function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
+function verifyTargetStateCommitment(bytes32 homeStateCommitment, bytes calldata input)
     external view returns (bytes32 targetStateCommitment)
 {
     (
@@ -91,7 +91,7 @@ function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input
 
     // Verify proof and return L1 block hash
     targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
-        homeBlockHash, rlpBlockHeader, blockHashBuffer, slot, accountProof, storageProof
+        homeStateCommitment, rlpBlockHeader, blockHashBuffer, slot, accountProof, storageProof
     );
 }
 ```
@@ -195,7 +195,7 @@ The `sendRoot` is a commitment to the Arbitrum state that can be looked up in th
 **Returns**: Arbitrum block hash (proven from Ethereum state)
 
 ```solidity
-function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
+function verifyTargetStateCommitment(bytes32 homeStateCommitment, bytes calldata input)
     external view returns (bytes32 targetStateCommitment)
 {
     (
@@ -209,7 +209,7 @@ function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input
     uint256 slot = SlotDerivation.deriveMapping(bytes32(rootsSlot), sendRoot);
 
     targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
-        homeBlockHash, rlpBlockHeader, outbox, slot, accountProof, storageProof
+        homeStateCommitment, rlpBlockHeader, outbox, slot, accountProof, storageProof
     );
 
     if (targetStateCommitment == bytes32(0)) {

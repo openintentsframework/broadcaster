@@ -114,7 +114,7 @@ function getTargetStateCommitment(bytes calldata input)
 **Returns**: Ethereum block hash (proven from Taiko L2 state)
 
 ```solidity
-function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
+function verifyTargetStateCommitment(bytes32 homeStateCommitment, bytes calldata input)
     external view returns (bytes32 targetStateCommitment)
 {
     (
@@ -132,7 +132,7 @@ function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input
     );
 
     targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
-        homeBlockHash, rlpBlockHeader, signalService, slot, accountProof, storageProof
+        homeStateCommitment, rlpBlockHeader, signalService, slot, accountProof, storageProof
     );
 
     if (targetStateCommitment == bytes32(0)) {
@@ -219,7 +219,7 @@ function getTargetStateCommitment(bytes calldata input)
 **Returns**: Taiko L2 block hash
 
 ```solidity
-function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
+function verifyTargetStateCommitment(bytes32 homeStateCommitment, bytes calldata input)
     external view returns (bytes32 targetStateCommitment)
 {
     (
@@ -235,7 +235,7 @@ function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input
     );
 
     targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
-        homeBlockHash, rlpBlockHeader, signalService, slot, accountProof, storageProof
+        homeStateCommitment, rlpBlockHeader, signalService, slot, accountProof, storageProof
     );
 
     if (targetStateCommitment == bytes32(0)) {

@@ -108,7 +108,7 @@ contract ArbitrumParentToChildProverTest is Test {
         RLP.Encoder memory enc = RLP.encoder().push(bytes32(0)).push(bytes32(0)).push(bytes32(0)).push(stateRoot);
 
         bytes memory rlpBlockHeader = enc.encode();
-        bytes32 homeBlockHash = keccak256(rlpBlockHeader);
+        bytes32 homeStateCommitment = keccak256(rlpBlockHeader);
 
         bytes32 sendRoot = 0x7995a5be000a0212a46f7f128e5ffd6f6a99fa9c72046d9e9b0668bd080712cd;
         bytes memory rlpAccountProof = _getAccountProof();
@@ -119,7 +119,7 @@ contract ArbitrumParentToChildProverTest is Test {
         // verifyTargetStateCommitment MUST be called off the prover's home chain.
         vm.chainId(proverHomeChainId + 1);
 
-        bytes32 result = prover.verifyTargetStateCommitment(homeBlockHash, input);
+        bytes32 result = prover.verifyTargetStateCommitment(homeStateCommitment, input);
         assertEq(
             result, expectedTargetBlockHash, "verifyTargetStateCommitment should return correct Arbitrum block hash"
         );
