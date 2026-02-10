@@ -33,12 +33,15 @@ contract LineaBuffer is BaseBuffer {
     error SenderMismatch();
 
     constructor(address l2MessageService_, address pusher_) {
-        _l2MessageService = l2MessageService_;
-        _pusher = pusher_;
-
         if (l2MessageService_ == address(0)) {
             revert InvalidL2MessageServiceAddress();
         }
+        if (pusher_ == address(0)) {
+            revert InvalidPusherAddress();
+        }
+
+        _l2MessageService = l2MessageService_;
+        _pusher = pusher_;
     }
 
     /// @inheritdoc IBuffer
@@ -47,9 +50,6 @@ contract LineaBuffer is BaseBuffer {
 
         if (msg.sender != address(l2MessageServiceCached)) {
             revert InvalidSender();
-        }
-        if (_pusher == address(0)) {
-            revert InvalidPusherAddress();
         }
         if (l2MessageServiceCached.sender() != _pusher) {
             revert SenderMismatch();

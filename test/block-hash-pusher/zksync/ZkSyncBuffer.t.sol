@@ -30,6 +30,11 @@ contract ZkSyncBufferTest is Test {
         buffer.receiveHashes(firstBlockNumber, blockHashes);
     }
 
+    function test_constructor_reverts_if_pusher_is_zero_address() public {
+        vm.expectRevert(abi.encodeWithSelector(ZkSyncBuffer.InvalidPusherAddress.selector));
+        new ZkSyncBuffer(address(0));
+    }
+
     function testFuzz_receiveHashes_reverts_if_not_pusher(address notPusher) public {
         vm.assume(notPusher != pusher);
         address aliasedPusher = AddressAliasHelper.applyL1ToL2Alias(pusher);

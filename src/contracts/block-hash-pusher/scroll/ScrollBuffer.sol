@@ -30,12 +30,15 @@ contract ScrollBuffer is BaseBuffer {
     error InvalidSender();
 
     constructor(address l2ScrollMessenger_, address pusher_) {
-        _l2ScrollMessenger = l2ScrollMessenger_;
-        _pusher = pusher_;
-
         if (l2ScrollMessenger_ == address(0)) {
             revert InvalidL2ScrollMessengerAddress();
         }
+        if (pusher_ == address(0)) {
+            revert InvalidPusherAddress();
+        }
+
+        _l2ScrollMessenger = l2ScrollMessenger_;
+        _pusher = pusher_;
     }
 
     /// @inheritdoc IBuffer
@@ -44,9 +47,6 @@ contract ScrollBuffer is BaseBuffer {
 
         if (msg.sender != address(l2ScrollMessengerCached)) {
             revert InvalidSender();
-        }
-        if (_pusher == address(0)) {
-            revert InvalidPusherAddress();
         }
         if (l2ScrollMessengerCached.xDomainMessageSender() != _pusher) {
             revert DomainMessageSenderMismatch();

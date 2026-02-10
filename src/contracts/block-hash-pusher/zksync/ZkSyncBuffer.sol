@@ -41,9 +41,6 @@ contract ZkSyncBuffer is BaseBuffer {
 
     /// @notice The aliased address of the pusher contract on L2.
     function aliasedPusher() public view returns (address) {
-        if (_pusher == address(0)) {
-            revert InvalidPusherAddress();
-        }
         return AddressAliasHelper.applyL1ToL2Alias(_pusher);
     }
 }

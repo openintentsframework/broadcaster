@@ -63,6 +63,11 @@ contract ScrollPusherTest is Test {
         scrollPusher.pushHashes(buffer, block.number - batchSize, batchSize, l2TransactionData);
     }
 
+    function test_constructor_reverts_if_l1_scroll_messenger_is_zero_address() public {
+        vm.expectRevert(abi.encodeWithSelector(ScrollPusher.InvalidL1ScrollMessengerAddress.selector));
+        new ScrollPusher(address(0));
+    }
+
     function test_viewFunctions() public {
         ScrollPusher scrollPusher = new ScrollPusher(mockL1ScrollMessenger);
         assertEq(scrollPusher.l1ScrollMessenger(), mockL1ScrollMessenger);

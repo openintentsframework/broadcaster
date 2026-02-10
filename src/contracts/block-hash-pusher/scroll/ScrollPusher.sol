@@ -23,7 +23,14 @@ contract ScrollPusher is BlockHashArrayBuilder, IPusher {
         address refundAddress;
     }
 
+    /// @notice Thrown when attempting to set an invalid L1ScrollMessenger address.
+    error InvalidL1ScrollMessengerAddress();
+
     constructor(address l1ScrollMessenger_) {
+        if (l1ScrollMessenger_ == address(0)) {
+            revert InvalidL1ScrollMessengerAddress();
+        }
+
         _l1ScrollMessenger = l1ScrollMessenger_;
     }
 

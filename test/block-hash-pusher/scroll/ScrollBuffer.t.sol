@@ -38,6 +38,16 @@ contract ScrollBufferTest is Test {
         mockL2ScrollMessenger.relayMessage(pusher, address(buffer), 0, 0, l2Calldata);
     }
 
+    function test_constructor_reverts_if_pusher_is_zero_address() public {
+        vm.expectRevert(abi.encodeWithSelector(ScrollBuffer.InvalidPusherAddress.selector));
+        new ScrollBuffer(address(mockL2ScrollMessenger), address(0));
+    }
+
+    function test_constructor_reverts_if_l2_scroll_messenger_is_zero_address() public {
+        vm.expectRevert(abi.encodeWithSelector(ScrollBuffer.InvalidL2ScrollMessengerAddress.selector));
+        new ScrollBuffer(address(0), pusher);
+    }
+
     function testFuzz_receiveHashes_reverts_if_sender_is_not_l2_scroll_messenger(address notL2ScrollMessenger) public {
         vm.assume(notL2ScrollMessenger != address(mockL2ScrollMessenger));
         ScrollBuffer buffer = new ScrollBuffer(address(mockL2ScrollMessenger), pusher);
