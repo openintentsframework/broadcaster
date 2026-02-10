@@ -125,25 +125,18 @@ contract ParentToChildProver is IStateProver {
     function verifyStorageSlot(bytes32 targetStateCommitment, bytes calldata input)
         external
         pure
-        returns (address account, uint256 slot, bytes32 value)
+        returns (address, uint256, bytes32)
     {
         // Decode the Linea SMT proof format
-        uint256 accountLeafIndex;
-        bytes[] memory accountProof;
-        bytes memory accountValue;
-        uint256 storageLeafIndex;
-        bytes[] memory storageProof;
-        bytes32 claimedStorageValue;
-
         (
-            account,
-            slot,
-            accountLeafIndex,
-            accountProof,
-            accountValue,
-            storageLeafIndex,
-            storageProof,
-            claimedStorageValue
+            address account,
+            uint256 slot,
+            uint256 accountLeafIndex,
+            bytes[] memory accountProof,
+            bytes memory accountValue,
+            uint256 storageLeafIndex,
+            bytes[] memory storageProof,
+            bytes32 claimedStorageValue
         ) = abi.decode(input, (address, uint256, uint256, bytes[], bytes, uint256, bytes[], bytes32));
 
         // Step 1: Verify account proof against L2 state root (SMT)
@@ -192,7 +185,7 @@ contract ParentToChildProver is IStateProver {
             revert StorageValueMismatch();
         }
 
-        value = claimedStorageValue;
+        return (account, slot, claimedStorageValue);
     }
 
     /// @inheritdoc IStateProver

@@ -105,22 +105,23 @@ contract ParentToChildProver is IStateProver {
     function verifyStorageSlot(bytes32 targetStateCommitment, bytes calldata input)
         external
         pure
-        returns (address account, uint256 slot, bytes32 value)
+        returns (address, uint256, bytes32)
     {
         // Decode the input - note: no block header needed since targetStateCommitment IS the state root
-        bytes memory accountProof;
-        bytes memory storageProof;
-        (account, slot, accountProof, storageProof) = abi.decode(input, (address, uint256, bytes, bytes));
+        (address account, uint256 slot, bytes memory accountProof, bytes memory storageProof) =
+            abi.decode(input, (address, uint256, bytes, bytes));
 
         // Verify proofs directly against the state root
         // This works because ScrollChain stores state roots, not block hashes
-        value = ProverUtils.getStorageSlotFromStateRoot(
+        bytes32 value = ProverUtils.getStorageSlotFromStateRoot(
             targetStateCommitment, // This is actually the state root
             accountProof,
             storageProof,
             account,
             slot
         );
+
+        return (account, slot, value);
     }
 
     /// @inheritdoc IStateProver
