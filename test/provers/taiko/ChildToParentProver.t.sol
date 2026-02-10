@@ -67,9 +67,9 @@ contract TaikoChildToParentProverTest is Test {
     // ═══════════════════════════════════════════════════════════════════════════
 
     function test_constructor() public view {
-        assertEq(prover.signalService(), address(mockSignalService), "signalService mismatch");
-        assertEq(prover.checkpointsSlot(), CHECKPOINTS_SLOT, "checkpointsSlot mismatch");
-        assertEq(prover.homeChainId(), L2_CHAIN_ID, "homeChainId mismatch");
+        assertEq(prover.SIGNAL_SERVICE(), address(mockSignalService), "SIGNAL_SERVICE mismatch");
+        assertEq(prover.CHECKPOINTS_SLOT(), CHECKPOINTS_SLOT, "CHECKPOINTS_SLOT mismatch");
+        assertEq(prover.HOME_CHAIN_ID(), L2_CHAIN_ID, "HOME_CHAIN_ID mismatch");
     }
 
     function test_version() public view {
@@ -268,8 +268,8 @@ contract TaikoChildToParentProverTest is Test {
 
         ChildToParentProver customProver = new ChildToParentProver(customSignalService, customSlot, customChainId);
 
-        assertEq(customProver.signalService(), customSignalService);
-        assertEq(customProver.checkpointsSlot(), customSlot);
-        assertEq(customProver.homeChainId(), customChainId);
+        assertEq(customProver.SIGNAL_SERVICE(), customSignalService);
+        assertEq(customProver.CHECKPOINTS_SLOT(), customSlot);
+        assertEq(customProver.HOME_CHAIN_ID(), customChainId);
     }
 }

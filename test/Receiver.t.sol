@@ -282,7 +282,7 @@ contract ReceiverTest is Test {
         assertEq(blockHash, expectedBlockHash);
         bytes memory input = abi.encode(rlpBlockHeader, account, slot, rlpAccountProof, rlpStorageProof);
 
-        IL1Block l1Block = IL1Block(childToParentProver.l1BlockPredeploy());
+        IL1Block l1Block = IL1Block(childToParentProver.L1_BLOCK_PREDEPLOY());
 
         vm.prank(l1Block.DEPOSITOR_ACCOUNT());
         l1Block.setL1BlockValues(
@@ -353,7 +353,7 @@ contract ReceiverTest is Test {
         assertEq(blockHash, expectedBlockHash);
         bytes memory input = abi.encode(rlpBlockHeader, account, slot, rlpAccountProof, rlpStorageProof);
 
-        IL1Block l1Block = IL1Block(childToParentProver.l1BlockPredeploy());
+        IL1Block l1Block = IL1Block(childToParentProver.L1_BLOCK_PREDEPLOY());
 
         vm.prank(l1Block.DEPOSITOR_ACCOUNT());
         l1Block.setL1BlockValues(
@@ -426,7 +426,7 @@ contract ReceiverTest is Test {
         assertEq(blockHash, expectedBlockHash);
         bytes memory input = abi.encode(rlpBlockHeader, account, slot, rlpAccountProof, rlpStorageProof);
 
-        IL1Block l1Block = IL1Block(childToParentProver.l1BlockPredeploy());
+        IL1Block l1Block = IL1Block(childToParentProver.L1_BLOCK_PREDEPLOY());
 
         vm.prank(l1Block.DEPOSITOR_ACCOUNT());
         l1Block.setL1BlockValues(
@@ -491,7 +491,7 @@ contract ReceiverTest is Test {
             bytes memory inputForOPChildToParentProver =
                 abi.encode(rlpBlockHeader, account, slot, rlpAccountProof, rlpStorageProof);
 
-            IL1Block l1Block = IL1Block(childToParentProver.l1BlockPredeploy());
+            IL1Block l1Block = IL1Block(childToParentProver.L1_BLOCK_PREDEPLOY());
 
             vm.prank(l1Block.DEPOSITOR_ACCOUNT());
             l1Block.setL1BlockValues(
@@ -555,7 +555,7 @@ contract ReceiverTest is Test {
         bytes memory rlpAccountProofArbitrum = jsonArbitrum.readBytes(".rlpAccountProof");
         bytes memory rlpStorageProofArbitrum = jsonArbitrum.readBytes(".rlpStorageProof");
 
-        IL1Block l1Block = IL1Block(childToParentProver.l1BlockPredeploy());
+        IL1Block l1Block = IL1Block(childToParentProver.L1_BLOCK_PREDEPLOY());
 
         vm.prank(l1Block.DEPOSITOR_ACCOUNT());
         l1Block.setL1BlockValues(

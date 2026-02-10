@@ -68,23 +68,23 @@ contract LineaParentToChildProverTest is Test {
     // ═══════════════════════════════════════════════════════════════════════════
 
     function test_constructor() public view {
-        assertEq(prover.lineaRollup(), address(mockLineaRollup));
-        assertEq(prover.stateRootHashesSlot(), STATE_ROOT_HASHES_SLOT);
-        assertEq(prover.homeChainId(), ETH_MAINNET_CHAIN_ID);
+        assertEq(prover.LINEA_ROLLUP(), address(mockLineaRollup));
+        assertEq(prover.STATE_ROOT_HASHES_SLOT(), STATE_ROOT_HASHES_SLOT);
+        assertEq(prover.HOME_CHAIN_ID(), ETH_MAINNET_CHAIN_ID);
     }
 
     function test_constructor_differentParameters() public {
         ParentToChildProver newProver = new ParentToChildProver(address(0x123), 99, 12345);
-        assertEq(newProver.lineaRollup(), address(0x123));
-        assertEq(newProver.stateRootHashesSlot(), 99);
-        assertEq(newProver.homeChainId(), 12345);
+        assertEq(newProver.LINEA_ROLLUP(), address(0x123));
+        assertEq(newProver.STATE_ROOT_HASHES_SLOT(), 99);
+        assertEq(newProver.HOME_CHAIN_ID(), 12345);
     }
 
     function testFuzz_constructor_acceptsAnyParameters(address _lineaRollup, uint256 _slot, uint256 _chainId) public {
         ParentToChildProver newProver = new ParentToChildProver(_lineaRollup, _slot, _chainId);
-        assertEq(newProver.lineaRollup(), _lineaRollup);
-        assertEq(newProver.stateRootHashesSlot(), _slot);
-        assertEq(newProver.homeChainId(), _chainId);
+        assertEq(newProver.LINEA_ROLLUP(), _lineaRollup);
+        assertEq(newProver.STATE_ROOT_HASHES_SLOT(), _slot);
+        assertEq(newProver.HOME_CHAIN_ID(), _chainId);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════

@@ -17,17 +17,17 @@ interface IL1Block {
 ///         Pre-generated proofs become stale when L1Block updates (~5 minutes).
 ///         Operational difference from Arbitrum: proofs must be generated just-in-time rather than pre-cached.
 contract ChildToParentProver is IStateProver {
-    address public constant l1BlockPredeploy = 0x4200000000000000000000000000000000000015;
-    uint256 public constant l1BlockHashSlot = 2; // hash is at slot 2
+    address public constant L1_BLOCK_PREDEPLOY = 0x4200000000000000000000000000000000000015;
+    uint256 public constant L1_BLOCK_HASH_SLOT = 2; // hash is at slot 2
 
     /// @dev The chain ID of the home chain (Optimism L2)
-    uint256 public immutable homeChainId;
+    uint256 public immutable HOME_CHAIN_ID;
 
     error CallNotOnHomeChain();
     error CallOnHomeChain();
 
     constructor(uint256 _homeChainId) {
-        homeChainId = _homeChainId;
+        HOME_CHAIN_ID = _homeChainId;
     }
 
     /// @notice Verify the latest available target block hash given a home chain block hash and a storage proof of the L1Block predeploy.
@@ -38,7 +38,7 @@ contract ChildToParentProver is IStateProver {
         view
         returns (bytes32 targetStateCommitment)
     {
-        if (block.chainid == homeChainId) {
+        if (block.chainid == HOME_CHAIN_ID) {
             revert CallOnHomeChain();
         }
 
@@ -50,7 +50,7 @@ contract ChildToParentProver is IStateProver {
 
         // verify proofs and get the value
         targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
-            homeBlockHash, rlpBlockHeader, l1BlockPredeploy, l1BlockHashSlot, accountProof, storageProof
+            homeBlockHash, rlpBlockHeader, L1_BLOCK_PREDEPLOY, L1_BLOCK_HASH_SLOT, accountProof, storageProof
         );
     }
 
@@ -64,10 +64,10 @@ contract ChildToParentProver is IStateProver {
     ///         In this case, this prover contract may need to be modified to use a different source of block hashes,
     ///         such as a backup contract that calls the L1Block predeploy and caches the latest block hash.
     function getTargetStateCommitment(bytes calldata) external view returns (bytes32 targetStateCommitment) {
-        if (block.chainid != homeChainId) {
+        if (block.chainid != HOME_CHAIN_ID) {
             revert CallNotOnHomeChain();
         }
-        return IL1Block(l1BlockPredeploy).hash();
+        return IL1Block(L1_BLOCK_PREDEPLOY).hash();
     }
 
     /// @notice Verify a storage slot given a target chain block hash and a proof.
