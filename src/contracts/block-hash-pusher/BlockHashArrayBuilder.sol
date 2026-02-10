@@ -36,7 +36,7 @@ abstract contract BlockHashArrayBuilder {
 
         blockHashes = new bytes32[](batchSize);
 
-        for (uint256 i = 0; i < batchSize; i++) {
+        for (uint256 i = 0; i < batchSize; ++i) {
             blockHashes[i] = _blockHash(firstBlockNumber + i);
         }
     }
