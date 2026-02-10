@@ -33,24 +33,16 @@ contract ScrollBuffer is BaseBuffer {
         _l2ScrollMessenger = l2ScrollMessenger_;
         _pusher = pusher_;
 
-        if (l2ScrollMessenger_ == address(0)) {
-            revert InvalidL2ScrollMessengerAddress();
-        }
+        require(l2ScrollMessenger_ != address(0), InvalidL2ScrollMessengerAddress());
     }
 
     /// @inheritdoc IBuffer
     function receiveHashes(uint256 firstBlockNumber, bytes32[] calldata blockHashes) external {
         IL2ScrollMessenger l2ScrollMessengerCached = IL2ScrollMessenger(l2ScrollMessenger());
 
-        if (msg.sender != address(l2ScrollMessengerCached)) {
-            revert InvalidSender();
-        }
-        if (_pusher == address(0)) {
-            revert InvalidPusherAddress();
-        }
-        if (l2ScrollMessengerCached.xDomainMessageSender() != _pusher) {
-            revert DomainMessageSenderMismatch();
-        }
+        require(msg.sender == address(l2ScrollMessengerCached), InvalidSender());
+        require(_pusher != address(0), InvalidPusherAddress());
+        require(l2ScrollMessengerCached.xDomainMessageSender() == _pusher, DomainMessageSenderMismatch());
 
         _receiveHashes(firstBlockNumber, blockHashes);
     }

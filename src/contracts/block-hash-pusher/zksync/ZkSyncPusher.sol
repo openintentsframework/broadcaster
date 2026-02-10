@@ -49,9 +49,7 @@ contract ZkSyncPusher is BlockHashArrayBuilder, IPusher {
         external
         payable
     {
-        if (buffer == address(0)) {
-            revert InvalidBuffer(buffer);
-        }
+        require(buffer != address(0), InvalidBuffer(buffer));
 
         bytes32[] memory blockHashes = _buildBlockHashArray(firstBlockNumber, batchSize);
         bytes memory l2Calldata = abi.encodeCall(IBuffer.receiveHashes, (firstBlockNumber, blockHashes));
@@ -70,9 +68,7 @@ contract ZkSyncPusher is BlockHashArrayBuilder, IPusher {
             l2Transaction.refundRecipient != address(0) ? l2Transaction.refundRecipient : msg.sender
         );
 
-        if (canonicalTxHash == bytes32(0)) {
-            revert FailedToPushHashes();
-        }
+        require(canonicalTxHash != bytes32(0), FailedToPushHashes());
 
         emit BlockHashesPushed(firstBlockNumber, firstBlockNumber + batchSize - 1);
     }
