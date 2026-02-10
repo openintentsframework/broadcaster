@@ -24,8 +24,8 @@ interface IMailbox {
 ///      via the ZkSync Mailbox's `requestL2Transaction` function. The pusher must be configured
 ///      with the correct ZkSync Diamond proxy address.
 contract ZkSyncPusher is BlockHashArrayBuilder, IPusher {
-    /// @dev The address of the ZkSync Diamond proxy contract on L1.
-    address private immutable _zkSyncDiamond;
+    /// @notice The address of the ZkSync Diamond proxy contract on L1.
+    address public immutable zkSyncDiamond;
 
     /// @notice Thrown when the L2 transaction request fails.
     error FailedToPushHashes();
@@ -41,7 +41,7 @@ contract ZkSyncPusher is BlockHashArrayBuilder, IPusher {
     }
 
     constructor(address zkSyncDiamond_) {
-        _zkSyncDiamond = zkSyncDiamond_;
+        zkSyncDiamond = zkSyncDiamond_;
     }
 
     /// @inheritdoc IPusher
@@ -60,7 +60,7 @@ contract ZkSyncPusher is BlockHashArrayBuilder, IPusher {
 
         /// In the current behavior of the ZkSync Mailbox, the `l2GasPerPubdataByteLimit` value must be equal to the `REQUIRED_L2_GAS_PRICE_PER_PUBDATA` value,
         /// which is a constant defined by ZkSync. The current value is 800. However, since this might change in the future, the value must be passed in as a parameter.
-        bytes32 canonicalTxHash = IMailbox(zkSyncDiamond()).requestL2Transaction{value: msg.value}(
+        bytes32 canonicalTxHash = IMailbox(zkSyncDiamond).requestL2Transaction{value: msg.value}(
             buffer,
             0,
             l2Calldata,
@@ -77,9 +77,4 @@ contract ZkSyncPusher is BlockHashArrayBuilder, IPusher {
         emit BlockHashesPushed(firstBlockNumber, firstBlockNumber + batchSize - 1);
     }
 
-    /// @notice The address of the ZkSync Diamond proxy contract on L1.
-    /// @return The address of the ZkSync Diamond proxy contract on L1.
-    function zkSyncDiamond() public view returns (address) {
-        return _zkSyncDiamond;
-    }
 }

@@ -16,8 +16,8 @@ abstract contract BaseBuffer is IBuffer {
     /// @dev For a parent chain with a block time of 12s (Ethereum), this is equivalent to roughly 54 days of history.
     uint256 private constant _BUFFER_SIZE = 393168; // 48 * 8191, where 8191 is the EIP-2935 history storage window
 
-    /// @dev The block number of the newest block in the buffer.
-    uint256 private _newestBlockNumber;
+    /// @notice The block number of the newest block in the buffer.
+    uint256 public newestBlockNumber;
 
     /// @dev Mapping of block numbers to block hashes.
     mapping(uint256 blockNumber => bytes32 blockHash) private _blockHashes;
@@ -66,16 +66,12 @@ abstract contract BaseBuffer is IBuffer {
 
         uint256 lastBlockNumber = firstBlockNumber + blockHashesLength - 1;
 
-        if (lastBlockNumber > _newestBlockNumber) {
+        if (lastBlockNumber > newestBlockNumber) {
             // update the newest block number
-            _newestBlockNumber = lastBlockNumber;
+            newestBlockNumber = lastBlockNumber;
         }
 
         emit BlockHashesPushed(firstBlockNumber, lastBlockNumber);
     }
 
-    /// @inheritdoc IBuffer
-    function newestBlockNumber() public view returns (uint256) {
-        return _newestBlockNumber;
-    }
 }

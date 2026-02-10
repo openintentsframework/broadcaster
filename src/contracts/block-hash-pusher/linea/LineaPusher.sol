@@ -12,8 +12,8 @@ import {IMessageService} from "@linea-contracts/messaging/interfaces/IMessageSer
 ///      via the Linea MessageService's `sendMessage` function. The pusher must be configured
 ///      with the correct rollup address.
 contract LineaPusher is BlockHashArrayBuilder, IPusher {
-    /// @dev The address of the Linea Rollup contract on L1.
-    address private immutable _lineaRollup;
+    /// @notice The address of the Linea Rollup contract on L1.
+    address public immutable lineaRollup;
 
     /// @notice Parameters for the L2 transaction that will be executed on Linea.
     /// @param _fee The fee paid for the postman to claim the message on L2
@@ -22,7 +22,7 @@ contract LineaPusher is BlockHashArrayBuilder, IPusher {
     }
 
     constructor(address rollup_) {
-        _lineaRollup = rollup_;
+        lineaRollup = rollup_;
     }
 
     /// @inheritdoc IPusher
@@ -39,14 +39,9 @@ contract LineaPusher is BlockHashArrayBuilder, IPusher {
 
         LineaL2Transaction memory l2Transaction = abi.decode(l2TransactionData, (LineaL2Transaction));
 
-        IMessageService(lineaRollup()).sendMessage{value: msg.value}(buffer, l2Transaction._fee, l2Calldata);
+        IMessageService(lineaRollup).sendMessage{value: msg.value}(buffer, l2Transaction._fee, l2Calldata);
 
         emit BlockHashesPushed(firstBlockNumber, firstBlockNumber + batchSize - 1);
     }
 
-    /// @notice The address of the Linea Rollup contract on L1.
-    /// @return The address of the Linea Rollup contract on L1.
-    function lineaRollup() public view returns (address) {
-        return _lineaRollup;
-    }
 }

@@ -14,8 +14,8 @@ contract ScrollBuffer is BaseBuffer {
     /// @dev The address of the L2ScrollMessenger contract on L2.
     address private immutable _l2ScrollMessenger;
 
-    /// @dev The address of the pusher contract on L1.
-    address private immutable _pusher;
+    /// @notice The address of the pusher contract on L1.
+    address public immutable pusher;
 
     /// @notice Thrown when attempting to set an invalid L2ScrollMessenger address.
     error InvalidL2ScrollMessengerAddress();
@@ -31,7 +31,7 @@ contract ScrollBuffer is BaseBuffer {
 
     constructor(address l2ScrollMessenger_, address pusher_) {
         _l2ScrollMessenger = l2ScrollMessenger_;
-        _pusher = pusher_;
+        pusher = pusher_;
 
         if (l2ScrollMessenger_ == address(0)) {
             revert InvalidL2ScrollMessengerAddress();
@@ -45,19 +45,14 @@ contract ScrollBuffer is BaseBuffer {
         if (msg.sender != address(l2ScrollMessengerCached)) {
             revert InvalidSender();
         }
-        if (_pusher == address(0)) {
+        if (pusher == address(0)) {
             revert InvalidPusherAddress();
         }
-        if (l2ScrollMessengerCached.xDomainMessageSender() != _pusher) {
+        if (l2ScrollMessengerCached.xDomainMessageSender() != pusher) {
             revert DomainMessageSenderMismatch();
         }
 
         _receiveHashes(firstBlockNumber, blockHashes);
-    }
-
-    /// @inheritdoc IBuffer
-    function pusher() public view returns (address) {
-        return _pusher;
     }
 
     /// @notice The address of the L2ScrollMessenger contract on L2.

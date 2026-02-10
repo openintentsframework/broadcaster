@@ -12,8 +12,8 @@ import {IL1ScrollMessenger} from "@scroll-tech/scroll-contracts/L1/IL1ScrollMess
 ///      via the Scroll L1ScrollMessenger's `sendMessage` function. The pusher must be configured
 ///      with the correct L1ScrollMessenger address.
 contract ScrollPusher is BlockHashArrayBuilder, IPusher {
-    /// @dev The address of the Scroll L1ScrollMessenger contract on L1.
-    address private immutable _l1ScrollMessenger;
+    /// @notice The address of the Scroll L1ScrollMessenger contract on L1.
+    address public immutable l1ScrollMessenger;
 
     /// @notice Parameters for the L2 transaction that will be executed on Scroll.
     /// @param gasLimit The gas limit for the L2 transaction.
@@ -24,7 +24,7 @@ contract ScrollPusher is BlockHashArrayBuilder, IPusher {
     }
 
     constructor(address l1ScrollMessenger_) {
-        _l1ScrollMessenger = l1ScrollMessenger_;
+        l1ScrollMessenger = l1ScrollMessenger_;
     }
 
     /// @inheritdoc IPusher
@@ -41,7 +41,7 @@ contract ScrollPusher is BlockHashArrayBuilder, IPusher {
 
         ScrollL2Transaction memory l2Transaction = abi.decode(l2TransactionData, (ScrollL2Transaction));
 
-        IL1ScrollMessenger(l1ScrollMessenger()).sendMessage{value: msg.value}(
+        IL1ScrollMessenger(l1ScrollMessenger).sendMessage{value: msg.value}(
             buffer,
             0,
             l2Calldata,
@@ -52,9 +52,4 @@ contract ScrollPusher is BlockHashArrayBuilder, IPusher {
         emit BlockHashesPushed(firstBlockNumber, firstBlockNumber + batchSize - 1);
     }
 
-    /// @notice The address of the Scroll L1ScrollMessenger contract on L1.
-    /// @return The address of the Scroll L1ScrollMessenger contract on L1.
-    function l1ScrollMessenger() public view returns (address) {
-        return _l1ScrollMessenger;
-    }
 }
