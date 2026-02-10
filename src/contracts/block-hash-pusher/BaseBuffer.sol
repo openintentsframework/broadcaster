@@ -73,5 +73,4 @@ abstract contract BaseBuffer is IBuffer {
 
         emit BlockHashesPushed(firstBlockNumber, lastBlockNumber);
     }
-
 }

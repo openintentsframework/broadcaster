@@ -76,5 +76,4 @@ contract ZkSyncPusher is BlockHashArrayBuilder, IPusher {
 
         emit BlockHashesPushed(firstBlockNumber, firstBlockNumber + batchSize - 1);
     }
-
 }
