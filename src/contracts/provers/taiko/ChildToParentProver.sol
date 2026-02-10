@@ -106,19 +106,23 @@ contract ChildToParentProver is IStateProver {
     function verifyStorageSlot(bytes32 targetStateCommitment, bytes calldata input)
         external
         pure
-        returns (address account, uint256 slot, bytes32 value)
+        returns (address, uint256, bytes32)
     {
         // Decode the input
-        bytes memory rlpBlockHeader;
-        bytes memory accountProof;
-        bytes memory storageProof;
-        (rlpBlockHeader, account, slot, accountProof, storageProof) =
-            abi.decode(input, (bytes, address, uint256, bytes, bytes));
+        (
+            bytes memory rlpBlockHeader,
+            address account,
+            uint256 slot,
+            bytes memory accountProof,
+            bytes memory storageProof
+        ) = abi.decode(input, (bytes, address, uint256, bytes, bytes));
 
         // Verify proofs and get the value
-        value = ProverUtils.getSlotFromBlockHeader(
+        bytes32 value = ProverUtils.getSlotFromBlockHeader(
             targetStateCommitment, rlpBlockHeader, account, slot, accountProof, storageProof
         );
+
+        return (account, slot, value);
     }
 
     /// @inheritdoc IStateProver
