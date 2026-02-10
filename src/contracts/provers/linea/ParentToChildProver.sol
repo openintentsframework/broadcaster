@@ -18,14 +18,14 @@ import {ZkEvmV2} from "@linea-contracts/rollup/ZkEvmV2.sol";
 ///      The state root stored on L1 is the SMT root, which requires linea_getProof for verification.
 contract ParentToChildProver is IStateProver {
     /// @dev Address of the LineaRollup contract on L1
-    address public immutable lineaRollup;
+    address public immutable LINEA_ROLLUP;
 
     /// @dev Storage slot of the stateRootHashes mapping in LineaRollup
     ///      mapping(uint256 blockNumber => bytes32 stateRootHash)
-    uint256 public immutable stateRootHashesSlot;
+    uint256 public immutable STATE_ROOT_HASHES_SLOT;
 
     /// @dev L1 chain ID (home chain)
-    uint256 public immutable homeChainId;
+    uint256 public immutable HOME_CHAIN_ID;
 
     error CallNotOnHomeChain();
     error CallOnHomeChain();
@@ -38,9 +38,9 @@ contract ParentToChildProver is IStateProver {
     error StorageKeyMismatch();
 
     constructor(address _lineaRollup, uint256 _stateRootHashesSlot, uint256 _homeChainId) {
-        lineaRollup = _lineaRollup;
-        stateRootHashesSlot = _stateRootHashesSlot;
-        homeChainId = _homeChainId;
+        LINEA_ROLLUP = _lineaRollup;
+        STATE_ROOT_HASHES_SLOT = _stateRootHashesSlot;
+        HOME_CHAIN_ID = _homeChainId;
     }
 
     /// @notice Verify L2 state root using L1 LineaRollup storage proof
@@ -54,7 +54,7 @@ contract ParentToChildProver is IStateProver {
         view
         returns (bytes32 targetStateCommitment)
     {
-        if (block.chainid == homeChainId) {
+        if (block.chainid == HOME_CHAIN_ID) {
             revert CallOnHomeChain();
         }
 
@@ -63,12 +63,12 @@ contract ParentToChildProver is IStateProver {
             abi.decode(input, (bytes, uint256, bytes, bytes));
 
         // Calculate storage slot for stateRootHashes[l2BlockNumber]
-        uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(stateRootHashesSlot), l2BlockNumber));
+        uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(STATE_ROOT_HASHES_SLOT), l2BlockNumber));
 
         // Verify proofs and get the L2 state root from L1's LineaRollup
         // Note: L1 (Ethereum) uses MPT, so we use ProverUtils here
         targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
-            homeStateCommitment, rlpBlockHeader, lineaRollup, slot, accountProof, storageProof
+            homeStateCommitment, rlpBlockHeader, LINEA_ROLLUP, slot, accountProof, storageProof
         );
 
         if (targetStateCommitment == bytes32(0)) {
@@ -81,7 +81,7 @@ contract ParentToChildProver is IStateProver {
     /// @param input ABI encoded (uint256 l2BlockNumber)
     /// @return targetStateCommitment The L2 state root
     function getTargetStateCommitment(bytes calldata input) external view returns (bytes32 targetStateCommitment) {
-        if (block.chainid != homeChainId) {
+        if (block.chainid != HOME_CHAIN_ID) {
             revert CallNotOnHomeChain();
         }
 
@@ -89,7 +89,7 @@ contract ParentToChildProver is IStateProver {
         uint256 l2BlockNumber = abi.decode(input, (uint256));
 
         // Get the state root from LineaRollup
-        targetStateCommitment = ZkEvmV2(lineaRollup).stateRootHashes(l2BlockNumber);
+        targetStateCommitment = ZkEvmV2(LINEA_ROLLUP).stateRootHashes(l2BlockNumber);
 
         if (targetStateCommitment == bytes32(0)) {
             revert TargetStateRootNotFound();

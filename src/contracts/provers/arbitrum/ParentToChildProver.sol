@@ -11,23 +11,23 @@ import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 ///         verifyStorageSlot is implemented to work against any Arbitrum child chain with a standard Ethereum block header and state trie.
 contract ParentToChildProver is IStateProver {
     /// @dev Address of the child chain's Outbox contract
-    address public immutable outbox;
+    address public immutable OUTBOX;
     /// @dev Storage slot the Outbox contract uses to store roots.
     ///      Should be set to 3 unless the outbox contract has been modified.
     ///      See https://github.com/OffchainLabs/nitro-contracts/blob/9d0e90ef588f94a9d2ffa4dc22713d91a76f57d4/src/bridge/AbsOutbox.sol#L32
-    uint256 public immutable rootsSlot;
+    uint256 public immutable ROOTS_SLOT;
 
     /// @dev The chain ID of the home chain (where this prover reads from).
-    uint256 public immutable homeChainId;
+    uint256 public immutable HOME_CHAIN_ID;
 
     error CallNotOnHomeChain();
     error CallOnHomeChain();
     error TargetBlockHashNotFound();
 
     constructor(address _outbox, uint256 _rootsSlot, uint256 _homeChainId) {
-        outbox = _outbox;
-        rootsSlot = _rootsSlot;
-        homeChainId = _homeChainId;
+        OUTBOX = _outbox;
+        ROOTS_SLOT = _rootsSlot;
+        HOME_CHAIN_ID = _homeChainId;
     }
 
     /// @notice Verify a target chain block hash given a home chain block hash and a proof.
@@ -38,7 +38,7 @@ contract ParentToChildProver is IStateProver {
         view
         returns (bytes32 targetStateCommitment)
     {
-        if (block.chainid == homeChainId) {
+        if (block.chainid == HOME_CHAIN_ID) {
             revert CallOnHomeChain();
         }
 
@@ -48,11 +48,11 @@ contract ParentToChildProver is IStateProver {
 
         // calculate the slot based on the provided send root
         // see: https://github.com/OffchainLabs/nitro-contracts/blob/9d0e90ef588f94a9d2ffa4dc22713d91a76f57d4/src/bridge/AbsOutbox.sol#L32
-        uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(rootsSlot), sendRoot));
+        uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(ROOTS_SLOT), sendRoot));
 
         // verify proofs and get the block hash
         targetStateCommitment =
-            ProverUtils.getSlotFromBlockHeader(homeBlockHash, rlpBlockHeader, outbox, slot, accountProof, storageProof);
+            ProverUtils.getSlotFromBlockHeader(homeBlockHash, rlpBlockHeader, OUTBOX, slot, accountProof, storageProof);
 
         if (targetStateCommitment == bytes32(0)) {
             revert TargetBlockHashNotFound();
@@ -62,14 +62,14 @@ contract ParentToChildProver is IStateProver {
     /// @notice Get a target chain block hash given a target chain sendRoot
     /// @param  input ABI encoded (bytes32 sendRoot)
     function getTargetStateCommitment(bytes calldata input) external view returns (bytes32 targetStateCommitment) {
-        if (block.chainid != homeChainId) {
+        if (block.chainid != HOME_CHAIN_ID) {
             revert CallNotOnHomeChain();
         }
 
         // decode the input
         bytes32 sendRoot = abi.decode(input, (bytes32));
         // get the target block hash from the outbox
-        targetStateCommitment = IOutbox(outbox).roots(sendRoot);
+        targetStateCommitment = IOutbox(OUTBOX).roots(sendRoot);
 
         if (targetStateCommitment == bytes32(0)) {
             revert TargetBlockHashNotFound();

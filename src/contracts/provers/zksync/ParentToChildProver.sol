@@ -62,19 +62,19 @@ struct ZkSyncProof {
 ///      use the gateway as a middleware between the L2 and the L1.
 contract ParentToChildProver is IStateProver {
     /// @notice The ZkChain contract address on the gateway chain that stores L2 logs root hashes.
-    IZkChain public immutable gatewayZkChain;
+    IZkChain public immutable GATEWAY_ZK_CHAIN;
 
     /// @notice The storage slot base for the L2 logs root hash mapping in the gateway ZkChain contract.
-    uint256 public immutable l2LogsRootHashSlot;
+    uint256 public immutable L2_LOGS_ROOT_HASH_SLOT;
 
     /// @notice The chain ID of the child chain (L2) for which this prover verifies messages.
-    uint256 public immutable childChainId;
+    uint256 public immutable CHILD_CHAIN_ID;
 
     /// @notice The chain ID of the gateway chain (settlement layer) that bridges between parent and child chains.
-    uint256 public immutable gatewayChainId;
+    uint256 public immutable GATEWAY_CHAIN_ID;
 
     /// @notice The chain ID of the home chain (L1) where this prover is deployed.
-    uint256 public immutable homeChainId;
+    uint256 public immutable HOME_CHAIN_ID;
 
     /// @notice Error thrown when the requested L2 logs root hash is not found (returns zero).
     error L2LogsRootHashNotFound();
@@ -101,11 +101,11 @@ contract ParentToChildProver is IStateProver {
         uint256 _gatewayChainId,
         uint256 _homeChainId
     ) {
-        gatewayZkChain = IZkChain(_gatewayZkChain);
-        l2LogsRootHashSlot = _l2LogsRootHashSlot;
-        childChainId = _childChainId;
-        gatewayChainId = _gatewayChainId;
-        homeChainId = _homeChainId;
+        GATEWAY_ZK_CHAIN = IZkChain(_gatewayZkChain);
+        L2_LOGS_ROOT_HASH_SLOT = _l2LogsRootHashSlot;
+        CHILD_CHAIN_ID = _childChainId;
+        GATEWAY_CHAIN_ID = _gatewayChainId;
+        HOME_CHAIN_ID = _homeChainId;
     }
 
     /// @notice Verify a target chain L2 logs root hash given a home chain block hash and a proof.
@@ -122,18 +122,18 @@ contract ParentToChildProver is IStateProver {
         view
         returns (bytes32 targetStateCommitment)
     {
-        if (block.chainid == homeChainId) {
+        if (block.chainid == HOME_CHAIN_ID) {
             revert CallOnHomeChain();
         }
         // decode the input
         (bytes memory rlpBlockHeader, uint256 batchNumber, bytes memory accountProof, bytes memory storageProof) =
             abi.decode(input, (bytes, uint256, bytes, bytes));
 
-        uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(l2LogsRootHashSlot), batchNumber));
+        uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(L2_LOGS_ROOT_HASH_SLOT), batchNumber));
 
         // verify proofs and get the L2 logs root hash
         targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
-            homeStateCommitment, rlpBlockHeader, address(gatewayZkChain), slot, accountProof, storageProof
+            homeStateCommitment, rlpBlockHeader, address(GATEWAY_ZK_CHAIN), slot, accountProof, storageProof
         );
     }
 
@@ -144,12 +144,12 @@ contract ParentToChildProver is IStateProver {
     /// @return targetStateCommitment The L2 logs root hash for the specified batch number.
     /// @custom:reverts L2LogsRootHashNotFound if the L2 logs root hash is not found (returns zero).
     function getTargetStateCommitment(bytes calldata input) external view returns (bytes32 targetStateCommitment) {
-        if (block.chainid != homeChainId) {
+        if (block.chainid != HOME_CHAIN_ID) {
             revert CallNotOnHomeChain();
         }
 
         uint256 batchNumber = abi.decode(input, (uint256));
-        targetStateCommitment = gatewayZkChain.l2LogsRootHash(batchNumber);
+        targetStateCommitment = GATEWAY_ZK_CHAIN.l2LogsRootHash(batchNumber);
 
         if (targetStateCommitment == bytes32(0)) {
             revert L2LogsRootHashNotFound();
@@ -188,7 +188,7 @@ contract ParentToChildProver is IStateProver {
         );
 
         if (!_proveL2LeafInclusion({
-                _chainId: childChainId,
+                _chainId: CHILD_CHAIN_ID,
                 _blockOrBatchNumber: proof.batchNumber,
                 _leafProofMask: proof.index,
                 _leaf: hashedLog,
@@ -242,7 +242,7 @@ contract ParentToChildProver is IStateProver {
             return _targetBatchRoot == proofData.batchSettlementRoot && _targetBatchRoot != bytes32(0);
         }
 
-        if (proofData.settlementLayerChainId != gatewayChainId) {
+        if (proofData.settlementLayerChainId != GATEWAY_CHAIN_ID) {
             revert ChainIdMismatch();
         }
 
