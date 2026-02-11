@@ -27,9 +27,7 @@ abstract contract BaseBuffer is IBuffer {
     /// @inheritdoc IBuffer
     function parentChainBlockHash(uint256 parentChainBlockNumber) external view returns (bytes32) {
         bytes32 blockHash = _blockHashes[parentChainBlockNumber];
-        if (blockHash == 0) {
-            revert UnknownParentChainBlockHash(parentChainBlockNumber);
-        }
+        require(blockHash != 0, UnknownParentChainBlockHash(parentChainBlockNumber));
         return blockHash;
     }
 
@@ -42,12 +40,10 @@ abstract contract BaseBuffer is IBuffer {
     function _receiveHashes(uint256 firstBlockNumber, bytes32[] calldata blockHashes) internal {
         uint256 blockHashesLength = blockHashes.length;
 
-        if (blockHashesLength == 0) {
-            revert EmptyBlockHashes();
-        }
+        require(blockHashesLength != 0, EmptyBlockHashes());
 
         // write the hashes to both the mapping and circular buffer
-        for (uint256 i = 0; i < blockHashesLength; ++i) {
+        for (uint256 i; i < blockHashesLength; ++i) {
             uint256 blockNumber = firstBlockNumber + i;
             uint256 bufferIndex = blockNumber % _BUFFER_SIZE;
             uint256 existingBlockNumber = _blockNumberBuffer[bufferIndex];

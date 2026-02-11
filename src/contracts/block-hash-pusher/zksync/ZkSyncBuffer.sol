@@ -18,18 +18,13 @@ contract ZkSyncBuffer is BaseBuffer {
     error InvalidPusherAddress();
 
     constructor(address pusher_) {
+        require(pusher_ != address(0), InvalidPusherAddress());
         _pusher = pusher_;
-
-        if (pusher_ == address(0)) {
-            revert InvalidPusherAddress();
-        }
     }
 
     /// @inheritdoc IBuffer
     function receiveHashes(uint256 firstBlockNumber, bytes32[] calldata blockHashes) external {
-        if (msg.sender != aliasedPusher()) {
-            revert NotPusher();
-        }
+        require(msg.sender == aliasedPusher(), NotPusher());
 
         _receiveHashes(firstBlockNumber, blockHashes);
     }
@@ -41,9 +36,6 @@ contract ZkSyncBuffer is BaseBuffer {
 
     /// @notice The aliased address of the pusher contract on L2.
     function aliasedPusher() public view returns (address) {
-        if (_pusher == address(0)) {
-            revert InvalidPusherAddress();
-        }
         return AddressAliasHelper.applyL1ToL2Alias(_pusher);
     }
 }

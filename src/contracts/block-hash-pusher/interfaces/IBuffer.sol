@@ -10,7 +10,7 @@ interface IBuffer {
     /// @notice Emitted when the buffer is pushed to.
     /// @param  firstBlockNumber The block number of the first block in the batch.
     /// @param  lastBlockNumber The block number of the last block in the batch.
-    event BlockHashesPushed(uint256 firstBlockNumber, uint256 lastBlockNumber);
+    event BlockHashesPushed(uint256 indexed firstBlockNumber, uint256 indexed lastBlockNumber);
 
     /// @notice Thrown when the block hashes array is empty.
     error EmptyBlockHashes();

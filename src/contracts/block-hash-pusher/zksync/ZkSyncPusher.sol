@@ -30,6 +30,9 @@ contract ZkSyncPusher is BlockHashArrayBuilder, IPusher {
     /// @notice Thrown when the L2 transaction request fails.
     error FailedToPushHashes();
 
+    /// @notice Thrown when attempting to set an invalid ZkSync Diamond address.
+    error InvalidZkSyncDiamondAddress();
+
     /// @notice Parameters for the L2 transaction that will be executed on ZkSync.
     /// @param l2GasLimit The gas limit for the L2 transaction.
     /// @param l2GasPerPubdataByteLimit The gas per pubdata byte limit.
@@ -41,6 +44,10 @@ contract ZkSyncPusher is BlockHashArrayBuilder, IPusher {
     }
 
     constructor(address zkSyncDiamond_) {
+        if (zkSyncDiamond_ == address(0)) {
+            revert InvalidZkSyncDiamondAddress();
+        }
+
         _zkSyncDiamond = zkSyncDiamond_;
     }
 
@@ -49,9 +56,7 @@ contract ZkSyncPusher is BlockHashArrayBuilder, IPusher {
         external
         payable
     {
-        if (buffer == address(0)) {
-            revert InvalidBuffer(buffer);
-        }
+        require(buffer != address(0), InvalidBuffer(buffer));
 
         bytes32[] memory blockHashes = _buildBlockHashArray(firstBlockNumber, batchSize);
         bytes memory l2Calldata = abi.encodeCall(IBuffer.receiveHashes, (firstBlockNumber, blockHashes));
@@ -70,9 +75,7 @@ contract ZkSyncPusher is BlockHashArrayBuilder, IPusher {
             l2Transaction.refundRecipient != address(0) ? l2Transaction.refundRecipient : msg.sender
         );
 
-        if (canonicalTxHash == bytes32(0)) {
-            revert FailedToPushHashes();
-        }
+        require(canonicalTxHash != bytes32(0), FailedToPushHashes());
 
         emit BlockHashesPushed(firstBlockNumber, firstBlockNumber + batchSize - 1);
     }

@@ -26,17 +26,13 @@ abstract contract BlockHashArrayBuilder {
         view
         returns (bytes32[] memory blockHashes)
     {
-        if (batchSize == 0 || batchSize > MAX_BATCH_SIZE()) {
-            revert IPusher.InvalidBatch(firstBlockNumber, batchSize);
-        }
+        require(batchSize != 0 && batchSize <= MAX_BATCH_SIZE(), IPusher.InvalidBatch(firstBlockNumber, batchSize));
 
-        if (firstBlockNumber + batchSize > block.number) {
-            revert IPusher.InvalidBatch(firstBlockNumber, batchSize);
-        }
+        require(firstBlockNumber + batchSize <= block.number, IPusher.InvalidBatch(firstBlockNumber, batchSize));
 
         blockHashes = new bytes32[](batchSize);
 
-        for (uint256 i = 0; i < batchSize; ++i) {
+        for (uint256 i; i < batchSize; ++i) {
             blockHashes[i] = _blockHash(firstBlockNumber + i);
         }
     }
@@ -47,9 +43,7 @@ abstract contract BlockHashArrayBuilder {
     function _blockHash(uint256 blockNumber) internal view virtual returns (bytes32) {
         // Note that this library is only supported on chains that support EIP-2935.
         bytes32 blockHash = Blockhash.blockHash(blockNumber);
-        if (blockHash == 0) {
-            revert InvalidBlockNumber(blockNumber);
-        }
+        require(blockHash != 0, InvalidBlockNumber(blockNumber));
         return blockHash;
     }
 

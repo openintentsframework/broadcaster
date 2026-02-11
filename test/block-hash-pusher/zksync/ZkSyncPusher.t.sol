@@ -98,6 +98,11 @@ contract ZkSyncPusherTest is Test {
         zkSyncPusher.pushHashes(buffer, block.number - batchSize, batchSize, l2TransactionData);
     }
 
+    function test_constructor_reverts_if_zksync_diamond_is_zero_address() public {
+        vm.expectRevert(abi.encodeWithSelector(ZkSyncPusher.InvalidZkSyncDiamondAddress.selector));
+        new ZkSyncPusher(address(0));
+    }
+
     function test_viewFunctions() public {
         ZkSyncPusher zkSyncPusher = new ZkSyncPusher(mockZkSyncMailbox);
         assertEq(zkSyncPusher.zkSyncDiamond(), mockZkSyncMailbox);
