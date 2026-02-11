@@ -18,9 +18,9 @@ contract ZkSyncBuffer is BaseBuffer {
     error InvalidPusherAddress();
 
     constructor(address pusher_) {
+        require(pusher_ != address(0), InvalidPusherAddress());
         _pusher = pusher_;
 
-        require(pusher_ != address(0), InvalidPusherAddress());
     }
 
     /// @inheritdoc IBuffer
