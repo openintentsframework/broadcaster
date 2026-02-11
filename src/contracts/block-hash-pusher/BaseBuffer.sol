@@ -43,7 +43,7 @@ abstract contract BaseBuffer is IBuffer {
         require(blockHashesLength != 0, EmptyBlockHashes());
 
         // write the hashes to both the mapping and circular buffer
-        for (uint256 i; i < blockHashesLength; i++) {
+        for (uint256 i; i < blockHashesLength; ++i) {
             uint256 blockNumber = firstBlockNumber + i;
             uint256 bufferIndex = blockNumber % _BUFFER_SIZE;
             uint256 existingBlockNumber = _blockNumberBuffer[bufferIndex];
