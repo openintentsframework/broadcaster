@@ -39,9 +39,7 @@ contract ScrollPusher is BlockHashArrayBuilder, IPusher {
         external
         payable
     {
-        if (buffer == address(0)) {
-            revert InvalidBuffer(buffer);
-        }
+        require(buffer != address(0), InvalidBuffer(buffer));
 
         bytes32[] memory blockHashes = _buildBlockHashArray(firstBlockNumber, batchSize);
         bytes memory l2Calldata = abi.encodeCall(IBuffer.receiveHashes, (firstBlockNumber, blockHashes));
