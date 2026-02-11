@@ -10,7 +10,7 @@ interface IPusher {
     /// @notice Emitted when block hashes are pushed to the buffer.
     /// @param  firstBlockNumber The block number of the first block in the batch.
     /// @param  lastBlockNumber The block number of the last block in the batch.
-    event BlockHashesPushed(uint256 firstBlockNumber, uint256 lastBlockNumber);
+    event BlockHashesPushed(uint256 indexed firstBlockNumber, uint256 indexed lastBlockNumber);
 
     /// @notice Thrown when incorrect msg.value is provided
     error IncorrectMsgValue(uint256 expected, uint256 provided);
