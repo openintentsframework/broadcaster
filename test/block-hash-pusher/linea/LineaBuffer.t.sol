@@ -50,6 +50,16 @@ contract LineaBufferTest is Test {
         buffer.receiveHashes(1, new bytes32[](1));
     }
 
+    function test_constructor_reverts_if_pusher_is_zero_address() public {
+        vm.expectRevert(abi.encodeWithSelector(LineaBuffer.InvalidPusherAddress.selector));
+        new LineaBuffer(address(mockLineaMessageService), address(0));
+    }
+
+    function test_constructor_reverts_if_l2_message_service_is_zero_address() public {
+        vm.expectRevert(abi.encodeWithSelector(LineaBuffer.InvalidL2MessageServiceAddress.selector));
+        new LineaBuffer(address(0), pusher);
+    }
+
     function testFuzz_receiveHashes_reverts_if_sender_does_not_match_pusher(address notPusher) public {
         vm.assume(notPusher != pusher);
         LineaBuffer buffer = new LineaBuffer(address(mockLineaMessageService), pusher);

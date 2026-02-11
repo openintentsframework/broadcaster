@@ -80,6 +80,11 @@ contract LineaPusherTest is Test {
         lineaPusher.pushHashes(buffer, block.number - batchSize, batchSize, l2TransactionData);
     }
 
+    function test_constructor_reverts_if_rollup_is_zero_address() public {
+        vm.expectRevert(abi.encodeWithSelector(LineaPusher.InvalidLineaRollupAddress.selector));
+        new LineaPusher(address(0));
+    }
+
     function test_viewFunctions() public {
         LineaPusher lineaPusher = new LineaPusher(mockLineaRollup);
         assertEq(lineaPusher.lineaRollup(), mockLineaRollup);

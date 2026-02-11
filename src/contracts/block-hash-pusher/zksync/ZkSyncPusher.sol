@@ -30,6 +30,9 @@ contract ZkSyncPusher is BlockHashArrayBuilder, IPusher {
     /// @notice Thrown when the L2 transaction request fails.
     error FailedToPushHashes();
 
+    /// @notice Thrown when attempting to set an invalid ZkSync Diamond address.
+    error InvalidZkSyncDiamondAddress();
+
     /// @notice Parameters for the L2 transaction that will be executed on ZkSync.
     /// @param l2GasLimit The gas limit for the L2 transaction.
     /// @param l2GasPerPubdataByteLimit The gas per pubdata byte limit.
@@ -41,6 +44,10 @@ contract ZkSyncPusher is BlockHashArrayBuilder, IPusher {
     }
 
     constructor(address zkSyncDiamond_) {
+        if (zkSyncDiamond_ == address(0)) {
+            revert InvalidZkSyncDiamondAddress();
+        }
+
         _zkSyncDiamond = zkSyncDiamond_;
     }
 

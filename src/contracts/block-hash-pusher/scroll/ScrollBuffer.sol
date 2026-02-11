@@ -30,10 +30,11 @@ contract ScrollBuffer is BaseBuffer {
     error InvalidSender();
 
     constructor(address l2ScrollMessenger_, address pusher_) {
+        require(l2ScrollMessenger_ != address(0), InvalidL2ScrollMessengerAddress());
+        require(pusher_ != address(0), InvalidPusherAddress());
+
         _l2ScrollMessenger = l2ScrollMessenger_;
         _pusher = pusher_;
-
-        require(l2ScrollMessenger_ != address(0), InvalidL2ScrollMessengerAddress());
     }
 
     /// @inheritdoc IBuffer
@@ -41,7 +42,6 @@ contract ScrollBuffer is BaseBuffer {
         IL2ScrollMessenger l2ScrollMessengerCached = IL2ScrollMessenger(l2ScrollMessenger());
 
         require(msg.sender == address(l2ScrollMessengerCached), InvalidSender());
-        require(_pusher != address(0), InvalidPusherAddress());
         require(l2ScrollMessengerCached.xDomainMessageSender() == _pusher, DomainMessageSenderMismatch());
 
         _receiveHashes(firstBlockNumber, blockHashes);

@@ -33,10 +33,11 @@ contract LineaBuffer is BaseBuffer {
     error SenderMismatch();
 
     constructor(address l2MessageService_, address pusher_) {
+        require(l2MessageService_ != address(0), InvalidL2MessageServiceAddress());
+        require(pusher_ != address(0), InvalidPusherAddress());
+
         _l2MessageService = l2MessageService_;
         _pusher = pusher_;
-
-        require(l2MessageService_ != address(0), InvalidL2MessageServiceAddress());
     }
 
     /// @inheritdoc IBuffer
@@ -44,7 +45,6 @@ contract LineaBuffer is BaseBuffer {
         IMessageService l2MessageServiceCached = IMessageService(l2MessageService());
 
         require(msg.sender == address(l2MessageServiceCached), InvalidSender());
-        require(_pusher != address(0), InvalidPusherAddress());
         require(l2MessageServiceCached.sender() == _pusher, SenderMismatch());
 
         _receiveHashes(firstBlockNumber, blockHashes);
