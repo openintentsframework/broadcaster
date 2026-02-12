@@ -41,6 +41,9 @@ abstract contract BaseBuffer is IBuffer {
         uint256 blockHashesLength = blockHashes.length;
 
         require(blockHashesLength != 0, EmptyBlockHashes());
+        require(firstBlockNumber != 0, InvalidFirstBlockNumber());
+
+        bool hashesWritten;
 
         // write the hashes to both the mapping and circular buffer
         for (uint256 i; i < blockHashesLength; ++i) {
@@ -51,6 +54,7 @@ abstract contract BaseBuffer is IBuffer {
             if (blockNumber <= existingBlockNumber) {
                 continue;
             }
+            hashesWritten = true;
 
             if (existingBlockNumber != 0) {
                 _blockHashes[existingBlockNumber] = 0;
@@ -60,14 +64,16 @@ abstract contract BaseBuffer is IBuffer {
             _blockNumberBuffer[bufferIndex] = blockNumber;
         }
 
-        uint256 lastBlockNumber = firstBlockNumber + blockHashesLength - 1;
+        if (hashesWritten) {
+            uint256 lastBlockNumber = firstBlockNumber + blockHashesLength - 1;
 
-        if (lastBlockNumber > _newestBlockNumber) {
-            // update the newest block number
-            _newestBlockNumber = lastBlockNumber;
+            if (lastBlockNumber > _newestBlockNumber) {
+                // update the newest block number
+                _newestBlockNumber = lastBlockNumber;
+            }
+
+            emit BlockHashesPushed(firstBlockNumber, lastBlockNumber);
         }
-
-        emit BlockHashesPushed(firstBlockNumber, lastBlockNumber);
     }
 
     /// @inheritdoc IBuffer

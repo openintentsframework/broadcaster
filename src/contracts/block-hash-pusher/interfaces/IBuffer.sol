@@ -15,6 +15,9 @@ interface IBuffer {
     /// @notice Thrown when the block hashes array is empty.
     error EmptyBlockHashes();
 
+    /// @notice Thrown when the first block number is invalid.
+    error InvalidFirstBlockNumber();
+
     /// @notice Thrown by `parentChainBlockHash` when the block hash for a given block number is not found.
     error UnknownParentChainBlockHash(uint256 parentChainBlockNumber);
 
