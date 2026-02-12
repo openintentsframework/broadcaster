@@ -43,8 +43,10 @@ contract LineaPusher is BlockHashArrayBuilder, IPusher {
         bytes memory l2Calldata = abi.encodeCall(IBuffer.receiveHashes, (firstBlockNumber, blockHashes));
 
         LineaL2Transaction memory l2Transaction = abi.decode(l2TransactionData, (LineaL2Transaction));
+        uint256 fee = l2Transaction._fee;
+        require(msg.value == fee, IncorrectMsgValue(fee, msg.value));
 
-        IMessageService(lineaRollup()).sendMessage{value: msg.value}(buffer, l2Transaction._fee, l2Calldata);
+        IMessageService(lineaRollup()).sendMessage{value: msg.value}(buffer, fee, l2Calldata);
 
         emit BlockHashesPushed(firstBlockNumber, firstBlockNumber + batchSize - 1);
     }
