@@ -1,0 +1,14 @@
+{
+  "copies": {
+    "ethereum-sepolia": {
+      "arbitrum-sepolia": "0x3F91bF074fff67f1EB12bA029982c29eBd26c08a",
+      "linea-sepolia": "0xDC444Ec0675b7c1a4BEa5C9A6AaB6AEeF51265FD",
+      "optimism-sepolia": "0x9d81549ceF77FeAE7190045E3994c24ED631A080",
+      "scroll-sepolia": "0xc0Ec75f14eA1a6142B5223EAd5D2AfE9AfAcB9eE"
+    }
+  },
+  "contracts": {
+    "broadcaster": "0xf0a41Df7879F0585Fad55bda91Fc7d02a4eEe186",
+    "receiver": "0xF6F1dE9DE71107Ff83e464AfadDccCA0Cd0a33ed"
+  }
+}
