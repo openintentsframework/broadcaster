@@ -100,7 +100,7 @@ contract ZkSyncParentToChildProverTest is Test {
 
         (uint256 messageSent, bytes32 timestamp) = abi.decode(proof.message.data, (uint256, bytes32));
 
-        address expectedAccount = 0x9a56fFd72F4B526c523C733F1F74197A51c495E1; // publisher
+        address expectedAccount = 0x51665298A7Ce1781aD2CB50B1E512322A6B12458; // ZkSyncBroadcaster deployed on ZkSync Sepolia
         uint256 expectedSlot = messageSent;
         bytes32 expectedValue = timestamp;
 

@@ -158,7 +158,7 @@ contract ReceiverTest is Test {
 
         (bytes32 messageSent, bytes32 expectedValue) = abi.decode(proof.message.data, (bytes32, bytes32));
 
-        address expectedAccount = publisher;
+        address expectedAccount = proof.message.sender;
 
         assertEq(
             broadcasterId,
