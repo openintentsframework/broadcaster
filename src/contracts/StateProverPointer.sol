@@ -16,13 +16,6 @@ bytes32 constant STATE_PROVER_POINTER_SLOT = bytes32(uint256(keccak256("eip7888.
 contract StateProverPointer is IStateProverPointer, Ownable {
     address internal _implementationAddress;
 
-    event ImplementationAddressSet(
-        uint256 indexed newVersion,
-        address newImplementationAddress,
-        bytes32 newCodeHash,
-        address oldImplementationAddress
-    );
-
     error NonIncreasingVersion(uint256 newVersion, uint256 oldVersion);
     error InvalidImplementationAddress();
 
