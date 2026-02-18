@@ -181,8 +181,6 @@ contract ParentToChildProver is IStateProver {
         (ZkSyncProof memory proof, address senderAccount, bytes32 message) =
             abi.decode(input, (ZkSyncProof, address, bytes32));
 
-        account = senderAccount;
-
         L2Log memory log = _l2MessageToLog(proof.message);
 
         bytes32 hashedLog = keccak256(
@@ -203,12 +201,13 @@ contract ParentToChildProver is IStateProver {
 
         (bytes32 slotSent, bytes32 timestamp) = abi.decode(proof.message.data, (bytes32, bytes32));
 
-        bytes32 expectedSlot = keccak256(abi.encode(message, account));
+        bytes32 expectedSlot = keccak256(abi.encode(message, senderAccount));
 
         if (slotSent != expectedSlot) {
             revert SlotMismatch();
         }
 
+        account = proof.message.sender;
         slot = uint256(slotSent);
         value = timestamp;
     }
