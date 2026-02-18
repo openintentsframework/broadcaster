@@ -133,7 +133,7 @@ contract ReceiverTest is Test {
 
         vm.prank(owner);
         vm.expectEmit();
-        emit StateProverPointer.ImplementationAddressSet(
+        emit IStateProverPointer.ImplementationAddressSet(
             1, address(parentToChildProver), address(parentToChildProver).codehash, address(0)
         );
         stateProverPointer.setImplementationAddress(address(parentToChildProver));
