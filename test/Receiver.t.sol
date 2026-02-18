@@ -190,7 +190,7 @@ contract ReceiverTest is Test {
         vm.prank(owner);
         vm.expectEmit();
         emit StateProverPointer.ImplementationAddressSet(
-            1, address(parentToChildProver), parentToChildProver.codehash(), address(0)
+            1, address(parentToChildProver), address(parentToChildProver).codehash, address(0)
         );
         stateProverPointer.setImplementationAddress(address(parentToChildProver));
 
@@ -1359,7 +1359,7 @@ contract ReceiverTest is Test {
         vm.prank(owner);
         vm.expectEmit();
         emit StateProverPointer.ImplementationAddressSet(
-            1, address(parentToChildProver), parentToChildProver.codehash(), address(0)
+            1, address(parentToChildProver), address(parentToChildProver).codehash, address(0)
         );
         stateProverPointer.setImplementationAddress(address(parentToChildProver));
 
@@ -1419,7 +1419,7 @@ contract ReceiverTest is Test {
         vm.prank(owner);
         vm.expectEmit();
         emit StateProverPointer.ImplementationAddressSet(
-            1, address(parentToChildProver), parentToChildProver.codehash(), address(0)
+            1, address(parentToChildProver), address(parentToChildProver).codehash, address(0)
         );
         stateProverPointer.setImplementationAddress(address(parentToChildProver));
 
@@ -1501,7 +1501,7 @@ contract ReceiverTest is Test {
         vm.prank(owner);
         vm.expectEmit();
         emit StateProverPointer.ImplementationAddressSet(
-            1, address(parentToChildProver), parentToChildProver.codehash(), address(0)
+            1, address(parentToChildProver), address(parentToChildProver).codehash, address(0)
         );
         stateProverPointer.setImplementationAddress(address(parentToChildProver));
 
