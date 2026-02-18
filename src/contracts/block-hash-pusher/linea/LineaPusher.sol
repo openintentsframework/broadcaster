@@ -11,6 +11,7 @@ import {IMessageService} from "@linea-contracts/messaging/interfaces/IMessageSer
 /// @dev This contract sends block hashes from Ethereum L1 to a LineaBuffer contract on Linea L2
 ///      via the Linea MessageService's `sendMessage` function. The pusher must be configured
 ///      with the correct rollup address.
+/// @custom:security-contact security@openzeppelin.com
 contract LineaPusher is BlockHashArrayBuilder, IPusher {
     /// @dev The address of the Linea Rollup contract on L1.
     address private immutable _lineaRollup;

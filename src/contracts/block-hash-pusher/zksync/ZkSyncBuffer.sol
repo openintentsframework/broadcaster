@@ -10,6 +10,7 @@ import {IBuffer} from "../interfaces/IBuffer.sol";
 /// @dev This contract extends BaseBuffer with access control specific to ZkSync's L1->L2 messaging.
 ///      When a message is sent from L1 to L2 via ZkSync's Mailbox, the sender address is aliased.
 ///      The buffer only accepts hash pushes from the aliased pusher address.
+/// @custom:security-contact security@openzeppelin.com
 contract ZkSyncBuffer is BaseBuffer {
     /// @dev The address of the pusher contract on L1.
     address private immutable _pusher;

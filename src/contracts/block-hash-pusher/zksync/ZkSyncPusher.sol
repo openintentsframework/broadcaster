@@ -6,6 +6,7 @@ import {IBuffer} from "../interfaces/IBuffer.sol";
 import {IPusher} from "../interfaces/IPusher.sol";
 
 /// @notice Interface for the ZkSync Mailbox contract used to send L1->L2 messages.
+/// Source: https://github.com/matter-labs/era-contracts/blob/33fbd0d832d15da150dcc7ec8032660980caa692/l1-contracts/contracts/state-transition/chain-interfaces/IMailboxImpl.sol#L88
 interface IMailbox {
     function requestL2Transaction(
         address _contractL2,
@@ -23,6 +24,7 @@ interface IMailbox {
 /// @dev This contract sends block hashes from Ethereum L1 to a ZkSyncBuffer contract on ZkSync Era L2
 ///      via the ZkSync Mailbox's `requestL2Transaction` function. The pusher must be configured
 ///      with the correct ZkSync Diamond proxy address.
+/// @custom:security-contact security@openzeppelin.com
 contract ZkSyncPusher is BlockHashArrayBuilder, IPusher {
     /// @dev The address of the ZkSync Diamond proxy contract on L1.
     address private immutable _zkSyncDiamond;
