@@ -37,7 +37,6 @@ struct L2Log {
 /// @param data An arbitrary length message data.
 struct L2Message {
     uint16 txNumberInBatch;
-    address sender;
     bytes data;
 }
 
@@ -61,8 +60,14 @@ struct ZkSyncProof {
 ///      This implementation is used to verify zkChain L2 log hash inclusion on L1 for messages that
 ///      use the gateway as a middleware between the L2 and the L1.
 contract ParentToChildProver is IStateProver {
+    /// @notice The address of the L1Messenger contract on the ZK chain.
+    address public constant L1_MESSENGER = 0x0000000000000000000000000000000000008008;
+
     /// @notice The ZkChain contract address on the gateway chain that stores L2 logs root hashes.
     IZkChain public immutable gatewayZkChain;
+
+    /// @notice The address of the Broadcaster contract on the ZK chain.
+    address public immutable broadcaster;
 
     /// @notice The storage slot base for the L2 logs root hash mapping in the gateway ZkChain contract.
     uint256 public immutable l2LogsRootHashSlot;
@@ -99,13 +104,15 @@ contract ParentToChildProver is IStateProver {
         uint256 _l2LogsRootHashSlot,
         uint256 _childChainId,
         uint256 _gatewayChainId,
-        uint256 _homeChainId
+        uint256 _homeChainId,
+        address _broadcaster
     ) {
         gatewayZkChain = IZkChain(_gatewayZkChain);
         l2LogsRootHashSlot = _l2LogsRootHashSlot;
         childChainId = _childChainId;
         gatewayChainId = _gatewayChainId;
         homeChainId = _homeChainId;
+        broadcaster = _broadcaster;
     }
 
     /// @notice Verify a target chain L2 logs root hash given a home chain block hash and a proof.
@@ -263,13 +270,13 @@ contract ParentToChildProver is IStateProver {
     ///      and the message data hash is used as the value.
     /// @param _message The L2 message to convert.
     /// @return log The L2 log structure corresponding to the message.
-    function _l2MessageToLog(L2Message memory _message) internal pure returns (L2Log memory) {
+    function _l2MessageToLog(L2Message memory _message) internal view returns (L2Log memory) {
         return L2Log({
             l2ShardId: 0,
             isService: true,
             txNumberInBatch: _message.txNumberInBatch,
-            sender: 0x0000000000000000000000000000000000008008,
-            key: bytes32(uint256(uint160(_message.sender))),
+            sender: L1_MESSENGER,
+            key: bytes32(uint256(uint160(broadcaster))),
             value: keccak256(_message.data)
         });
     }
