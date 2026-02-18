@@ -10,6 +10,7 @@ import {Blockhash} from "@openzeppelin/contracts/utils/Blockhash.sol";
 ///      that can be pushed to a buffer contract on a child chain. Concrete implementations should
 ///      override `pushHashes` to implement chain-specific cross-chain messaging mechanisms.
 /// @notice Inspired by: https://github.com/OffchainLabs/block-hash-pusher/blob/main/contracts/Pusher.sol
+/// @custom:security-contact security@openzeppelin.com
 abstract contract BlockHashArrayBuilder {
     /// @notice Thrown when the block number is invalid
     error InvalidBlockNumber(uint256 blockNumber);

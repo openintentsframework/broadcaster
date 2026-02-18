@@ -24,7 +24,7 @@ interface IMailbox {
 /// @dev This contract sends block hashes from Ethereum L1 to a ZkSyncBuffer contract on ZkSync Era L2
 ///      via the ZkSync Mailbox's `requestL2Transaction` function. The pusher must be configured
 ///      with the correct ZkSync Diamond proxy address.
-/// @custom:security-contact security@openzeppelin.org
+/// @custom:security-contact security@openzeppelin.com
 contract ZkSyncPusher is BlockHashArrayBuilder, IPusher {
     /// @dev The address of the ZkSync Diamond proxy contract on L1.
     address private immutable _zkSyncDiamond;

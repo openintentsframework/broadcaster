@@ -13,7 +13,7 @@ import {IMessageService} from "@linea-contracts/messaging/interfaces/IMessageSer
 ///      In order to do this, anyone is able to claim the message on the message service contract on L2.
 ///      Currently Linea runs a postman service that claims messages on L2, but this might not happen for more expensive messages and
 ///      users might need to claim the messages themselves in those cases.
-/// @custom:security-contact security@openzeppelin.org
+/// @custom:security-contact security@openzeppelin.com
 contract LineaBuffer is BaseBuffer {
     /// @dev The address of the L2MessageService contract on L2.
     address private immutable _l2MessageService;

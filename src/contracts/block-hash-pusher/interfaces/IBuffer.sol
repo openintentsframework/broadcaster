@@ -6,7 +6,7 @@ pragma solidity ^0.8.28;
 ///         Once a block X is included in the buffer, it will remain available
 ///         until another block X+M*bufferSize is pushed, where M is a positive integer.
 /// @notice Inspired by: https://github.com/OffchainLabs/block-hash-pusher/blob/main/contracts/interfaces/IBuffer.sol
-/// @custom:security-contact security@openzeppelin.org
+/// @custom:security-contact security@openzeppelin.com
 interface IBuffer {
     /// @notice Emitted when the buffer is pushed to.
     /// @param  firstBlockNumber The block number of the first block in the batch.
