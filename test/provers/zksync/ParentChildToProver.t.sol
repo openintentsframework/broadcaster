@@ -25,13 +25,10 @@ contract ZkSyncParentToChildProverTest is Test {
     uint256 public parentForkId;
     uint256 public parentChainId;
 
-    address public broadcaster;
-
     function setUp() public {
         parentForkId = vm.createFork(vm.envString("ETHEREUM_RPC_URL"));
 
         parentChainId = 11155111;
-        broadcaster = 0x51665298A7Ce1781aD2CB50B1E512322A6B12458; // ZkSyncBroadcaster deployed on ZkSync Sepolia
     }
 
     function getZkSyncProof() public pure returns (ZkSyncProof memory) {
@@ -80,6 +77,7 @@ contract ZkSyncParentToChildProverTest is Test {
             index: 4,
             message: L2Message({
                 txNumberInBatch: 91,
+                sender: 0x51665298A7Ce1781aD2CB50B1E512322A6B12458,
                 data: hex"4d2f31e8578316b1eee225feb6442c49f42083864fa317ea81928e275ad2e3660000000000000000000000000000000000000000000000000000000069459b52"
             }),
             proof: logProof
@@ -88,7 +86,7 @@ contract ZkSyncParentToChildProverTest is Test {
     }
 
     function test_verifyStorageSlot() public {
-        ParentToChildProver prover = new ParentToChildProver(address(0), 0, 300, 32657, parentChainId, broadcaster);
+        ParentToChildProver prover = new ParentToChildProver(address(0), 0, 300, 32657, parentChainId);
 
         bytes32 expectedL2LogsRootHash = 0xc445ecf161f26c39cde0fe9a0db973d3d5193951d55c5d60f224cb0579370003;
 
@@ -112,7 +110,7 @@ contract ZkSyncParentToChildProverTest is Test {
     }
 
     function test_verifyStorageSlot_revertsWithWrongGatewayChainId() public {
-        ParentToChildProver prover = new ParentToChildProver(address(0), 0, 300, 32657, parentChainId, broadcaster);
+        ParentToChildProver prover = new ParentToChildProver(address(0), 0, 300, 32657, parentChainId);
 
         bytes32 expectedL2LogsRootHash = 0xc445ecf161f26c39cde0fe9a0db973d3d5193951d55c5d60f224cb0579370003;
 
@@ -130,8 +128,7 @@ contract ZkSyncParentToChildProverTest is Test {
         MockZkChain mockZkChain = new MockZkChain();
         mockZkChain.setL2LogsRootHash(43984, 0x4cbeceb2a95a01369ab104ec6a305e37cb22d3717abb91da6880e038c3160470);
 
-        ParentToChildProver prover =
-            new ParentToChildProver(address(mockZkChain), 0, 300, 32657, parentChainId, broadcaster);
+        ParentToChildProver prover = new ParentToChildProver(address(mockZkChain), 0, 300, 32657, parentChainId);
 
         bytes32 targetL2LogsRootHash = prover.getTargetStateCommitment(abi.encode(43984));
         assertEq(
@@ -145,8 +142,7 @@ contract ZkSyncParentToChildProverTest is Test {
         vm.selectFork(parentForkId);
         MockZkChain mockZkChain = new MockZkChain();
 
-        ParentToChildProver prover =
-            new ParentToChildProver(address(mockZkChain), 0, 300, 32657, parentChainId, broadcaster);
+        ParentToChildProver prover = new ParentToChildProver(address(mockZkChain), 0, 300, 32657, parentChainId);
 
         vm.expectRevert(ParentToChildProver.L2LogsRootHashNotFound.selector);
         prover.getTargetStateCommitment(abi.encode(43985));
@@ -155,8 +151,7 @@ contract ZkSyncParentToChildProverTest is Test {
     function test_getTargetStateCommitment_revertsWithNotInHomeChain() public {
         MockZkChain mockZkChain = new MockZkChain();
 
-        ParentToChildProver prover =
-            new ParentToChildProver(address(mockZkChain), 0, 300, 32657, parentChainId, broadcaster);
+        ParentToChildProver prover = new ParentToChildProver(address(mockZkChain), 0, 300, 32657, parentChainId);
 
         vm.expectRevert(ParentToChildProver.CallNotOnHomeChain.selector);
         prover.getTargetStateCommitment(abi.encode(43985));

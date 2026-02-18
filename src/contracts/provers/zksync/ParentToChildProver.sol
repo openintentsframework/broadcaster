@@ -33,9 +33,11 @@ struct L2Log {
 /// @notice An arbitrary length message passed from L2 to L1.
 /// @dev Under the hood it is an `L2Log` sent from the special system L2 contract.
 /// @param txNumberInBatch The L2 transaction number in a batch, in which the message was sent.
+/// @param sender The address of the L2 account from which the message was passed.
 /// @param data An arbitrary length message data.
 struct L2Message {
     uint16 txNumberInBatch;
+    address sender;
     bytes data;
 }
 
@@ -64,9 +66,6 @@ contract ParentToChildProver is IStateProver {
 
     /// @notice The ZkChain contract address on the gateway chain that stores L2 logs root hashes.
     IZkChain public immutable gatewayZkChain;
-
-    /// @notice The address of the Broadcaster contract on the ZK chain.
-    address public immutable broadcaster;
 
     /// @notice The storage slot base for the L2 logs root hash mapping in the gateway ZkChain contract.
     uint256 public immutable l2LogsRootHashSlot;
@@ -103,15 +102,13 @@ contract ParentToChildProver is IStateProver {
         uint256 _l2LogsRootHashSlot,
         uint256 _childChainId,
         uint256 _gatewayChainId,
-        uint256 _homeChainId,
-        address _broadcaster
+        uint256 _homeChainId
     ) {
         gatewayZkChain = IZkChain(_gatewayZkChain);
         l2LogsRootHashSlot = _l2LogsRootHashSlot;
         childChainId = _childChainId;
         gatewayChainId = _gatewayChainId;
         homeChainId = _homeChainId;
-        broadcaster = _broadcaster;
     }
 
     /// @notice Verify a target chain L2 logs root hash given a home chain block hash and a proof.
@@ -170,7 +167,7 @@ contract ParentToChildProver is IStateProver {
     /// @param input ABI encoded ZkSyncProof containing:
     ///              - batchNumber: The batch number containing the message.
     ///              - index: The leaf proof mask for the message in the Merkle tree.
-    ///              - message: The L2 message to be verified (contains txNumberInBatch and data).
+    ///              - message: The L2 message to be verified (contains txNumberInBatch, sender, and data).
     ///              - proof: The Merkle proof for verifying the message inclusion.
     /// @return account The address of the account on the target chain (from the message sender).
     /// @return slot The storage slot derived from the account address and message hash.
@@ -264,9 +261,8 @@ contract ParentToChildProver is IStateProver {
 
     /// @notice Convert an L2 message to an L2 log structure.
     /// @dev Transforms an L2Message into the L2Log format used for Merkle tree hashing.
-    ///      Uses fixed values for shard ID (0) and service flag (true). The sender is set to
-    ///      L1_MESSENGER (0x8008), the key is the broadcaster address deployed on the ZK chain, and the value is
-    ///      keccak256 of the message data.
+    ///      Uses fixed values for shard ID (0), service flag (true) and sender address (L1_MESSENGER).
+    ///      The message sender is encoded as the key and the message data hash is used as the value.
     /// @param _message The L2 message to convert.
     /// @return The L2 log structure corresponding to the message.
     function _l2MessageToLog(L2Message memory _message) internal view returns (L2Log memory) {
@@ -275,7 +271,7 @@ contract ParentToChildProver is IStateProver {
             isService: true,
             txNumberInBatch: _message.txNumberInBatch,
             sender: L1_MESSENGER,
-            key: bytes32(uint256(uint160(broadcaster))),
+            key: bytes32(uint256(uint160(_message.sender))),
             value: keccak256(_message.data)
         });
     }

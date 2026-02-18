@@ -111,6 +111,7 @@ contract ReceiverTest is Test {
             index: 4,
             message: L2Message({
                 txNumberInBatch: 91,
+                sender: 0x51665298A7Ce1781aD2CB50B1E512322A6B12458,
                 data: hex"4d2f31e8578316b1eee225feb6442c49f42083864fa317ea81928e275ad2e3660000000000000000000000000000000000000000000000000000000069459b52"
             }),
             proof: logProof
@@ -121,14 +122,12 @@ contract ReceiverTest is Test {
     function test_verifyBroadcastMessage_from_ZkSync_into_Ethereum() public {
         vm.selectFork(ethereumForkId);
 
-        address broadcaster = 0x51665298A7Ce1781aD2CB50B1E512322A6B12458; // ZkSyncBroadcaster deployed on ZkSync Sepolia
-
         MockZkChain mockZkChain = new MockZkChain();
         mockZkChain.setL2LogsRootHash(47506, 0xc445ecf161f26c39cde0fe9a0db973d3d5193951d55c5d60f224cb0579370003);
 
         receiver = new Receiver();
         ZksyncParentToChildProver parentToChildProver =
-            new ZksyncParentToChildProver(address(mockZkChain), 0, 300, 32657, block.chainid, broadcaster);
+            new ZksyncParentToChildProver(address(mockZkChain), 0, 300, 32657, block.chainid);
 
         StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
@@ -182,14 +181,12 @@ contract ReceiverTest is Test {
     function test_verifyBroadcastMessage_from_ZkSync_into_Ethereum_wrong_message() public {
         vm.selectFork(ethereumForkId);
 
-        address broadcaster = 0x51665298A7Ce1781aD2CB50B1E512322A6B12458; // ZkSyncBroadcaster deployed on ZkSync Sepolia
-
         MockZkChain mockZkChain = new MockZkChain();
         mockZkChain.setL2LogsRootHash(47506, 0xc445ecf161f26c39cde0fe9a0db973d3d5193951d55c5d60f224cb0579370003);
 
         receiver = new Receiver();
         ZksyncParentToChildProver parentToChildProver =
-            new ZksyncParentToChildProver(address(mockZkChain), 0, 300, 32657, block.chainid, broadcaster);
+            new ZksyncParentToChildProver(address(mockZkChain), 0, 300, 32657, block.chainid);
 
         StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
