@@ -11,6 +11,7 @@ import {IBuffer} from "./interfaces/IBuffer.sol";
 ///      a sliding window of block hashes without requiring contiguous block numbers.
 /// @dev Concrete implementations should override `receiveHashes` to add chain-specific access control.
 /// @notice Inspired by: https://github.com/OffchainLabs/block-hash-pusher/blob/main/contracts/Buffer.sol
+/// @custom:security-contact security@openzeppelin.com
 abstract contract BaseBuffer is IBuffer {
     /// @dev The size of the circular buffer.
     /// @dev For a parent chain with a block time of 12s (Ethereum), this is equivalent to roughly 54 days of history.

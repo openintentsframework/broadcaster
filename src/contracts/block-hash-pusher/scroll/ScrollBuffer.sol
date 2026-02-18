@@ -10,6 +10,7 @@ import {IL2ScrollMessenger} from "@scroll-tech/scroll-contracts/L2/IL2ScrollMess
 /// @dev This contract extends BaseBuffer with access control specific to Scroll's L1->L2 messaging.
 ///      The pusher address on L1 must send the message via L1ScrollMessenger to the buffer address on L2.
 ///      The L2ScrollMessenger contract on L2 is responsible for relaying the message to the buffer contract on L2.
+/// @custom:security-contact security@openzeppelin.com
 contract ScrollBuffer is BaseBuffer {
     /// @dev The address of the L2ScrollMessenger contract on L2.
     address private immutable _l2ScrollMessenger;

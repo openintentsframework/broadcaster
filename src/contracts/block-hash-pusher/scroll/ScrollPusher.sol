@@ -11,6 +11,7 @@ import {IL1ScrollMessenger} from "@scroll-tech/scroll-contracts/L1/IL1ScrollMess
 /// @dev This contract sends block hashes from Ethereum L1 to a ScrollBuffer contract on Scroll L2
 ///      via the Scroll L1ScrollMessenger's `sendMessage` function. The pusher must be configured
 ///      with the correct L1ScrollMessenger address.
+/// @custom:security-contact security@openzeppelin.com
 contract ScrollPusher is BlockHashArrayBuilder, IPusher {
     /// @dev The address of the Scroll L1ScrollMessenger contract on L1.
     address private immutable _l1ScrollMessenger;
