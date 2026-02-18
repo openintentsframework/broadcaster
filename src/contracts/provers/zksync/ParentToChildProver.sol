@@ -33,7 +33,6 @@ struct L2Log {
 /// @notice An arbitrary length message passed from L2 to L1.
 /// @dev Under the hood it is an `L2Log` sent from the special system L2 contract.
 /// @param txNumberInBatch The L2 transaction number in a batch, in which the message was sent.
-/// @param sender The address of the L2 account from which the message was passed.
 /// @param data An arbitrary length message data.
 struct L2Message {
     uint16 txNumberInBatch;
@@ -171,7 +170,7 @@ contract ParentToChildProver is IStateProver {
     /// @param input ABI encoded ZkSyncProof containing:
     ///              - batchNumber: The batch number containing the message.
     ///              - index: The leaf proof mask for the message in the Merkle tree.
-    ///              - message: The L2 message to be verified (contains txNumberInBatch, sender, and data).
+    ///              - message: The L2 message to be verified (contains txNumberInBatch and data).
     ///              - proof: The Merkle proof for verifying the message inclusion.
     /// @return account The address of the account on the target chain (from the message sender).
     /// @return slot The storage slot derived from the account address and message hash.
@@ -265,11 +264,11 @@ contract ParentToChildProver is IStateProver {
 
     /// @notice Convert an L2 message to an L2 log structure.
     /// @dev Transforms an L2Message into the L2Log format used for Merkle tree hashing.
-    ///      Uses fixed values for shard ID (0), service flag (true), and sender address
-    ///      (the ZkSync system contract address). The message sender is encoded as the key,
-    ///      and the message data hash is used as the value.
+    ///      Uses fixed values for shard ID (0) and service flag (true). The sender is set to
+    ///      L1_MESSENGER (0x8008), the key is the broadcaster address deployed on the ZK chain, and the value is
+    ///      keccak256 of the message data.
     /// @param _message The L2 message to convert.
-    /// @return log The L2 log structure corresponding to the message.
+    /// @return The L2 log structure corresponding to the message.
     function _l2MessageToLog(L2Message memory _message) internal view returns (L2Log memory) {
         return L2Log({
             l2ShardId: 0,
