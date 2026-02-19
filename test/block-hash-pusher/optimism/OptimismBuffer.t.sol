@@ -73,7 +73,7 @@ contract OptimismBufferTest is Test {
         new OptimismBuffer(address(mockOpCrosschainDomainMessenger), address(0));
     }
 
-    function test_constructor_reverts_if_l2_scroll_messenger_is_zero_address() public {
+    function test_constructor_reverts_if_l2_cross_domain_messenger_is_zero_address() public {
         vm.expectRevert(abi.encodeWithSelector(OptimismBuffer.InvalidL2CrossDomainMessengerAddress.selector));
         new OptimismBuffer(address(0), pusher);
     }
