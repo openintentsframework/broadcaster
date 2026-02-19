@@ -26,9 +26,7 @@ contract LineaPusher is BlockHashArrayBuilder, IPusher {
     error InvalidLineaRollupAddress();
 
     constructor(address rollup_) {
-        if (rollup_ == address(0)) {
-            revert InvalidLineaRollupAddress();
-        }
+        require(rollup_ != address(0), InvalidLineaRollupAddress());
 
         _lineaRollup = rollup_;
     }
