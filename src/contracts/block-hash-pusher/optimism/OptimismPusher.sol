@@ -26,9 +26,7 @@ contract OptimismPusher is BlockHashArrayBuilder, IPusher {
     error InvalidL1CrossDomainMessengerProxyAddress();
 
     constructor(address l1CrossDomainMessengerProxy_) {
-        if (l1CrossDomainMessengerProxy_ == address(0)) {
-            revert InvalidL1CrossDomainMessengerProxyAddress();
-        }
+        require(l1CrossDomainMessengerProxy_ != address(0), InvalidL1CrossDomainMessengerProxyAddress());
 
         _l1CrossDomainMessengerProxy = l1CrossDomainMessengerProxy_;
     }
