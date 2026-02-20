@@ -8,11 +8,12 @@ pragma solidity 0.8.30;
 ///         If the pointer's prover is updated, the new prover MUST have a higher IStateProver::version() than the old one.
 ///         These pointers are always referred to by their address on their home chain.
 interface IStateProverPointer {
-    /// @notice Emitted when the implementation address is set.
+    /// @notice Emitted when the pointer is set to a new implementation.
+    /// MUST be emitted when the pointer is set
     event ImplementationAddressSet(
         uint256 indexed newVersion,
-        address newImplementationAddress,
-        bytes32 newCodeHash,
+        address indexed newImplementationAddress,
+        bytes32 indexed newCodeHash,
         address oldImplementationAddress
     );
 
