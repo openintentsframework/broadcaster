@@ -5,28 +5,19 @@ import {console, Test} from "forge-std/Test.sol";
 import {stdJson} from "forge-std/StdJson.sol";
 import {Broadcaster} from "../../../src/contracts/Broadcaster.sol";
 import {IBroadcaster} from "../../../src/contracts/interfaces/IBroadcaster.sol";
-import {IOutbox} from "@arbitrum/nitro-contracts/src/bridge/IOutbox.sol";
 import {ChildToParentProver} from "../../../src/contracts/provers/zksync/ChildToParentProver.sol";
 import {Bytes} from "@openzeppelin/contracts/utils/Bytes.sol";
 import {IBuffer} from "../../../src/contracts/block-hash-pusher/interfaces/IBuffer.sol";
 import {BufferMock} from "../../mocks/BufferMock.sol";
-import {RLP} from "@openzeppelin/contracts/utils/RLP.sol";
-import {BlockHeaders} from "../../utils/BlockHeaders.sol";
 
 contract ZksyncChildToParentProverTest is Test {
     using stdJson for string;
-    using RLP for RLP.Encoder;
     using Bytes for bytes;
 
     uint256 public parentForkId;
     uint256 public childForkId;
 
-    IOutbox public outbox = IOutbox(0x65f07C7D521164a4d5DaC6eB8Fac8DA067A3B78F);
-
-    uint256 public rootSlot = 3;
-
     ChildToParentProver public childToParentProver; // Home is Child, Target is Parent
-
     uint256 childChainId;
 
     address public blockHashBuffer;
