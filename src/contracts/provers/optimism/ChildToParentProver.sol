@@ -3,36 +3,34 @@ pragma solidity 0.8.30;
 
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
 import {IStateProver} from "../../interfaces/IStateProver.sol";
+import {IBuffer} from "../../block-hash-pusher/interfaces/IBuffer.sol";
+import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 
-interface IL1Block {
-    function hash() external view returns (bytes32);
-}
-
-/// @notice OP-stack implementation of a child to parent IStateProver.
-/// @dev    verifyTargetStateCommitment and getTargetStateCommitment get block hashes from the L1Block predeploy.
-///         verifyStorageSlot is implemented to work against any target chain with a standard Ethereum block header and state trie.
-///
-/// @dev    Note: L1Block only stores the LATEST L1 block hash.
-///         Historical messages CAN be verified by generating fresh proofs on-demand.
-///         Pre-generated proofs become stale when L1Block updates (~5 minutes).
-///         Operational difference from Arbitrum: proofs must be generated just-in-time rather than pre-cached.
+/// @notice OP-Stack implementation of a child to parent IStateProver.
+/// @dev    verifyTargetStateCommitment and getTargetStateCommitment get block hashes from the block hash buffer.
+///         See https://github.com/openintentsframework/broadcaster/blob/main/src/contracts/block-hash-pusher for more details.
+///         verifyStorageSlot is implemented to work against any parent chain with a standard Ethereum block header and state trie.
 contract ChildToParentProver is IStateProver {
-    address public constant l1BlockPredeploy = 0x4200000000000000000000000000000000000015;
-    uint256 public constant l1BlockHashSlot = 2; // hash is at slot 2
+    /// @dev Address of the block hash buffer contract.
+    address public immutable blockHashBuffer;
+    /// @dev Storage slot the buffer contract uses to store block hashes.
+    ///      See https://github.com/openintentsframework/broadcaster/blob/main/src/contracts/block-hash-pusher/BaseBuffer.sol
+    uint256 public constant blockHashMappingSlot = 1;
 
-    /// @dev The chain ID of the home chain (Optimism L2)
+    /// @dev The chain ID of the home chain (child chain).
     uint256 public immutable homeChainId;
 
     error CallNotOnHomeChain();
     error CallOnHomeChain();
 
-    constructor(uint256 _homeChainId) {
+    constructor(address _blockHashBuffer, uint256 _homeChainId) {
+        blockHashBuffer = _blockHashBuffer;
         homeChainId = _homeChainId;
     }
 
-    /// @notice Verify the latest available target block hash given a home chain block hash and a storage proof of the L1Block predeploy.
+    /// @notice Get a parent chain block hash from the buffer at `blockHashBuffer` using a storage proof
     /// @param  homeBlockHash The block hash of the home chain.
-    /// @param  input ABI encoded (bytes blockHeader, bytes accountProof, bytes storageProof)
+    /// @param  input ABI encoded (bytes blockHeader, uint256 targetBlockNumber, bytes accountProof, bytes storageProof)
     function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
         external
         view
@@ -41,33 +39,31 @@ contract ChildToParentProver is IStateProver {
         if (block.chainid == homeChainId) {
             revert CallOnHomeChain();
         }
-
         // decode the input
-        bytes memory rlpBlockHeader;
-        bytes memory accountProof;
-        bytes memory storageProof;
-        (rlpBlockHeader, accountProof, storageProof) = abi.decode(input, (bytes, bytes, bytes));
+        (bytes memory rlpBlockHeader, uint256 targetBlockNumber, bytes memory accountProof, bytes memory storageProof) =
+            abi.decode(input, (bytes, uint256, bytes, bytes));
 
-        // verify proofs and get the value
+        // calculate the slot based on the provided block number
+        // see: https://github.com/OffchainLabs/block-hash-pusher/blob/a1e26f2e42e6306d1e7f03c5d20fa6aa64ff7a12/contracts/Buffer.sol#L32
+        uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(blockHashMappingSlot), targetBlockNumber));
+
+        // verify proofs and get the block hash
         targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
-            homeBlockHash, rlpBlockHeader, l1BlockPredeploy, l1BlockHashSlot, accountProof, storageProof
+            homeBlockHash, rlpBlockHeader, blockHashBuffer, slot, accountProof, storageProof
         );
     }
 
-    /// @notice Get the latest parent chain block hash from the L1Block predeploy. Bytes argument is ignored.
-    /// @dev    OP stack does not provide access to historical block hashes, so this function can only return the latest.
-    ///
-    ///         Calls to the Receiver contract could revert because proofs can become stale after the predeploy's block hash is updated.
-    ///         In this case, failing calls may need to be retried with a new proof.
-    ///
-    ///         If the L1Block is consistently updated too frequently, calls to the Receiver may be DoS'd.
-    ///         In this case, this prover contract may need to be modified to use a different source of block hashes,
-    ///         such as a backup contract that calls the L1Block predeploy and caches the latest block hash.
-    function getTargetStateCommitment(bytes calldata) external view returns (bytes32 targetStateCommitment) {
+    /// @notice Get a parent chain block hash from the buffer at `blockHashBuffer`.
+    /// @param  input ABI encoded (uint256 targetBlockNumber)
+    function getTargetStateCommitment(bytes calldata input) external view returns (bytes32 targetStateCommitment) {
         if (block.chainid != homeChainId) {
             revert CallNotOnHomeChain();
         }
-        return IL1Block(l1BlockPredeploy).hash();
+        // decode the input
+        uint256 targetBlockNumber = abi.decode(input, (uint256));
+
+        // get the block hash from the buffer
+        targetStateCommitment = IBuffer(blockHashBuffer).parentChainBlockHash(targetBlockNumber);
     }
 
     /// @notice Verify a storage slot given a target chain block hash and a proof.
