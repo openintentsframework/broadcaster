@@ -16,6 +16,7 @@ import {IScrollChain} from "@scroll-tech/scroll-contracts/L1/rollup/IScrollChain
 ///         in the ScrollChain contract. The "targetStateCommitment" returned by this prover is actually
 ///         the L2 state root, which can be used directly for MPT verification without needing
 ///         the L2 block header.
+/// @custom:security-contact security@openzeppelin.com
 contract ParentToChildProver is IStateProver {
     /// @dev Address of the ScrollChain contract on L1
     address public immutable scrollChain;

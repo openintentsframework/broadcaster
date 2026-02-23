@@ -16,6 +16,7 @@ interface IL1Block {
 ///         Historical messages CAN be verified by generating fresh proofs on-demand.
 ///         Pre-generated proofs become stale when L1Block updates (~5 minutes).
 ///         Operational difference from Arbitrum: proofs must be generated just-in-time rather than pre-cached.
+/// @custom:security-contact security@openzeppelin.com
 contract ChildToParentProver is IStateProver {
     address public constant l1BlockPredeploy = 0x4200000000000000000000000000000000000015;
     uint256 public constant l1BlockHashSlot = 2; // hash is at slot 2

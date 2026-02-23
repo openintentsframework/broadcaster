@@ -22,6 +22,7 @@ interface IL1Messenger {
 ///      with the block timestamp and emits an event for off-chain indexing. Additionally, when a message is
 ///      broadcast, it sends an L2->L1 message containing the original message and timestamp (ABI encoded together).
 ///      The storage layout is designed to be efficiently provable for cross-chain message verification.
+/// @custom:security-contact security@openzeppelin.com
 contract ZkSyncBroadcaster is IBroadcaster {
     /// @notice Error thrown when attempting to broadcast a message that has already been broadcast by the same publisher.
     error MessageAlreadyBroadcasted();

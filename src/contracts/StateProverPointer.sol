@@ -13,6 +13,7 @@ bytes32 constant STATE_PROVER_POINTER_SLOT = bytes32(uint256(keccak256("eip7888.
 /// @dev This contract stores the address and code hash of the current StateProver implementation.
 ///      It enforces version monotonicity to ensure that updates always move to newer versions.
 ///      The code hash is stored in a dedicated storage slot for efficient cross-chain verification.
+/// @custom:security-contact security@openzeppelin.com
 contract StateProverPointer is IStateProverPointer, Ownable {
     address internal _implementationAddress;
 
