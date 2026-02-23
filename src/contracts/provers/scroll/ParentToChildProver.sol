@@ -86,9 +86,7 @@ contract ParentToChildProver is IStateProver {
         // Get the state root from ScrollChain
         targetStateCommitment = IScrollChain(scrollChain).finalizedStateRoots(batchIndex);
 
-        if (targetStateCommitment == bytes32(0)) {
-            revert StateRootNotFound();
-        }
+        require(targetStateCommitment != bytes32(0), InvalidTargetStateCommitment());
     }
 
     /// @notice Verify a storage slot given an L2 state root and a proof
