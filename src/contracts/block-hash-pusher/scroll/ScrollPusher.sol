@@ -28,9 +28,7 @@ contract ScrollPusher is BlockHashArrayBuilder, IPusher {
     error InvalidL1ScrollMessengerAddress();
 
     constructor(address l1ScrollMessenger_) {
-        if (l1ScrollMessenger_ == address(0)) {
-            revert InvalidL1ScrollMessengerAddress();
-        }
+        require(l1ScrollMessenger_ != address(0), InvalidL1ScrollMessengerAddress());
 
         _l1ScrollMessenger = l1ScrollMessenger_;
     }
