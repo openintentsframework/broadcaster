@@ -36,6 +36,7 @@ contract ParentToChildProver is IStateProver {
     error AccountKeyMismatch();
     error AccountValueMismatch();
     error StorageKeyMismatch();
+    error InvalidTargetStateCommitment();
 
     constructor(address _lineaRollup, uint256 _stateRootHashesSlot, uint256 _homeChainId) {
         lineaRollup = _lineaRollup;
@@ -71,9 +72,7 @@ contract ParentToChildProver is IStateProver {
             homeStateCommitment, rlpBlockHeader, lineaRollup, slot, accountProof, storageProof
         );
 
-        if (targetStateCommitment == bytes32(0)) {
-            revert TargetStateRootNotFound();
-        }
+        require(targetStateCommitment != bytes32(0), InvalidTargetStateCommitment());
     }
 
     /// @notice Get L2 state root directly from L1 LineaRollup
