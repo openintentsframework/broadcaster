@@ -132,6 +132,10 @@ contract ReceiverTest is Test {
         StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
+        vm.expectEmit();
+        emit IStateProverPointer.ImplementationAddressSet(
+            1, address(parentToChildProver), address(parentToChildProver).codehash, address(0)
+        );
         stateProverPointer.setImplementationAddress(address(parentToChildProver));
 
         bytes32 message = 0x0000000000000000000000000000000000000000000000000000000074657374; // "test"
