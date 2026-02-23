@@ -31,6 +31,7 @@ contract ParentToChildProver is IStateProver {
     error CallNotOnHomeChain();
     error CallOnHomeChain();
     error StateRootNotFound();
+    error InvalidTargetStateCommitment();
 
     /// @param _scrollChain Address of the ScrollChain contract on L1
     /// @param _finalizedStateRootsSlot Storage slot of the finalizedStateRoots mapping
@@ -71,6 +72,7 @@ contract ParentToChildProver is IStateProver {
         if (targetStateCommitment == bytes32(0)) {
             revert StateRootNotFound();
         }
+        require(targetStateCommitment != bytes32(0), InvalidTargetStateCommitment());
     }
 
     /// @notice Get L2 state root directly from L1 ScrollChain

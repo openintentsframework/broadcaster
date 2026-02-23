@@ -25,6 +25,7 @@ contract ChildToParentProver is IStateProver {
 
     error CallNotOnHomeChain();
     error CallOnHomeChain();
+    error InvalidTargetStateCommitment();
 
     constructor(uint256 _homeChainId) {
         homeChainId = _homeChainId;
@@ -52,6 +53,7 @@ contract ChildToParentProver is IStateProver {
         targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
             homeBlockHash, rlpBlockHeader, l1BlockPredeploy, l1BlockHashSlot, accountProof, storageProof
         );
+        require(targetStateCommitment != bytes32(0), InvalidTargetStateCommitment());
     }
 
     /// @notice Get the latest parent chain block hash from the L1Block predeploy. Bytes argument is ignored.

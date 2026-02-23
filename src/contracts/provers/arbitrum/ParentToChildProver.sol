@@ -22,7 +22,7 @@ contract ParentToChildProver is IStateProver {
 
     error CallNotOnHomeChain();
     error CallOnHomeChain();
-    error TargetBlockHashNotFound();
+    error InvalidTargetStateCommitment();
 
     constructor(address _outbox, uint256 _rootsSlot, uint256 _homeChainId) {
         outbox = _outbox;
@@ -55,8 +55,9 @@ contract ParentToChildProver is IStateProver {
             ProverUtils.getSlotFromBlockHeader(homeBlockHash, rlpBlockHeader, outbox, slot, accountProof, storageProof);
 
         if (targetStateCommitment == bytes32(0)) {
-            revert TargetBlockHashNotFound();
+            revert InvalidTargetStateCommitment();
         }
+        require(targetStateCommitment != bytes32(0), InvalidTargetStateCommitment());
     }
 
     /// @notice Get a target chain block hash given a target chain sendRoot
@@ -72,7 +73,7 @@ contract ParentToChildProver is IStateProver {
         targetStateCommitment = IOutbox(outbox).roots(sendRoot);
 
         if (targetStateCommitment == bytes32(0)) {
-            revert TargetBlockHashNotFound();
+            revert InvalidTargetStateCommitment();
         }
     }
 

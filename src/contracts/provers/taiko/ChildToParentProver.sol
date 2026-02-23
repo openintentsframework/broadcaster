@@ -34,7 +34,7 @@ contract ChildToParentProver is IStateProver {
 
     error CallNotOnHomeChain();
     error CallOnHomeChain();
-    error TargetBlockHashNotFound();
+    error InvalidTargetStateCommitment();
 
     constructor(address _signalService, uint256 _checkpointsSlot, uint256 _homeChainId) {
         signalService = _signalService;
@@ -70,9 +70,7 @@ contract ChildToParentProver is IStateProver {
             homeBlockHash, rlpBlockHeader, signalService, slot, accountProof, storageProof
         );
 
-        if (targetStateCommitment == bytes32(0)) {
-            revert TargetBlockHashNotFound();
-        }
+        require(targetStateCommitment != bytes32(0), InvalidTargetStateCommitment());
     }
 
     /// @notice Get L1 block hash directly from L2 SignalService
@@ -93,7 +91,7 @@ contract ChildToParentProver is IStateProver {
         targetStateCommitment = checkpoint.blockHash;
 
         if (targetStateCommitment == bytes32(0)) {
-            revert TargetBlockHashNotFound();
+            revert InvalidTargetStateCommitment();
         }
     }
 
