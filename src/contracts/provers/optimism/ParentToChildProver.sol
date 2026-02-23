@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.30;
 
-import {Lib_SecureMerkleTrie} from "@eth-optimism/contracts/libraries/trie/Lib_SecureMerkleTrie.sol";
-import {Lib_RLPReader} from "@eth-optimism/contracts/libraries/rlp/Lib_RLPReader.sol";
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
 import {IStateProver} from "../../interfaces/IStateProver.sol";
 import {Bytes} from "@openzeppelin/contracts/utils/Bytes.sol";
@@ -19,8 +17,6 @@ interface IFaultDisputeGame {
 /// @dev    verifyTargetStateCommitment and getTargetStateCommitment get block hashes from a valid fault dispute game proxy contract.
 ///         verifyStorageSlot is implemented to work against any OP-stack child chain with a standard Ethereum block header and state trie.
 contract ParentToChildProver is IStateProver {
-    using Lib_RLPReader for Lib_RLPReader.RLPItem;
-
     struct OutputRootProof {
         bytes32 version;
         bytes32 stateRoot;
@@ -40,6 +36,11 @@ contract ParentToChildProver is IStateProver {
 
     error CallNotOnHomeChain();
     error CallOnHomeChain();
+    error InvalidHomeBlockHeader();
+    error AnchorGameAccountDoesNotExist();
+    error InvalidGameProxyCode();
+    error InvalidRootClaimPreimage();
+    error InvalidGameProxy();
 
     constructor(address _anchorStateRegistry, uint256 _homeChainId) {
         anchorStateRegistry = _anchorStateRegistry;
@@ -79,7 +80,9 @@ contract ParentToChildProver is IStateProver {
         ) = abi.decode(input, (bytes, bytes, bytes, bytes, bytes, OutputRootProof));
 
         // check the block hash
-        require(homeBlockHash == keccak256(rlpBlockHeader), "Invalid home block header");
+        if (homeBlockHash != keccak256(rlpBlockHeader)) {
+            revert InvalidHomeBlockHeader();
+        }
         bytes32 stateRoot = ProverUtils.extractStateRootFromBlockHeader(rlpBlockHeader);
 
         // grab the anchor game address
@@ -96,17 +99,23 @@ contract ParentToChildProver is IStateProver {
         // get the anchor game's code hash from the account proof
         (bool accountExists, bytes memory accountValue) =
             ProverUtils.getAccountDataFromStateRoot(stateRoot, gameProxyAccountProof, anchorGame);
-        require(accountExists, "Anchor game account does not exist");
+        if (!accountExists) {
+            revert AnchorGameAccountDoesNotExist();
+        }
         bytes32 codeHash = ProverUtils.extractCodeHashFromAccountData(accountValue);
 
         // verify the game proxy code against the code hash
-        require(keccak256(gameProxyCode) == codeHash, "Invalid game proxy code");
+        if (keccak256(gameProxyCode) != codeHash) {
+            revert InvalidGameProxyCode();
+        }
 
         // extract the root claim from the game proxy code
         bytes32 rootClaim = _getRootClaimFromGameProxyCode(gameProxyCode);
 
         // verify the root claim preimage
-        require(rootClaim == keccak256(abi.encode(rootClaimPreimage)), "Invalid root claim preimage");
+        if (rootClaim != keccak256(abi.encode(rootClaimPreimage))) {
+            revert InvalidRootClaimPreimage();
+        }
 
         // return the target block hash from the root claim preimage
         return rootClaimPreimage.latestBlockhash;
@@ -126,10 +135,14 @@ contract ParentToChildProver is IStateProver {
         (address gameProxy, OutputRootProof memory rootClaimPreimage) = abi.decode(input, (address, OutputRootProof));
 
         // check the game proxy address
-        require(IAnchorStateRegistry(anchorStateRegistry).isGameClaimValid(gameProxy), "Invalid game proxy");
+        if (!IAnchorStateRegistry(anchorStateRegistry).isGameClaimValid(gameProxy)) {
+            revert InvalidGameProxy();
+        }
 
         bytes32 rootClaim = IFaultDisputeGame(gameProxy).rootClaim();
-        require(rootClaim == keccak256(abi.encode(rootClaimPreimage)), "Invalid root claim preimage");
+        if (rootClaim != keccak256(abi.encode(rootClaimPreimage))) {
+            revert InvalidRootClaimPreimage();
+        }
 
         return rootClaimPreimage.latestBlockhash;
     }

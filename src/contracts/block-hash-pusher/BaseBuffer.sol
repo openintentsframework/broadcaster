@@ -11,6 +11,7 @@ import {IBuffer} from "./interfaces/IBuffer.sol";
 ///      a sliding window of block hashes without requiring contiguous block numbers.
 /// @dev Concrete implementations should override `receiveHashes` to add chain-specific access control.
 /// @notice Inspired by: https://github.com/OffchainLabs/block-hash-pusher/blob/main/contracts/Buffer.sol
+/// @custom:security-contact security@openzeppelin.com
 abstract contract BaseBuffer is IBuffer {
     /// @dev The size of the circular buffer.
     /// @dev For a parent chain with a block time of 12s (Ethereum), this is equivalent to roughly 54 days of history.
@@ -27,9 +28,7 @@ abstract contract BaseBuffer is IBuffer {
     /// @inheritdoc IBuffer
     function parentChainBlockHash(uint256 parentChainBlockNumber) external view returns (bytes32) {
         bytes32 blockHash = _blockHashes[parentChainBlockNumber];
-        if (blockHash == 0) {
-            revert UnknownParentChainBlockHash(parentChainBlockNumber);
-        }
+        require(blockHash != 0, UnknownParentChainBlockHash(parentChainBlockNumber));
         return blockHash;
     }
 
@@ -42,12 +41,13 @@ abstract contract BaseBuffer is IBuffer {
     function _receiveHashes(uint256 firstBlockNumber, bytes32[] calldata blockHashes) internal {
         uint256 blockHashesLength = blockHashes.length;
 
-        if (blockHashesLength == 0) {
-            revert EmptyBlockHashes();
-        }
+        require(blockHashesLength != 0, EmptyBlockHashes());
+        require(firstBlockNumber != 0, InvalidFirstBlockNumber());
+
+        bool hashesWritten;
 
         // write the hashes to both the mapping and circular buffer
-        for (uint256 i = 0; i < blockHashesLength; i++) {
+        for (uint256 i; i < blockHashesLength; ++i) {
             uint256 blockNumber = firstBlockNumber + i;
             uint256 bufferIndex = blockNumber % _BUFFER_SIZE;
             uint256 existingBlockNumber = _blockNumberBuffer[bufferIndex];
@@ -55,6 +55,7 @@ abstract contract BaseBuffer is IBuffer {
             if (blockNumber <= existingBlockNumber) {
                 continue;
             }
+            hashesWritten = true;
 
             if (existingBlockNumber != 0) {
                 _blockHashes[existingBlockNumber] = 0;
@@ -64,14 +65,16 @@ abstract contract BaseBuffer is IBuffer {
             _blockNumberBuffer[bufferIndex] = blockNumber;
         }
 
-        uint256 lastBlockNumber = firstBlockNumber + blockHashesLength - 1;
+        if (hashesWritten) {
+            uint256 lastBlockNumber = firstBlockNumber + blockHashesLength - 1;
 
-        if (lastBlockNumber > _newestBlockNumber) {
-            // update the newest block number
-            _newestBlockNumber = lastBlockNumber;
+            if (lastBlockNumber > _newestBlockNumber) {
+                // update the newest block number
+                _newestBlockNumber = lastBlockNumber;
+            }
+
+            emit BlockHashesPushed(firstBlockNumber, lastBlockNumber);
         }
-
-        emit BlockHashesPushed(firstBlockNumber, lastBlockNumber);
     }
 
     /// @inheritdoc IBuffer

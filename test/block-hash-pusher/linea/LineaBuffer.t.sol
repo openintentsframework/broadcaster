@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.30;
 
-import {Test} from "forge-std/Test.sol";
+import {Test, Vm} from "forge-std/Test.sol";
 import {LineaBuffer} from "../../../src/contracts/block-hash-pusher/linea/LineaBuffer.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IBuffer} from "../../../src/contracts/block-hash-pusher/interfaces/IBuffer.sol";
@@ -31,10 +31,43 @@ contract LineaBufferTest is Test {
         bytes memory l2Calldata = abi.encodeCall(buffer.receiveHashes, (firstBlockNumber, blockHashes));
 
         vm.expectCall(address(buffer), l2Calldata);
-        vm.expectEmit();
-        emit IMessageService.MessageClaimed(keccak256(l2Calldata));
+        if (firstBlockNumber == 0) {
+            vm.expectRevert(abi.encodeWithSelector(IBuffer.InvalidFirstBlockNumber.selector));
+        } else {
+            vm.expectEmit();
+            emit IMessageService.MessageClaimed(keccak256(l2Calldata));
+        }
         vm.prank(claimer);
         mockLineaMessageService.claimMessage(pusher, address(buffer), 0.005 ether, 0, payable(claimer), l2Calldata, 0);
+    }
+
+    function test_receiveHashes_does_not_emit_event_when_no_hashes_written() public {
+        LineaBuffer buffer = new LineaBuffer(address(mockLineaMessageService), pusher);
+
+        bytes32[] memory blockHashes = new bytes32[](5);
+        for (uint256 i = 0; i < 5; i++) {
+            blockHashes[i] = keccak256(abi.encode(i + 1));
+        }
+
+        bytes memory l2Calldata = abi.encodeCall(buffer.receiveHashes, (1, blockHashes));
+
+        // First push: should emit
+        vm.expectEmit();
+        emit IBuffer.BlockHashesPushed(1, 5);
+        vm.prank(claimer);
+        mockLineaMessageService.claimMessage(pusher, address(buffer), 0.005 ether, 0, payable(claimer), l2Calldata, 0);
+        assertEq(buffer.newestBlockNumber(), 5);
+
+        // Duplicate push: should NOT emit BlockHashesPushed
+        vm.recordLogs();
+        vm.prank(claimer);
+        mockLineaMessageService.claimMessage(pusher, address(buffer), 0.005 ether, 0, payable(claimer), l2Calldata, 0);
+
+        Vm.Log[] memory logs = vm.getRecordedLogs();
+        for (uint256 i = 0; i < logs.length; i++) {
+            assertTrue(logs[i].topics[0] != IBuffer.BlockHashesPushed.selector, "Unexpected BlockHashesPushed event");
+        }
+        assertEq(buffer.newestBlockNumber(), 5);
     }
 
     function testFuzz_receiveHashes_reverts_if_sender_is_not_linea_message_service(address notLineaMessageService)
@@ -48,6 +81,16 @@ contract LineaBufferTest is Test {
         vm.expectRevert(abi.encodeWithSelector(LineaBuffer.InvalidSender.selector));
         vm.prank(notLineaMessageService);
         buffer.receiveHashes(1, new bytes32[](1));
+    }
+
+    function test_constructor_reverts_if_pusher_is_zero_address() public {
+        vm.expectRevert(abi.encodeWithSelector(LineaBuffer.InvalidPusherAddress.selector));
+        new LineaBuffer(address(mockLineaMessageService), address(0));
+    }
+
+    function test_constructor_reverts_if_l2_message_service_is_zero_address() public {
+        vm.expectRevert(abi.encodeWithSelector(LineaBuffer.InvalidL2MessageServiceAddress.selector));
+        new LineaBuffer(address(0), pusher);
     }
 
     function testFuzz_receiveHashes_reverts_if_sender_does_not_match_pusher(address notPusher) public {

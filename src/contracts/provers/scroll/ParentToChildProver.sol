@@ -30,7 +30,6 @@ contract ParentToChildProver is IStateProver {
 
     error CallNotOnHomeChain();
     error CallOnHomeChain();
-    error BatchNotFinalized();
     error StateRootNotFound();
 
     /// @param _scrollChain Address of the ScrollChain contract on L1
