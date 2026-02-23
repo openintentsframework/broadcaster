@@ -30,7 +30,6 @@ contract ParentToChildProver is IStateProver {
 
     error CallNotOnHomeChain();
     error CallOnHomeChain();
-    error StateRootNotFound();
     error InvalidTargetStateCommitment();
 
     /// @param _scrollChain Address of the ScrollChain contract on L1
@@ -69,9 +68,6 @@ contract ParentToChildProver is IStateProver {
             homeBlockHash, rlpBlockHeader, scrollChain, slot, accountProof, storageProof
         );
 
-        if (targetStateCommitment == bytes32(0)) {
-            revert StateRootNotFound();
-        }
         require(targetStateCommitment != bytes32(0), InvalidTargetStateCommitment());
     }
 
