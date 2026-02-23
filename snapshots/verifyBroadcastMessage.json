@@ -1,9 +1,9 @@
 {
-  "EthereumToOptimism": "1639195",
-  "EthereumToTaikoL2": "1052214",
-  "LineaL2ToEthereum": "2551776",
-  "ScrollL2ToEthereum": "1361940",
+  "EthereumToOptimism": "1639217",
+  "EthereumToTaikoL2": "1052236",
+  "LineaL2ToEthereum": "2551798",
+  "ScrollL2ToEthereum": "1361962",
   "ScrollToOptimism": "1348688",
-  "TaikoL2ToEthereum": "1022277",
-  "ZkSyncL2ToEthereum": "125663"
+  "TaikoL2ToEthereum": "1022299",
+  "ZkSyncL2ToEthereum": "125685"
 }
