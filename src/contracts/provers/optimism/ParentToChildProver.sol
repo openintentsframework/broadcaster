@@ -179,7 +179,7 @@ contract ParentToChildProver is IStateProver {
     ///         https://github.com/Vectorized/solady/blob/502cc1ea718e6fa73b380635ee0868b0740595f0/src/utils/LibClone.sol#L329
     /// @param  bytecode The game proxy code.
     /// @return rootClaim The root claim extracted from the game proxy code.
-    function _getRootClaimFromGameProxyCode(bytes memory bytecode) internal pure returns (bytes32 rootClaim) {
+    function _getRootClaimFromGameProxyCode(bytes memory bytecode) private pure returns (bytes32 rootClaim) {
         // https://github.com/ethereum-optimism/optimism/blob/ef7a933ca7f3d27ac40406f87fea25e0c3ba2016/packages/contracts-bedrock/src/dispute/DisputeGameFactory.sol#L155-L164
         // CWIA Calldata Layout:
         // ┌──────────────┬────────────────────────────────────┐
