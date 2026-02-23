@@ -158,9 +158,7 @@ contract ParentToChildProver is IStateProver {
         uint256 batchNumber = abi.decode(input, (uint256));
         targetStateCommitment = gatewayZkChain.l2LogsRootHash(batchNumber);
 
-        if (targetStateCommitment == bytes32(0)) {
-            revert L2LogsRootHashNotFound();
-        }
+        require(targetStateCommitment != bytes32(0), L2LogsRootHashNotFound());
     }
 
     /// @notice Verify a storage slot given a target chain L2 logs root hash and a proof.

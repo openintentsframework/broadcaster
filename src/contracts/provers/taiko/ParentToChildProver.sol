@@ -90,9 +90,7 @@ contract ParentToChildProver is IStateProver {
 
         targetStateCommitment = checkpoint.blockHash;
 
-        if (targetStateCommitment == bytes32(0)) {
-            revert InvalidTargetStateCommitment();
-        }
+        require(targetStateCommitment != bytes32(0), InvalidTargetStateCommitment());
     }
 
     /// @notice Verify a storage slot given a target chain block hash and a proof

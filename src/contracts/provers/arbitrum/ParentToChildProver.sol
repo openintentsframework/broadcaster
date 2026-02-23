@@ -69,9 +69,7 @@ contract ParentToChildProver is IStateProver {
         // get the target block hash from the outbox
         targetStateCommitment = IOutbox(outbox).roots(sendRoot);
 
-        if (targetStateCommitment == bytes32(0)) {
-            revert InvalidTargetStateCommitment();
-        }
+        require(targetStateCommitment != bytes32(0), InvalidTargetStateCommitment());
     }
 
     /// @notice Verify a storage slot given a target chain block hash and a proof.

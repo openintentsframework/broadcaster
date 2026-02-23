@@ -90,9 +90,7 @@ contract ParentToChildProver is IStateProver {
         // Get the state root from LineaRollup
         targetStateCommitment = ZkEvmV2(lineaRollup).stateRootHashes(l2BlockNumber);
 
-        if (targetStateCommitment == bytes32(0)) {
-            revert TargetStateRootNotFound();
-        }
+        require(targetStateCommitment != bytes32(0), TargetStateRootNotFound());
     }
 
     /// @notice Verify a storage slot given a target chain state root and a Sparse Merkle Tree proof
