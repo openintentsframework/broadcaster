@@ -63,6 +63,10 @@ contract StateProverPointer is IStateProverPointer, Ownable2Step {
 
         _implementationAddress = _newImplementationAddress;
         _setCodeHash(_newImplementationAddress.codehash);
+
+        emit ImplementationAddressSet(
+            newVersion, _newImplementationAddress, _newImplementationAddress.codehash, currentImplementationAddress
+        );
     }
 
     function _setCodeHash(bytes32 _codeHash) internal {

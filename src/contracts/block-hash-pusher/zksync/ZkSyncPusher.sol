@@ -46,9 +46,7 @@ contract ZkSyncPusher is BlockHashArrayBuilder, IPusher {
     }
 
     constructor(address zkSyncDiamond_) {
-        if (zkSyncDiamond_ == address(0)) {
-            revert InvalidZkSyncDiamondAddress();
-        }
+        require(zkSyncDiamond_ != address(0), InvalidZkSyncDiamondAddress());
 
         _zkSyncDiamond = zkSyncDiamond_;
     }
