@@ -5,10 +5,12 @@ import {ProverUtils} from "../../libraries/ProverUtils.sol";
 import {IStateProver} from "../../interfaces/IStateProver.sol";
 import {Bytes} from "@openzeppelin/contracts/utils/Bytes.sol";
 
+/// Source: https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/dispute/AnchorStateRegistry.sol
 interface IAnchorStateRegistry {
     function isGameClaimValid(address _game) external view returns (bool);
 }
 
+/// Source: https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/dispute/FaultDisputeGame.sol
 interface IFaultDisputeGame {
     function rootClaim() external view returns (bytes32);
 }
@@ -25,8 +27,8 @@ contract ParentToChildProver is IStateProver {
     }
 
     /// @dev The storage slot in the AnchorStateRegistry where the anchor game address is stored.
-    ///      https://github.com/ethereum-optimism/optimism/blob/ef7a933ca7f3d27ac40406f87fea25e0c3ba2016/packages/contracts-bedrock/src/dispute/AnchorStateRegistry.sol#L39
-    uint256 public constant ANCHOR_GAME_SLOT = 3;
+    ///      See https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/dispute/AnchorStateRegistry.sol
+    uint256 public immutable anchorGameSlot;
 
     /// @notice The target chain's AnchorStateRegistry address.
     address public immutable anchorStateRegistry;
@@ -42,8 +44,9 @@ contract ParentToChildProver is IStateProver {
     error InvalidRootClaimPreimage();
     error InvalidGameProxy();
 
-    constructor(address _anchorStateRegistry, uint256 _homeChainId) {
+    constructor(address _anchorStateRegistry, uint256 _anchorGameSlot, uint256 _homeChainId) {
         anchorStateRegistry = _anchorStateRegistry;
+        anchorGameSlot = _anchorGameSlot;
         homeChainId = _homeChainId;
     }
 
@@ -90,7 +93,7 @@ contract ParentToChildProver is IStateProver {
             uint160(
                 uint256(
                     ProverUtils.getStorageSlotFromStateRoot(
-                        stateRoot, asrAccountProof, asrStorageProof, anchorStateRegistry, ANCHOR_GAME_SLOT
+                        stateRoot, asrAccountProof, asrStorageProof, anchorStateRegistry, anchorGameSlot
                     )
                 )
             )
