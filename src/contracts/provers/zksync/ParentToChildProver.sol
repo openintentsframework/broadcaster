@@ -61,6 +61,9 @@ struct ZkSyncProof {
 ///      This implementation is used to verify zkChain L2 log hash inclusion on L1 for messages that
 ///      use the gateway as a middleware between the L2 and the L1.
 contract ParentToChildProver is IStateProver {
+    /// @notice The address of the L1Messenger contract on the ZK chain.
+    address public constant L1_MESSENGER = 0x0000000000000000000000000000000000008008;
+
     /// @notice The ZkChain contract address on the gateway chain that stores L2 logs root hashes.
     IZkChain public immutable GATEWAY_ZK_CHAIN;
 
@@ -178,8 +181,6 @@ contract ParentToChildProver is IStateProver {
         (ZkSyncProof memory proof, address senderAccount, bytes32 message) =
             abi.decode(input, (ZkSyncProof, address, bytes32));
 
-        account = senderAccount;
-
         L2Log memory log = _l2MessageToLog(proof.message);
 
         bytes32 hashedLog = keccak256(
@@ -200,12 +201,13 @@ contract ParentToChildProver is IStateProver {
 
         (bytes32 slotSent, bytes32 timestamp) = abi.decode(proof.message.data, (bytes32, bytes32));
 
-        bytes32 expectedSlot = keccak256(abi.encode(message, account));
+        bytes32 expectedSlot = keccak256(abi.encode(message, senderAccount));
 
         if (slotSent != expectedSlot) {
             revert SlotMismatch();
         }
 
+        account = proof.message.sender;
         slot = uint256(slotSent);
         value = timestamp;
     }
@@ -258,17 +260,16 @@ contract ParentToChildProver is IStateProver {
 
     /// @notice Convert an L2 message to an L2 log structure.
     /// @dev Transforms an L2Message into the L2Log format used for Merkle tree hashing.
-    ///      Uses fixed values for shard ID (0), service flag (true), and sender address
-    ///      (the ZkSync system contract address). The message sender is encoded as the key,
-    ///      and the message data hash is used as the value.
+    ///      Uses fixed values for shard ID (0), service flag (true) and sender address (L1_MESSENGER).
+    ///      The message sender is encoded as the key and the message data hash is used as the value.
     /// @param _message The L2 message to convert.
-    /// @return log The L2 log structure corresponding to the message.
-    function _l2MessageToLog(L2Message memory _message) internal pure returns (L2Log memory) {
+    /// @return The L2 log structure corresponding to the message.
+    function _l2MessageToLog(L2Message memory _message) internal view returns (L2Log memory) {
         return L2Log({
             l2ShardId: 0,
             isService: true,
             txNumberInBatch: _message.txNumberInBatch,
-            sender: 0x0000000000000000000000000000000000008008,
+            sender: L1_MESSENGER,
             key: bytes32(uint256(uint160(_message.sender))),
             value: keccak256(_message.data)
         });

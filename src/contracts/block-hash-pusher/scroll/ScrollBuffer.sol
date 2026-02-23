@@ -10,6 +10,7 @@ import {IL2ScrollMessenger} from "@scroll-tech/scroll-contracts/L2/IL2ScrollMess
 /// @dev This contract extends BaseBuffer with access control specific to Scroll's L1->L2 messaging.
 ///      The pusher address on L1 must send the message via L1ScrollMessenger to the buffer address on L2.
 ///      The L2ScrollMessenger contract on L2 is responsible for relaying the message to the buffer contract on L2.
+/// @custom:security-contact security@openzeppelin.com
 contract ScrollBuffer is BaseBuffer {
     /// @dev The address of the L2ScrollMessenger contract on L2.
     address private immutable _l2ScrollMessenger;
@@ -30,27 +31,19 @@ contract ScrollBuffer is BaseBuffer {
     error InvalidSender();
 
     constructor(address l2ScrollMessenger_, address pusher_) {
+        require(l2ScrollMessenger_ != address(0), InvalidL2ScrollMessengerAddress());
+        require(pusher_ != address(0), InvalidPusherAddress());
+
         _l2ScrollMessenger = l2ScrollMessenger_;
         _pusher = pusher_;
-
-        if (l2ScrollMessenger_ == address(0)) {
-            revert InvalidL2ScrollMessengerAddress();
-        }
     }
 
     /// @inheritdoc IBuffer
     function receiveHashes(uint256 firstBlockNumber, bytes32[] calldata blockHashes) external {
         IL2ScrollMessenger l2ScrollMessengerCached = IL2ScrollMessenger(l2ScrollMessenger());
 
-        if (msg.sender != address(l2ScrollMessengerCached)) {
-            revert InvalidSender();
-        }
-        if (_pusher == address(0)) {
-            revert InvalidPusherAddress();
-        }
-        if (l2ScrollMessengerCached.xDomainMessageSender() != _pusher) {
-            revert DomainMessageSenderMismatch();
-        }
+        require(msg.sender == address(l2ScrollMessengerCached), InvalidSender());
+        require(l2ScrollMessengerCached.xDomainMessageSender() == _pusher, DomainMessageSenderMismatch());
 
         _receiveHashes(firstBlockNumber, blockHashes);
     }

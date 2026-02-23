@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.30;
 
-import {Test} from "forge-std/Test.sol";
+import {Test, Vm} from "forge-std/Test.sol";
 import {ZkSyncBuffer} from "../../../src/contracts/block-hash-pusher/zksync/ZkSyncBuffer.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {AddressAliasHelper} from "@arbitrum/nitro-contracts/src/libraries/AddressAliasHelper.sol";
@@ -26,8 +26,47 @@ contract ZkSyncBufferTest is Test {
         assertEq(buffer.pusher(), pusher);
         assertEq(buffer.aliasedPusher(), aliasedPusher);
 
+        if (firstBlockNumber == 0) {
+            vm.expectRevert(abi.encodeWithSelector(IBuffer.InvalidFirstBlockNumber.selector));
+        } else {
+            vm.expectEmit();
+            emit IBuffer.BlockHashesPushed(firstBlockNumber, firstBlockNumber + batchSize - 1);
+        }
         vm.prank(aliasedPusher);
         buffer.receiveHashes(firstBlockNumber, blockHashes);
+    }
+
+    function test_constructor_reverts_if_pusher_is_zero_address() public {
+        vm.expectRevert(abi.encodeWithSelector(ZkSyncBuffer.InvalidPusherAddress.selector));
+        new ZkSyncBuffer(address(0));
+    }
+
+    function test_receiveHashes_does_not_emit_event_when_no_hashes_written() public {
+        ZkSyncBuffer buffer = new ZkSyncBuffer(pusher);
+        address aliasedPusher = AddressAliasHelper.applyL1ToL2Alias(pusher);
+
+        bytes32[] memory blockHashes = new bytes32[](5);
+        for (uint256 i = 0; i < 5; i++) {
+            blockHashes[i] = keccak256(abi.encode(i + 1));
+        }
+
+        // First push: should emit
+        vm.expectEmit();
+        emit IBuffer.BlockHashesPushed(1, 5);
+        vm.prank(aliasedPusher);
+        buffer.receiveHashes(1, blockHashes);
+        assertEq(buffer.newestBlockNumber(), 5);
+
+        // Duplicate push: should NOT emit BlockHashesPushed
+        vm.recordLogs();
+        vm.prank(aliasedPusher);
+        buffer.receiveHashes(1, blockHashes);
+
+        Vm.Log[] memory logs = vm.getRecordedLogs();
+        for (uint256 i = 0; i < logs.length; i++) {
+            assertTrue(logs[i].topics[0] != IBuffer.BlockHashesPushed.selector, "Unexpected BlockHashesPushed event");
+        }
+        assertEq(buffer.newestBlockNumber(), 5);
     }
 
     function testFuzz_receiveHashes_reverts_if_not_pusher(address notPusher) public {

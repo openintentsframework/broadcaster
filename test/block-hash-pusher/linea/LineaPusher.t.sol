@@ -35,9 +35,12 @@ contract LineaPusherTest is Test {
 
         lineaPusher.pushHashes{value: 0.005 ether}(buffer, block.number - 8000, 20, l2TransactionData);
 
-        // push hashes with _fee < msg.value should revert
-        vm.expectRevert(abi.encodeWithSelector(IMessageService.ValueSentTooLow.selector));
+        // push hashes with _fee != msg.value should revert
+        vm.expectRevert(abi.encodeWithSelector(IPusher.IncorrectMsgValue.selector, 0.005 ether, 0.004 ether));
         lineaPusher.pushHashes{value: 0.004 ether}(buffer, block.number - 1, 1, l2TransactionData);
+
+        vm.expectRevert(abi.encodeWithSelector(IPusher.IncorrectMsgValue.selector, 0.005 ether, 0.006 ether));
+        lineaPusher.pushHashes{value: 0.006 ether}(buffer, block.number - 1, 1, l2TransactionData);
     }
 
     function testFuzz_pushHashes(uint16 batchSize) public {
@@ -53,7 +56,7 @@ contract LineaPusherTest is Test {
         lineaPusher.pushHashes{value: 0.005 ether}(buffer, block.number - batchSize, batchSize, l2TransactionData);
     }
 
-    function testFuzz_pushHashes_reverts_if_value_too_low(uint16 batchSize) public {
+    function testFuzz_pushHashes_reverts_if_value_is_incorrect(uint16 batchSize) public {
         vm.assume(batchSize > 0 && batchSize <= 256);
         vm.roll(batchSize + 1);
 
@@ -61,10 +64,14 @@ contract LineaPusherTest is Test {
 
         bytes memory l2TransactionData = abi.encode(LineaPusher.LineaL2Transaction({_fee: 0.005 ether}));
 
-        vm.deal(user, 0.005 ether);
+        vm.deal(user, 0.006 ether);
         vm.prank(user);
-        vm.expectRevert(abi.encodeWithSelector(IMessageService.ValueSentTooLow.selector));
+        vm.expectRevert(abi.encodeWithSelector(IPusher.IncorrectMsgValue.selector, 0.005 ether, 0.001 ether));
         lineaPusher.pushHashes{value: 0.001 ether}(buffer, block.number - batchSize, batchSize, l2TransactionData);
+
+        vm.prank(user);
+        vm.expectRevert(abi.encodeWithSelector(IPusher.IncorrectMsgValue.selector, 0.005 ether, 0.006 ether));
+        lineaPusher.pushHashes{value: 0.006 ether}(buffer, block.number - batchSize, batchSize, l2TransactionData);
     }
 
     function testFuzz_pushHashes_invalidBatchSize(uint16 batchSize) public {
@@ -78,6 +85,11 @@ contract LineaPusherTest is Test {
         vm.prank(user);
         vm.expectRevert(abi.encodeWithSelector(IPusher.InvalidBatch.selector, block.number - batchSize, batchSize));
         lineaPusher.pushHashes(buffer, block.number - batchSize, batchSize, l2TransactionData);
+    }
+
+    function test_constructor_reverts_if_rollup_is_zero_address() public {
+        vm.expectRevert(abi.encodeWithSelector(LineaPusher.InvalidLineaRollupAddress.selector));
+        new LineaPusher(address(0));
     }
 
     function test_viewFunctions() public {

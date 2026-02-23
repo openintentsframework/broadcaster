@@ -13,6 +13,7 @@ import {IMessageService} from "@linea-contracts/messaging/interfaces/IMessageSer
 ///      In order to do this, anyone is able to claim the message on the message service contract on L2.
 ///      Currently Linea runs a postman service that claims messages on L2, but this might not happen for more expensive messages and
 ///      users might need to claim the messages themselves in those cases.
+/// @custom:security-contact security@openzeppelin.com
 contract LineaBuffer is BaseBuffer {
     /// @dev The address of the L2MessageService contract on L2.
     address private immutable _l2MessageService;
@@ -33,27 +34,19 @@ contract LineaBuffer is BaseBuffer {
     error SenderMismatch();
 
     constructor(address l2MessageService_, address pusher_) {
+        require(l2MessageService_ != address(0), InvalidL2MessageServiceAddress());
+        require(pusher_ != address(0), InvalidPusherAddress());
+
         _l2MessageService = l2MessageService_;
         _pusher = pusher_;
-
-        if (l2MessageService_ == address(0)) {
-            revert InvalidL2MessageServiceAddress();
-        }
     }
 
     /// @inheritdoc IBuffer
     function receiveHashes(uint256 firstBlockNumber, bytes32[] calldata blockHashes) external {
         IMessageService l2MessageServiceCached = IMessageService(l2MessageService());
 
-        if (msg.sender != address(l2MessageServiceCached)) {
-            revert InvalidSender();
-        }
-        if (_pusher == address(0)) {
-            revert InvalidPusherAddress();
-        }
-        if (l2MessageServiceCached.sender() != _pusher) {
-            revert SenderMismatch();
-        }
+        require(msg.sender == address(l2MessageServiceCached), InvalidSender());
+        require(l2MessageServiceCached.sender() == _pusher, SenderMismatch());
 
         _receiveHashes(firstBlockNumber, blockHashes);
     }
