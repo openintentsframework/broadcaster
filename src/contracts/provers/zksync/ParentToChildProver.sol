@@ -118,7 +118,8 @@ contract ParentToChildProver is IStateProver {
     /// @param input ABI encoded tuple: (bytes rlpBlockHeader, uint256 batchNumber, bytes storageProof).
     ///              - rlpBlockHeader: RLP-encoded block header of the home chain.
     ///              - batchNumber: The batch number for which to retrieve the L2 logs root hash.
-    ///              - proof: Storage proof for the storage slot containing the L2 logs root hash.
+    ///              - accountProof: Account proof for the gateway ZkChain contract.
+    ///              - storageProof: Storage proof for the storage slot containing the L2 logs root hash.
     /// @return targetStateCommitment The L2 logs root hash for the specified batch number.
     function verifyTargetStateCommitment(bytes32 homeStateCommitment, bytes calldata input)
         external
