@@ -23,7 +23,6 @@ contract ParentToChildProver is IStateProver {
 
     /// @dev Storage slot where ScrollChain stores the finalizedStateRoots mapping
     ///      mapping(uint256 batchIndex => bytes32 stateRoot)
-    ///      This is slot 7 in the ScrollChain contract (after upgradeable storage gaps)
     uint256 public immutable finalizedStateRootsSlot;
 
     /// @dev L1 chain ID (home chain where this prover reads from)
