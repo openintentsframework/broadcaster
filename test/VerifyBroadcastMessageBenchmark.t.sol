@@ -20,6 +20,8 @@ import {
 } from "../src/contracts/provers/zksync/ParentToChildProver.sol";
 
 import {MockZkChain} from "./provers/zksync/ParentChildToProver.t.sol";
+import {IBuffer} from "../src/contracts/block-hash-pusher/interfaces/IBuffer.sol";
+import {BufferMock} from "./mocks/BufferMock.sol";
 
 /**
  * @title verifyBroadcastMessage Gas Benchmarks
@@ -348,7 +350,8 @@ contract VerifyBroadcastMessageBenchmark is Test {
         vm.chainId(L2_CHAIN_ID);
 
         receiver = new Receiver();
-        OptimismC2P prover = new OptimismC2P(L2_CHAIN_ID);
+        address blockHashBuffer = address(new BufferMock());
+        OptimismC2P prover = new OptimismC2P(blockHashBuffer, L2_CHAIN_ID);
         StateProverPointer pointer = new StateProverPointer(owner);
 
         vm.prank(owner);
@@ -368,10 +371,11 @@ contract VerifyBroadcastMessageBenchmark is Test {
         bytes32 message = 0x0000000000000000000000000000000000000000000000000000000074657374;
         address publisher = 0x9a56fFd72F4B526c523C733F1F74197A51c495E1;
 
-        // Mock L1Block predeploy
-        address l1Block = prover.L1_BLOCK_PREDEPLOY();
-        vm.mockCall(l1Block, abi.encodeWithSignature("hash()"), abi.encode(blockHash));
-        vm.mockCall(l1Block, abi.encodeWithSignature("number()"), abi.encode(blockNumber));
+        IBuffer buffer = IBuffer(blockHashBuffer);
+        bytes32[] memory blockHashes = new bytes32[](1);
+        blockHashes[0] = blockHash;
+
+        buffer.receiveHashes(blockNumber, blockHashes);
 
         bytes memory storageProof = abi.encode(rlpBlockHeader, account, slot, rlpAccountProof, rlpStorageProof);
 
@@ -379,12 +383,12 @@ contract VerifyBroadcastMessageBenchmark is Test {
         route[0] = address(pointer);
 
         bytes[] memory scpInputs = new bytes[](1);
-        scpInputs[0] = bytes("");
+        scpInputs[0] = abi.encode(blockNumber);
 
         IReceiver.RemoteReadArgs memory args =
             IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProof});
 
-        // Call and snapshot
+        //Call and snapshot
         receiver.verifyBroadcastMessage(args, message, publisher);
         vm.snapshotGasLastCall("verifyBroadcastMessage", "EthereumToOptimism");
     }
@@ -408,7 +412,8 @@ contract VerifyBroadcastMessageBenchmark is Test {
         receiver = new Receiver();
 
         // First hop prover: Optimism C2P (gets Ethereum block hash on OP L2)
-        OptimismC2P opC2PProver = new OptimismC2P(OP_L2_CHAIN_ID);
+        address blockHashBuffer = address(new BufferMock());
+        OptimismC2P opC2PProver = new OptimismC2P(blockHashBuffer, OP_L2_CHAIN_ID);
         StateProverPointer opPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
@@ -434,10 +439,12 @@ contract VerifyBroadcastMessageBenchmark is Test {
         uint256 ethBlockNumber = ethJson.readUint(".blockNumber");
         bytes32 ethBlockHash = ethJson.readBytes32(".blockHash");
 
-        // Mock L1Block predeploy for first hop
-        address l1Block = opC2PProver.L1_BLOCK_PREDEPLOY();
-        vm.mockCall(l1Block, abi.encodeWithSignature("hash()"), abi.encode(ethBlockHash));
-        vm.mockCall(l1Block, abi.encodeWithSignature("number()"), abi.encode(ethBlockNumber));
+        // Mock Ethereum block hash
+        IBuffer buffer = IBuffer(blockHashBuffer);
+        bytes32[] memory blockHashes = new bytes32[](1);
+        blockHashes[0] = ethBlockHash;
+
+        buffer.receiveHashes(ethBlockNumber, blockHashes);
 
         // Load Scroll proof for second hop
         string memory scrollJson = vm.readFile("test/payloads/scroll/e2e-proof.json");
@@ -463,7 +470,7 @@ contract VerifyBroadcastMessageBenchmark is Test {
         vm.startSnapshotGas("verifyBroadcastMessage", "ScrollToOptimism");
 
         // First: get Ethereum block hash via OP C2P (simulates first hop verification)
-        opC2PProver.getTargetStateCommitment(bytes(""));
+        opC2PProver.getTargetStateCommitment(abi.encode(ethBlockNumber));
 
         // Second: verify Scroll storage using Scroll P2C (simulates second hop verification)
         scrollP2CProverCopy.verifyStorageSlot(scrollStateRoot, scrollStorageProof);

@@ -69,6 +69,8 @@ contract ChildToParentProver is IStateProver {
             claimedStorageValue
         ) = abi.decode(input, (uint256, uint256, bytes[], bytes, uint256, bytes[], bytes32));
 
+        // calculate the slot based on the provided block number
+        // see: https://github.com/openintentsframework/broadcaster/blob/8d02f8e8e39de27de8f0ded481d3c4e5a129351f/src/contracts/block-hash-pusher/BaseBuffer.sol#L24
         uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(BLOCK_HASH_MAPPING_SLOT), targetBlockNumber));
 
         bool accountValid = SparseMerkleProof.verifyProof(accountProof, accountLeafIndex, homeBlockHash);

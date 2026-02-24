@@ -46,7 +46,7 @@ contract ChildToParentProver is IStateProver {
             abi.decode(input, (bytes, uint256, bytes, bytes));
 
         // calculate the slot based on the provided block number
-        // see: https://github.com/OffchainLabs/block-hash-pusher/blob/a1e26f2e42e6306d1e7f03c5d20fa6aa64ff7a12/contracts/Buffer.sol#L32
+        // see: https://github.com/openintentsframework/broadcaster/blob/8d02f8e8e39de27de8f0ded481d3c4e5a129351f/src/contracts/block-hash-pusher/BaseBuffer.sol#L24
         uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(BLOCK_HASH_MAPPING_SLOT), targetBlockNumber));
 
         // verify proofs and get the block hash
