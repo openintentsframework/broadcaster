@@ -35,7 +35,7 @@ contract ChildToParentProver is IStateProver {
     }
 
     /// @notice Get a parent chain block hash from the buffer at `blockHashBuffer` using a Linea SMT proof
-    /// @dev Linea uses Sparse Merkle Trees with MiMC hashing, not MPT.
+    /// @dev Linea uses Sparse Merkle Trees with MiMC hashing.
     ///      Proofs must be generated using linea_getProof RPC method.
     /// @param  homeBlockHash The state root of the home chain (Linea SMT state root).
     /// @param  input ABI encoded (uint256 targetBlockNumber, uint256 accountLeafIndex, bytes[] accountProof,
