@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.30;
 
+import {SparseMerkleProof} from "../../libraries/linea/SparseMerkleProof.sol";
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
 import {IStateProver} from "../../interfaces/IStateProver.sol";
 import {IBuffer} from "../../block-hash-pusher/interfaces/IBuffer.sol";
@@ -21,15 +22,24 @@ contract ChildToParentProver is IStateProver {
 
     error CallNotOnHomeChain();
     error CallOnHomeChain();
+    error InvalidAccountProof();
+    error InvalidStorageProof();
+    error StorageValueMismatch();
+    error AccountKeyMismatch();
+    error AccountValueMismatch();
+    error StorageKeyMismatch();
 
     constructor(address _blockHashBuffer, uint256 _homeChainId) {
         blockHashBuffer = _blockHashBuffer;
         homeChainId = _homeChainId;
     }
 
-    /// @notice Get a parent chain block hash from the buffer at `blockHashBuffer` using a storage proof
-    /// @param  homeBlockHash The block hash of the home chain.
-    /// @param  input ABI encoded (bytes blockHeader, uint256 targetBlockNumber, bytes accountProof, bytes storageProof)
+    /// @notice Get a parent chain block hash from the buffer at `blockHashBuffer` using a Linea SMT proof
+    /// @dev Linea uses Sparse Merkle Trees with MiMC hashing, not MPT.
+    ///      Proofs must be generated using linea_getProof RPC method.
+    /// @param  homeBlockHash The state root of the home chain (Linea SMT state root).
+    /// @param  input ABI encoded (uint256 targetBlockNumber, uint256 accountLeafIndex, bytes[] accountProof,
+    ///         bytes accountValue, uint256 storageLeafIndex, bytes[] storageProof, bytes32 claimedStorageValue)
     function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
         external
         view
@@ -38,18 +48,62 @@ contract ChildToParentProver is IStateProver {
         if (block.chainid == homeChainId) {
             revert CallOnHomeChain();
         }
-        // decode the input
-        (bytes memory rlpBlockHeader, uint256 targetBlockNumber, bytes memory accountProof, bytes memory storageProof) =
-            abi.decode(input, (bytes, uint256, bytes, bytes));
 
-        // calculate the slot based on the provided block number
-        // see: https://github.com/OffchainLabs/block-hash-pusher/blob/a1e26f2e42e6306d1e7f03c5d20fa6aa64ff7a12/contracts/Buffer.sol#L32
+        uint256 targetBlockNumber;
+        uint256 accountLeafIndex;
+        bytes[] memory accountProof;
+        bytes memory accountValue;
+        uint256 storageLeafIndex;
+        bytes[] memory storageProof;
+        bytes32 claimedStorageValue;
+
+        (
+            targetBlockNumber,
+            accountLeafIndex,
+            accountProof,
+            accountValue,
+            storageLeafIndex,
+            storageProof,
+            claimedStorageValue
+        ) = abi.decode(input, (uint256, uint256, bytes[], bytes, uint256, bytes[], bytes32));
+
         uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(blockHashMappingSlot), targetBlockNumber));
 
-        // verify proofs and get the block hash
-        targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
-            homeBlockHash, rlpBlockHeader, blockHashBuffer, slot, accountProof, storageProof
-        );
+        bool accountValid = SparseMerkleProof.verifyProof(accountProof, accountLeafIndex, homeBlockHash);
+        if (!accountValid) {
+            revert InvalidAccountProof();
+        }
+
+        SparseMerkleProof.Leaf memory accountLeaf = SparseMerkleProof.getLeaf(accountProof[accountProof.length - 1]);
+        bytes32 expectedAccountHKey = SparseMerkleProof.hashAccountKey(blockHashBuffer);
+        if (accountLeaf.hKey != expectedAccountHKey) {
+            revert AccountKeyMismatch();
+        }
+
+        bytes32 expectedAccountHValue = SparseMerkleProof.hashAccountValue(accountValue);
+        if (accountLeaf.hValue != expectedAccountHValue) {
+            revert AccountValueMismatch();
+        }
+
+        SparseMerkleProof.Account memory accountData = SparseMerkleProof.getAccount(accountValue);
+
+        bool storageValid = SparseMerkleProof.verifyProof(storageProof, storageLeafIndex, accountData.storageRoot);
+        if (!storageValid) {
+            revert InvalidStorageProof();
+        }
+
+        SparseMerkleProof.Leaf memory storageLeaf = SparseMerkleProof.getLeaf(storageProof[storageProof.length - 1]);
+        bytes32 expectedStorageHKey = SparseMerkleProof.hashStorageKey(bytes32(slot));
+        if (storageLeaf.hKey != expectedStorageHKey) {
+            revert StorageKeyMismatch();
+        }
+
+        bytes32 expectedHValue = SparseMerkleProof.hashStorageValue(claimedStorageValue);
+        if (storageLeaf.hValue != expectedHValue) {
+            revert StorageValueMismatch();
+        }
+
+        targetStateCommitment = claimedStorageValue;
     }
 
     /// @notice Get a parent chain block hash from the buffer at `blockHashBuffer`.
