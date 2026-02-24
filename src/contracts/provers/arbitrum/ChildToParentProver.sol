@@ -23,6 +23,7 @@ contract ChildToParentProver is IStateProver {
 
     error CallNotOnHomeChain();
     error CallOnHomeChain();
+    error InvalidTargetStateCommitment();
 
     constructor(uint256 _homeChainId) {
         homeChainId = _homeChainId;
@@ -51,6 +52,8 @@ contract ChildToParentProver is IStateProver {
         targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
             homeBlockHash, rlpBlockHeader, BLOCK_HASH_BUFFER, slot, accountProof, storageProof
         );
+
+        require(targetStateCommitment != bytes32(0), InvalidTargetStateCommitment());
     }
 
     /// @notice Get a parent chain block hash from the buffer at `BLOCK_HASH_BUFFER`.
@@ -64,6 +67,7 @@ contract ChildToParentProver is IStateProver {
 
         // get the block hash from the buffer
         targetStateCommitment = IBuffer(BLOCK_HASH_BUFFER).parentChainBlockHash(targetBlockNumber);
+        require(targetStateCommitment != bytes32(0), InvalidTargetStateCommitment());
     }
 
     /// @notice Verify a storage slot given a target chain block hash and a proof.

@@ -97,6 +97,9 @@ contract ParentToChildProver is IStateProver {
     /// @notice Error thrown when the slot does not match the expected slot.
     error SlotMismatch();
 
+    /// @notice Error thrown when the target state commitment is invalid.
+    error InvalidTargetStateCommitment();
+
     constructor(
         address _gatewayZkChain,
         uint256 _l2LogsRootHashSlot,
@@ -138,6 +141,7 @@ contract ParentToChildProver is IStateProver {
         targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
             homeStateCommitment, rlpBlockHeader, address(gatewayZkChain), slot, accountProof, storageProof
         );
+        require(targetStateCommitment != bytes32(0), InvalidTargetStateCommitment());
     }
 
     /// @notice Get a target chain L2 logs root hash given a batch number.
@@ -154,9 +158,7 @@ contract ParentToChildProver is IStateProver {
         uint256 batchNumber = abi.decode(input, (uint256));
         targetStateCommitment = gatewayZkChain.l2LogsRootHash(batchNumber);
 
-        if (targetStateCommitment == bytes32(0)) {
-            revert L2LogsRootHashNotFound();
-        }
+        require(targetStateCommitment != bytes32(0), L2LogsRootHashNotFound());
     }
 
     /// @notice Verify a storage slot given a target chain L2 logs root hash and a proof.

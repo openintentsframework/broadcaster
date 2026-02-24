@@ -41,6 +41,7 @@ contract ParentToChildProver is IStateProver {
     error InvalidGameProxyCode();
     error InvalidRootClaimPreimage();
     error InvalidGameProxy();
+    error InvalidTargetStateCommitment();
 
     constructor(address _anchorStateRegistry, uint256 _homeChainId) {
         anchorStateRegistry = _anchorStateRegistry;
@@ -118,7 +119,8 @@ contract ParentToChildProver is IStateProver {
         }
 
         // return the target block hash from the root claim preimage
-        return rootClaimPreimage.latestBlockhash;
+        targetStateCommitment = rootClaimPreimage.latestBlockhash;
+        require(targetStateCommitment != bytes32(0), InvalidTargetStateCommitment());
     }
 
     /// @notice Return the blockhash from a valid fault dispute game's root claim. The game's claim must be considered valid by the anchor state registry.
