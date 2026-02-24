@@ -29,10 +29,10 @@ contract ParentToChildProver is IStateProver {
     uint256 public constant ANCHOR_GAME_SLOT = 3;
 
     /// @notice The target chain's AnchorStateRegistry address.
-    address public immutable ANCHOR_STATE_REGISTRY;
+    address public immutable anchorStateRegistry;
 
     /// @dev The chain ID of the home chain (where this prover reads from).
-    uint256 public immutable HOME_CHAIN_ID;
+    uint256 public immutable homeChainId;
 
     error CallNotOnHomeChain();
     error CallOnHomeChain();
@@ -43,8 +43,8 @@ contract ParentToChildProver is IStateProver {
     error InvalidGameProxy();
 
     constructor(address _anchorStateRegistry, uint256 _homeChainId) {
-        ANCHOR_STATE_REGISTRY = _anchorStateRegistry;
-        HOME_CHAIN_ID = _homeChainId;
+        anchorStateRegistry = _anchorStateRegistry;
+        homeChainId = _homeChainId;
     }
 
     /// @notice Verify the latest available target block hash given a home chain block hash, a storage proof of the AnchorStateRegistry, the anchor game proxy code and a root claim preimage.
@@ -65,7 +65,7 @@ contract ParentToChildProver is IStateProver {
         view
         returns (bytes32 targetStateCommitment)
     {
-        if (block.chainid == HOME_CHAIN_ID) {
+        if (block.chainid == homeChainId) {
             revert CallOnHomeChain();
         }
 
@@ -90,7 +90,7 @@ contract ParentToChildProver is IStateProver {
             uint160(
                 uint256(
                     ProverUtils.getStorageSlotFromStateRoot(
-                        stateRoot, asrAccountProof, asrStorageProof, ANCHOR_STATE_REGISTRY, ANCHOR_GAME_SLOT
+                        stateRoot, asrAccountProof, asrStorageProof, anchorStateRegistry, ANCHOR_GAME_SLOT
                     )
                 )
             )
@@ -127,7 +127,7 @@ contract ParentToChildProver is IStateProver {
     ///         3. Return the latest block hash from the root claim preimage.
     /// @param  input ABI encoded (address gameProxy, OutputRootProof rootClaimPreimage)
     function getTargetStateCommitment(bytes calldata input) external view returns (bytes32 targetStateCommitment) {
-        if (block.chainid != HOME_CHAIN_ID) {
+        if (block.chainid != homeChainId) {
             revert CallNotOnHomeChain();
         }
 
@@ -135,7 +135,7 @@ contract ParentToChildProver is IStateProver {
         (address gameProxy, OutputRootProof memory rootClaimPreimage) = abi.decode(input, (address, OutputRootProof));
 
         // check the game proxy address
-        if (!IAnchorStateRegistry(ANCHOR_STATE_REGISTRY).isGameClaimValid(gameProxy)) {
+        if (!IAnchorStateRegistry(anchorStateRegistry).isGameClaimValid(gameProxy)) {
             revert InvalidGameProxy();
         }
 

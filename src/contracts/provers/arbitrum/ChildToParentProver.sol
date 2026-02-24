@@ -19,13 +19,13 @@ contract ChildToParentProver is IStateProver {
     uint256 public constant BLOCK_HASH_MAPPING_SLOT = 51;
 
     /// @dev The chain Id of the home chain, i.e., the child chain.
-    uint256 public immutable HOME_CHAIN_ID;
+    uint256 public immutable homeChainId;
 
     error CallNotOnHomeChain();
     error CallOnHomeChain();
 
     constructor(uint256 _homeChainId) {
-        HOME_CHAIN_ID = _homeChainId;
+        homeChainId = _homeChainId;
     }
 
     /// @notice Get a parent chain block hash from the buffer at `BLOCK_HASH_BUFFER` using a storage proof
@@ -36,7 +36,7 @@ contract ChildToParentProver is IStateProver {
         view
         returns (bytes32 targetStateCommitment)
     {
-        if (block.chainid == HOME_CHAIN_ID) {
+        if (block.chainid == homeChainId) {
             revert CallOnHomeChain();
         }
         // decode the input
@@ -56,7 +56,7 @@ contract ChildToParentProver is IStateProver {
     /// @notice Get a parent chain block hash from the buffer at `BLOCK_HASH_BUFFER`.
     /// @param  input ABI encoded (uint256 targetBlockNumber)
     function getTargetStateCommitment(bytes calldata input) external view returns (bytes32 targetStateCommitment) {
-        if (block.chainid != HOME_CHAIN_ID) {
+        if (block.chainid != homeChainId) {
             revert CallNotOnHomeChain();
         }
         //decode the input

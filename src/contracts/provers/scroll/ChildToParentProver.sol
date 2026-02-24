@@ -12,23 +12,23 @@ import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 ///         verifyStorageSlot is implemented to work against any parent chain with a standard Ethereum block header and state trie.
 contract ChildToParentProver is IStateProver {
     /// @dev Address of the block hash buffer contract.
-    address public immutable BLOCK_HASH_BUFFER;
+    address public immutable blockHashBuffer;
     /// @dev Storage slot the buffer contract uses to store block hashes.
     ///      https://github.com/openintentsframework/broadcaster/blob/main/src/contracts/block-hash-pusher/BaseBuffer.sol
     uint256 public constant BLOCK_HASH_MAPPING_SLOT = 1;
 
     /// @dev The chain ID of the home chain (child chain).
-    uint256 public immutable HOME_CHAIN_ID;
+    uint256 public immutable homeChainId;
 
     error CallNotOnHomeChain();
     error CallOnHomeChain();
 
     constructor(address _blockHashBuffer, uint256 _homeChainId) {
-        BLOCK_HASH_BUFFER = _blockHashBuffer;
-        HOME_CHAIN_ID = _homeChainId;
+        blockHashBuffer = _blockHashBuffer;
+        homeChainId = _homeChainId;
     }
 
-    /// @notice Get a parent chain block hash from the buffer at `BLOCK_HASH_BUFFER` using a storage proof
+    /// @notice Get a parent chain block hash from the buffer at `blockHashBuffer` using a storage proof
     /// @param  homeBlockHash The block hash of the home chain.
     /// @param  input ABI encoded (bytes blockHeader, uint256 targetBlockNumber, bytes accountProof, bytes storageProof)
     function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
@@ -36,7 +36,7 @@ contract ChildToParentProver is IStateProver {
         view
         returns (bytes32 targetStateCommitment)
     {
-        if (block.chainid == HOME_CHAIN_ID) {
+        if (block.chainid == homeChainId) {
             revert CallOnHomeChain();
         }
         // decode the input
@@ -49,21 +49,21 @@ contract ChildToParentProver is IStateProver {
 
         // verify proofs and get the block hash
         targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
-            homeBlockHash, rlpBlockHeader, BLOCK_HASH_BUFFER, slot, accountProof, storageProof
+            homeBlockHash, rlpBlockHeader, blockHashBuffer, slot, accountProof, storageProof
         );
     }
 
-    /// @notice Get a parent chain block hash from the buffer at `BLOCK_HASH_BUFFER`.
+    /// @notice Get a parent chain block hash from the buffer at `blockHashBuffer`.
     /// @param  input ABI encoded (uint256 targetBlockNumber)
     function getTargetStateCommitment(bytes calldata input) external view returns (bytes32 targetStateCommitment) {
-        if (block.chainid != HOME_CHAIN_ID) {
+        if (block.chainid != homeChainId) {
             revert CallNotOnHomeChain();
         }
         // decode the input
         uint256 targetBlockNumber = abi.decode(input, (uint256));
 
         // get the block hash from the buffer
-        targetStateCommitment = IBuffer(BLOCK_HASH_BUFFER).parentChainBlockHash(targetBlockNumber);
+        targetStateCommitment = IBuffer(blockHashBuffer).parentChainBlockHash(targetBlockNumber);
     }
 
     /// @notice Verify a storage slot given a target chain block hash and a proof.

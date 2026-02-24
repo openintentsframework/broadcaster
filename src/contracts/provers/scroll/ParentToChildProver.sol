@@ -18,15 +18,15 @@ import {IScrollChain} from "@scroll-tech/scroll-contracts/L1/rollup/IScrollChain
 ///         the L2 block header.
 contract ParentToChildProver is IStateProver {
     /// @dev Address of the ScrollChain contract on L1
-    address public immutable SCROLL_CHAIN;
+    address public immutable scrollChain;
 
     /// @dev Storage slot where ScrollChain stores the finalizedStateRoots mapping
     ///      mapping(uint256 batchIndex => bytes32 stateRoot)
     ///      This is slot 7 in the ScrollChain contract (after upgradeable storage gaps)
-    uint256 public immutable FINALIZED_STATE_ROOTS_SLOT;
+    uint256 public immutable finalizedStateRootsSlot;
 
     /// @dev L1 chain ID (home chain where this prover reads from)
-    uint256 public immutable HOME_CHAIN_ID;
+    uint256 public immutable homeChainId;
 
     error CallNotOnHomeChain();
     error CallOnHomeChain();
@@ -36,9 +36,9 @@ contract ParentToChildProver is IStateProver {
     /// @param _finalizedStateRootsSlot Storage slot of the finalizedStateRoots mapping
     /// @param _homeChainId Chain ID of the home chain (L1)
     constructor(address _scrollChain, uint256 _finalizedStateRootsSlot, uint256 _homeChainId) {
-        SCROLL_CHAIN = _scrollChain;
-        FINALIZED_STATE_ROOTS_SLOT = _finalizedStateRootsSlot;
-        HOME_CHAIN_ID = _homeChainId;
+        scrollChain = _scrollChain;
+        finalizedStateRootsSlot = _finalizedStateRootsSlot;
+        homeChainId = _homeChainId;
     }
 
     /// @notice Verify L2 state root using L1 ScrollChain storage proof
@@ -51,7 +51,7 @@ contract ParentToChildProver is IStateProver {
         view
         returns (bytes32 targetStateCommitment)
     {
-        if (block.chainid == HOME_CHAIN_ID) {
+        if (block.chainid == homeChainId) {
             revert CallOnHomeChain();
         }
 
@@ -60,12 +60,12 @@ contract ParentToChildProver is IStateProver {
             abi.decode(input, (bytes, uint256, bytes, bytes));
 
         // Calculate the storage slot for the finalized state root
-        // slot = keccak256(abi.encode(batchIndex, FINALIZED_STATE_ROOTS_SLOT))
-        uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(FINALIZED_STATE_ROOTS_SLOT), batchIndex));
+        // slot = keccak256(abi.encode(batchIndex, finalizedStateRootsSlot))
+        uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(finalizedStateRootsSlot), batchIndex));
 
         // Verify proofs and get the L2 state root from L1's ScrollChain
         targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
-            homeBlockHash, rlpBlockHeader, SCROLL_CHAIN, slot, accountProof, storageProof
+            homeBlockHash, rlpBlockHeader, scrollChain, slot, accountProof, storageProof
         );
 
         if (targetStateCommitment == bytes32(0)) {
@@ -78,7 +78,7 @@ contract ParentToChildProver is IStateProver {
     /// @param  input ABI encoded (uint256 batchIndex)
     /// @return targetStateCommitment The L2 state root (NOTE: this is a state root, not a block hash)
     function getTargetStateCommitment(bytes calldata input) external view returns (bytes32 targetStateCommitment) {
-        if (block.chainid != HOME_CHAIN_ID) {
+        if (block.chainid != homeChainId) {
             revert CallNotOnHomeChain();
         }
 
@@ -86,7 +86,7 @@ contract ParentToChildProver is IStateProver {
         uint256 batchIndex = abi.decode(input, (uint256));
 
         // Get the state root from ScrollChain
-        targetStateCommitment = IScrollChain(SCROLL_CHAIN).finalizedStateRoots(batchIndex);
+        targetStateCommitment = IScrollChain(scrollChain).finalizedStateRoots(batchIndex);
 
         if (targetStateCommitment == bytes32(0)) {
             revert StateRootNotFound();

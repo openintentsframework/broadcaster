@@ -21,13 +21,13 @@ contract ChildToParentProver is IStateProver {
     uint256 public constant L1_BLOCK_HASH_SLOT = 2; // hash is at slot 2
 
     /// @dev The chain ID of the home chain (Optimism L2)
-    uint256 public immutable HOME_CHAIN_ID;
+    uint256 public immutable homeChainId;
 
     error CallNotOnHomeChain();
     error CallOnHomeChain();
 
     constructor(uint256 _homeChainId) {
-        HOME_CHAIN_ID = _homeChainId;
+        homeChainId = _homeChainId;
     }
 
     /// @notice Verify the latest available target block hash given a home chain block hash and a storage proof of the L1Block predeploy.
@@ -38,7 +38,7 @@ contract ChildToParentProver is IStateProver {
         view
         returns (bytes32 targetStateCommitment)
     {
-        if (block.chainid == HOME_CHAIN_ID) {
+        if (block.chainid == homeChainId) {
             revert CallOnHomeChain();
         }
 
@@ -64,7 +64,7 @@ contract ChildToParentProver is IStateProver {
     ///         In this case, this prover contract may need to be modified to use a different source of block hashes,
     ///         such as a backup contract that calls the L1Block predeploy and caches the latest block hash.
     function getTargetStateCommitment(bytes calldata) external view returns (bytes32 targetStateCommitment) {
-        if (block.chainid != HOME_CHAIN_ID) {
+        if (block.chainid != homeChainId) {
             revert CallNotOnHomeChain();
         }
         return IL1Block(L1_BLOCK_PREDEPLOY).hash();

@@ -255,8 +255,8 @@ contract ScrollChainMock is IScrollChain {
 
         /// @notice Test constructor sets immutables correctly
         function test_constructor() public view {
-            assertEq(parentToChildProver.SCROLL_CHAIN(), address(scrollChainMock));
-            assertEq(parentToChildProver.FINALIZED_STATE_ROOTS_SLOT(), FINALIZED_STATE_ROOTS_SLOT);
-            assertEq(parentToChildProver.HOME_CHAIN_ID(), l1ChainId);
+            assertEq(parentToChildProver.scrollChain(), address(scrollChainMock));
+            assertEq(parentToChildProver.finalizedStateRootsSlot(), FINALIZED_STATE_ROOTS_SLOT);
+            assertEq(parentToChildProver.homeChainId(), l1ChainId);
         }
     }

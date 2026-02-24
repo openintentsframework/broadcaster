@@ -22,24 +22,24 @@ interface ICheckpointStore {
 ///         verifyStorageSlot works against any Ethereum-compatible chain with standard block headers.
 contract ChildToParentProver is IStateProver {
     /// @dev Address of the L2 SignalService contract
-    address public immutable SIGNAL_SERVICE;
+    address public immutable signalService;
 
     /// @dev Storage slot where SignalService stores checkpoints mapping
     ///      mapping(uint48 blockNumber => CheckpointRecord checkpoint)
     ///      CheckpointRecord { bytes32 blockHash; bytes32 stateRoot; }
-    uint256 public immutable CHECKPOINTS_SLOT;
+    uint256 public immutable checkpointsSlot;
 
     /// @dev L2 chain ID (home chain where this prover is deployed)
-    uint256 public immutable HOME_CHAIN_ID;
+    uint256 public immutable homeChainId;
 
     error CallNotOnHomeChain();
     error CallOnHomeChain();
     error TargetBlockHashNotFound();
 
     constructor(address _signalService, uint256 _checkpointsSlot, uint256 _homeChainId) {
-        SIGNAL_SERVICE = _signalService;
-        CHECKPOINTS_SLOT = _checkpointsSlot;
-        HOME_CHAIN_ID = _homeChainId;
+        signalService = _signalService;
+        checkpointsSlot = _checkpointsSlot;
+        homeChainId = _homeChainId;
     }
 
     /// @notice Verify L1 block hash using L2 SignalService checkpoint with storage proof
@@ -52,7 +52,7 @@ contract ChildToParentProver is IStateProver {
         view
         returns (bytes32 targetStateCommitment)
     {
-        if (block.chainid == HOME_CHAIN_ID) {
+        if (block.chainid == homeChainId) {
             revert CallOnHomeChain();
         }
 
@@ -61,13 +61,13 @@ contract ChildToParentProver is IStateProver {
             abi.decode(input, (bytes, uint48, bytes, bytes));
 
         // Calculate the storage slot for the checkpoint
-        // checkpointSlot = keccak256(abi.encode(l1BlockNumber, CHECKPOINTS_SLOT))
-        uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(CHECKPOINTS_SLOT), l1BlockNumber));
+        // checkpointSlot = keccak256(abi.encode(l1BlockNumber, checkpointsSlot))
+        uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(checkpointsSlot), l1BlockNumber));
 
         // Verify proofs and get the L1 block hash from L2's SignalService
         // CheckpointRecord.blockHash is stored at the base slot
         targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
-            homeBlockHash, rlpBlockHeader, SIGNAL_SERVICE, slot, accountProof, storageProof
+            homeBlockHash, rlpBlockHeader, signalService, slot, accountProof, storageProof
         );
 
         if (targetStateCommitment == bytes32(0)) {
@@ -80,7 +80,7 @@ contract ChildToParentProver is IStateProver {
     /// @param  input ABI encoded (uint48 l1BlockNumber)
     /// @return targetStateCommitment The L1 block hash
     function getTargetStateCommitment(bytes calldata input) external view returns (bytes32 targetStateCommitment) {
-        if (block.chainid != HOME_CHAIN_ID) {
+        if (block.chainid != homeChainId) {
             revert CallNotOnHomeChain();
         }
 
@@ -88,7 +88,7 @@ contract ChildToParentProver is IStateProver {
         uint48 l1BlockNumber = abi.decode(input, (uint48));
 
         // Get the checkpoint from SignalService
-        ICheckpointStore.Checkpoint memory checkpoint = ICheckpointStore(SIGNAL_SERVICE).getCheckpoint(l1BlockNumber);
+        ICheckpointStore.Checkpoint memory checkpoint = ICheckpointStore(signalService).getCheckpoint(l1BlockNumber);
 
         targetStateCommitment = checkpoint.blockHash;
 
