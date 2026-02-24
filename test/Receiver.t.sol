@@ -259,7 +259,8 @@ contract ReceiverTest is Test {
         vm.selectFork(optimismForkId);
         receiver = new Receiver();
 
-        OPChildToParentProver childToParentProver = new OPChildToParentProver(block.chainid);
+        address blockHashBuffer = address(new BufferMock());
+        OPChildToParentProver childToParentProver = new OPChildToParentProver(blockHashBuffer, block.chainid);
 
         StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
@@ -294,18 +295,17 @@ contract ReceiverTest is Test {
         assertEq(blockHash, expectedBlockHash);
         bytes memory input = abi.encode(rlpBlockHeader, account, slot, rlpAccountProof, rlpStorageProof);
 
-        IL1Block l1Block = IL1Block(childToParentProver.L1_BLOCK_PREDEPLOY());
+        IBuffer buffer = IBuffer(blockHashBuffer);
+        bytes32[] memory blockHashes = new bytes32[](1);
+        blockHashes[0] = blockHash;
 
-        vm.prank(l1Block.DEPOSITOR_ACCOUNT());
-        l1Block.setL1BlockValues(
-            uint64(blockNumber), uint64(block.timestamp), block.basefee, blockHash, 0, bytes32(0), 0, 0
-        );
+        buffer.receiveHashes(blockNumber, blockHashes);
 
         address[] memory route = new address[](1);
         route[0] = address(stateProverPointer);
 
         bytes[] memory scpInputs = new bytes[](1);
-        scpInputs[0] = bytes("");
+        scpInputs[0] = abi.encode(blockNumber);
 
         bytes memory storageProofToLastProver = input;
 
@@ -337,7 +337,8 @@ contract ReceiverTest is Test {
 
         receiver = new Receiver();
 
-        OPChildToParentProver childToParentProver = new OPChildToParentProver(block.chainid);
+        address blockHashBuffer = address(new BufferMock());
+        OPChildToParentProver childToParentProver = new OPChildToParentProver(blockHashBuffer, block.chainid);
 
         StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
@@ -369,18 +370,17 @@ contract ReceiverTest is Test {
         assertEq(blockHash, expectedBlockHash);
         bytes memory input = abi.encode(rlpBlockHeader, account, slot, rlpAccountProof, rlpStorageProof);
 
-        IL1Block l1Block = IL1Block(childToParentProver.L1_BLOCK_PREDEPLOY());
+        IBuffer buffer = IBuffer(blockHashBuffer);
+        bytes32[] memory blockHashes = new bytes32[](1);
+        blockHashes[0] = blockHash;
 
-        vm.prank(l1Block.DEPOSITOR_ACCOUNT());
-        l1Block.setL1BlockValues(
-            uint64(blockNumber), uint64(block.timestamp), block.basefee, blockHash, 0, bytes32(0), 0, 0
-        );
+        buffer.receiveHashes(blockNumber, blockHashes);
 
         address[] memory route = new address[](1);
         route[0] = address(stateProverPointer);
 
         bytes[] memory scpInputs = new bytes[](1);
-        scpInputs[0] = bytes("");
+        scpInputs[0] = abi.encode(blockNumber);
 
         bytes memory storageProofToLastProver = input;
 
@@ -414,7 +414,8 @@ contract ReceiverTest is Test {
 
         receiver = new Receiver();
 
-        OPChildToParentProver childToParentProver = new OPChildToParentProver(block.chainid);
+        address blockHashBuffer = address(new BufferMock());
+        OPChildToParentProver childToParentProver = new OPChildToParentProver(blockHashBuffer, block.chainid);
 
         StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
@@ -446,18 +447,17 @@ contract ReceiverTest is Test {
         assertEq(blockHash, expectedBlockHash);
         bytes memory input = abi.encode(rlpBlockHeader, account, slot, rlpAccountProof, rlpStorageProof);
 
-        IL1Block l1Block = IL1Block(childToParentProver.L1_BLOCK_PREDEPLOY());
+        IBuffer buffer = IBuffer(blockHashBuffer);
+        bytes32[] memory blockHashes = new bytes32[](1);
+        blockHashes[0] = blockHash;
 
-        vm.prank(l1Block.DEPOSITOR_ACCOUNT());
-        l1Block.setL1BlockValues(
-            uint64(blockNumber), uint64(block.timestamp), block.basefee, blockHash, 0, bytes32(0), 0, 0
-        );
+        buffer.receiveHashes(blockNumber, blockHashes);
 
         address[] memory route = new address[](1);
         route[0] = address(stateProverPointer);
 
         bytes[] memory scpInputs = new bytes[](1);
-        scpInputs[0] = bytes("");
+        scpInputs[0] = abi.encode(blockNumber);
 
         bytes memory storageProofToLastProver = input;
 
@@ -475,7 +475,8 @@ contract ReceiverTest is Test {
 
         receiver = new Receiver();
 
-        OPChildToParentProver childToParentProver = new OPChildToParentProver(block.chainid);
+        address blockHashBuffer = address(new BufferMock());
+        OPChildToParentProver childToParentProver = new OPChildToParentProver(blockHashBuffer, block.chainid);
 
         StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
@@ -515,18 +516,17 @@ contract ReceiverTest is Test {
             bytes memory inputForOPChildToParentProver =
                 abi.encode(rlpBlockHeader, account, slot, rlpAccountProof, rlpStorageProof);
 
-            IL1Block l1Block = IL1Block(childToParentProver.L1_BLOCK_PREDEPLOY());
+            IBuffer buffer = IBuffer(blockHashBuffer);
+            bytes32[] memory blockHashes = new bytes32[](1);
+            blockHashes[0] = blockHash;
 
-            vm.prank(l1Block.DEPOSITOR_ACCOUNT());
-            l1Block.setL1BlockValues(
-                uint64(blockNumber), uint64(block.timestamp), block.basefee, blockHash, 0, bytes32(0), 0, 0
-            );
+            buffer.receiveHashes(blockNumber, blockHashes);
 
             address[] memory route = new address[](1);
             route[0] = address(stateProverPointer);
 
             bytes[] memory scpInputs = new bytes[](1);
-            scpInputs[0] = bytes("");
+            scpInputs[0] = abi.encode(blockNumber);
 
             bytes memory storageProofToLastProver = inputForOPChildToParentProver;
 
@@ -579,18 +579,17 @@ contract ReceiverTest is Test {
         bytes memory rlpAccountProofArbitrum = jsonArbitrum.readBytes(".rlpAccountProof");
         bytes memory rlpStorageProofArbitrum = jsonArbitrum.readBytes(".rlpStorageProof");
 
-        IL1Block l1Block = IL1Block(childToParentProver.L1_BLOCK_PREDEPLOY());
+        IBuffer buffer = IBuffer(blockHashBuffer);
+        bytes32[] memory blockHashes = new bytes32[](1);
+        blockHashes[0] = blockHashEthereum;
 
-        vm.prank(l1Block.DEPOSITOR_ACCOUNT());
-        l1Block.setL1BlockValues(
-            uint64(blockNumberEthereum), uint64(block.timestamp), block.basefee, blockHashEthereum, 0, bytes32(0), 0, 0
-        );
+        buffer.receiveHashes(blockNumberEthereum, blockHashes);
 
         address[] memory route = new address[](2);
         route[0] = address(stateProverPointer);
         route[1] = arbParentToChildProverPointerAddress;
 
-        bytes memory input0 = bytes("");
+        bytes memory input0 = abi.encode(blockNumberEthereum);
         bytes memory input1 =
             abi.encode(rlpBlockHeaderEthereum, sendRootArbitrum, rlpAccountProofEthereum, rlpStorageProofEthereum);
 
