@@ -5,7 +5,7 @@ import {console, Test} from "forge-std/Test.sol";
 import {stdJson} from "forge-std/StdJson.sol";
 import {Broadcaster} from "../../../src/contracts/Broadcaster.sol";
 import {IBroadcaster} from "../../../src/contracts/interfaces/IBroadcaster.sol";
-import {ChildToParentProver} from "../../../src/contracts/provers/zksync/ChildToParentProver.sol";
+import {ChildToParentProver} from "../../../src/contracts/provers/optimism/ChildToParentProver.sol";
 import {Bytes} from "@openzeppelin/contracts/utils/Bytes.sol";
 import {IBuffer} from "../../../src/contracts/block-hash-pusher/interfaces/IBuffer.sol";
 import {BufferMock} from "../../mocks/BufferMock.sol";
