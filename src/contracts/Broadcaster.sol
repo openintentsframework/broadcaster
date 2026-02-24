@@ -10,6 +10,7 @@ import {StorageSlot} from "@openzeppelin/contracts/utils/StorageSlot.sol";
 /// @dev Message timestamps are stored in deterministic storage slots calculated from hash(message, publisher) to prevent duplicate broadcasts.
 ///      Each broadcast is timestamped with the block timestamp and emits an event for off-chain indexing.
 ///      The storage layout is designed to be efficiently provable for cross-chain message verification.
+/// @custom:security-contact security@openzeppelin.com
 contract Broadcaster is IBroadcaster {
     error MessageAlreadyBroadcasted();
 

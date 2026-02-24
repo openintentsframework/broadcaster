@@ -9,6 +9,7 @@ import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 /// @notice Linea implementation of a child to parent IStateProver.
 /// @dev    verifyTargetStateCommitment and getTargetStateCommitment get block hashes from the block hash buffer.
 ///         verifyStorageSlot is implemented to work against any parent chain with a standard Ethereum block header and state trie.
+/// @custom:security-contact security@openzeppelin.com
 contract ChildToParentProver is IStateProver {
     /// @dev Address of the block hash buffer contract.
     address public immutable blockHashBuffer;

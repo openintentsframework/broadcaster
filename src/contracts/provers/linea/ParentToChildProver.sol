@@ -16,6 +16,7 @@ import {ZkEvmV2} from "@linea-contracts/rollup/ZkEvmV2.sol";
 ///
 ///      Note: Linea uses Sparse Merkle Tree (SMT) with MiMC hashing, NOT Merkle-Patricia Trie (MPT).
 ///      The state root stored on L1 is the SMT root, which requires linea_getProof for verification.
+/// @custom:security-contact security@openzeppelin.com
 contract ParentToChildProver is IStateProver {
     /// @dev Address of the LineaRollup contract on L1
     address public immutable lineaRollup;

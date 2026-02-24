@@ -18,6 +18,7 @@ interface IFaultDisputeGame {
 /// @notice OP-stack implementation of a parent to child IStateProver.
 /// @dev    verifyTargetStateCommitment and getTargetStateCommitment get block hashes from a valid fault dispute game proxy contract.
 ///         verifyStorageSlot is implemented to work against any OP-stack child chain with a standard Ethereum block header and state trie.
+/// @custom:security-contact security@openzeppelin.com
 contract ParentToChildProver is IStateProver {
     struct OutputRootProof {
         bytes32 version;

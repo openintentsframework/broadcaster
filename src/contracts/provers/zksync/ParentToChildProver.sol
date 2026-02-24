@@ -60,6 +60,7 @@ struct ZkSyncProof {
 ///      to work against any ZkSync child chain with a standard Ethereum block header and state trie.
 ///      This implementation is used to verify zkChain L2 log hash inclusion on L1 for messages that
 ///      use the gateway as a middleware between the L2 and the L1.
+/// @custom:security-contact security@openzeppelin.com
 contract ParentToChildProver is IStateProver {
     /// @notice The address of the L1Messenger contract on the ZK chain.
     address public constant L1_MESSENGER = 0x0000000000000000000000000000000000008008;

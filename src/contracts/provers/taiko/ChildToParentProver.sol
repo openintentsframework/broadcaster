@@ -20,6 +20,7 @@ interface ICheckpointStore {
 ///         verifyTargetStateCommitment gets L1 block hashes from L2's SignalService checkpoint storage.
 ///         getTargetStateCommitment reads L1 block hashes directly from L2's SignalService.
 ///         verifyStorageSlot works against any Ethereum-compatible chain with standard block headers.
+/// @custom:security-contact security@openzeppelin.com
 contract ChildToParentProver is IStateProver {
     /// @dev Address of the L2 SignalService contract
     address public immutable signalService;

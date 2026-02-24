@@ -9,6 +9,7 @@ import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 /// @notice Arbitrum implementation of a parent to child IStateProver.
 /// @dev    verifyTargetStateCommitment and getTargetStateCommitment get block hashes from the child chain's Outbox contract.
 ///         verifyStorageSlot is implemented to work against any Arbitrum child chain with a standard Ethereum block header and state trie.
+/// @custom:security-contact security@openzeppelin.com
 contract ParentToChildProver is IStateProver {
     /// @dev Address of the child chain's Outbox contract
     address public immutable outbox;
