@@ -115,7 +115,7 @@ contract ParentToChildProver is IStateProver {
     /// @dev Verifies that the L2 logs root hash for a specific batch is stored in the gateway ZkChain contract
     ///      by checking the storage slot using storage proofs against the home chain block header.
     /// @param homeStateCommitment The block hash of the home chain (L1) containing the gateway ZkChain state.
-    /// @param input ABI encoded tuple: (bytes rlpBlockHeader, uint256 batchNumber, bytes storageProof).
+    /// @param input ABI encoded tuple: (bytes rlpBlockHeader, uint256 batchNumber, bytes accountProof, bytes storageProof).
     ///              - rlpBlockHeader: RLP-encoded block header of the home chain.
     ///              - batchNumber: The batch number for which to retrieve the L2 logs root hash.
     ///              - accountProof: Account proof for the gateway ZkChain contract.
