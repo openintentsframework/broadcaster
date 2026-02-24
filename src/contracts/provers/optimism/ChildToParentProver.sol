@@ -16,7 +16,7 @@ contract ChildToParentProver is IStateProver {
     address public immutable blockHashBuffer;
     /// @dev Storage slot the buffer contract uses to store block hashes.
     ///      See https://github.com/openintentsframework/broadcaster/blob/main/src/contracts/block-hash-pusher/BaseBuffer.sol
-    uint256 public constant blockHashMappingSlot = 1;
+    uint256 public constant BLOCK_HASH_MAPPING_SLOT = 1;
 
     /// @dev The chain ID of the home chain (child chain).
     uint256 public immutable homeChainId;
@@ -47,7 +47,7 @@ contract ChildToParentProver is IStateProver {
 
         // calculate the slot based on the provided block number
         // see: https://github.com/OffchainLabs/block-hash-pusher/blob/a1e26f2e42e6306d1e7f03c5d20fa6aa64ff7a12/contracts/Buffer.sol#L32
-        uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(blockHashMappingSlot), targetBlockNumber));
+        uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(BLOCK_HASH_MAPPING_SLOT), targetBlockNumber));
 
         // verify proofs and get the block hash
         targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
