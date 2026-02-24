@@ -369,7 +369,7 @@ contract VerifyBroadcastMessageBenchmark is Test {
         address publisher = 0x9a56fFd72F4B526c523C733F1F74197A51c495E1;
 
         // Mock L1Block predeploy
-        address l1Block = prover.l1BlockPredeploy();
+        address l1Block = prover.L1_BLOCK_PREDEPLOY();
         vm.mockCall(l1Block, abi.encodeWithSignature("hash()"), abi.encode(blockHash));
         vm.mockCall(l1Block, abi.encodeWithSignature("number()"), abi.encode(blockNumber));
 
@@ -435,7 +435,7 @@ contract VerifyBroadcastMessageBenchmark is Test {
         bytes32 ethBlockHash = ethJson.readBytes32(".blockHash");
 
         // Mock L1Block predeploy for first hop
-        address l1Block = opC2PProver.l1BlockPredeploy();
+        address l1Block = opC2PProver.L1_BLOCK_PREDEPLOY();
         vm.mockCall(l1Block, abi.encodeWithSignature("hash()"), abi.encode(ethBlockHash));
         vm.mockCall(l1Block, abi.encodeWithSignature("number()"), abi.encode(ethBlockNumber));
 
