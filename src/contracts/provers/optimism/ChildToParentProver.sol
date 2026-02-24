@@ -53,7 +53,6 @@ contract ChildToParentProver is IStateProver {
         targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
             homeBlockHash, rlpBlockHeader, blockHashBuffer, slot, accountProof, storageProof
         );
-
         require(targetStateCommitment != bytes32(0), InvalidTargetStateCommitment());
     }
 

@@ -10,6 +10,7 @@ import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 /// @dev    verifyTargetStateCommitment and getTargetStateCommitment get block hashes from the block hash buffer at 0x0000000048C4Ed10cF14A02B9E0AbDDA5227b071.
 ///         See https://github.com/OffchainLabs/block-hash-pusher/blob/a1e26f2e42e6306d1e7f03c5d20fa6aa64ff7a12 for more details.
 ///         verifyStorageSlot is implemented to work against any parent chain with a standard Ethereum block header and state trie.
+/// @custom:security-contact security@openzeppelin.com
 contract ChildToParentProver is IStateProver {
     /// @dev Address of the block hash buffer contract
     ///      See https://github.com/OffchainLabs/block-hash-pusher/blob/a1e26f2e42e6306d1e7f03c5d20fa6aa64ff7a12/.env.example#L12
@@ -23,6 +24,7 @@ contract ChildToParentProver is IStateProver {
 
     error CallNotOnHomeChain();
     error CallOnHomeChain();
+    error InvalidTargetStateCommitment();
 
     constructor(uint256 _homeChainId) {
         homeChainId = _homeChainId;
@@ -51,6 +53,8 @@ contract ChildToParentProver is IStateProver {
         targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
             homeBlockHash, rlpBlockHeader, BLOCK_HASH_BUFFER, slot, accountProof, storageProof
         );
+
+        require(targetStateCommitment != bytes32(0), InvalidTargetStateCommitment());
     }
 
     /// @notice Get a parent chain block hash from the buffer at `BLOCK_HASH_BUFFER`.
@@ -64,6 +68,7 @@ contract ChildToParentProver is IStateProver {
 
         // get the block hash from the buffer
         targetStateCommitment = IBuffer(BLOCK_HASH_BUFFER).parentChainBlockHash(targetBlockNumber);
+        require(targetStateCommitment != bytes32(0), InvalidTargetStateCommitment());
     }
 
     /// @notice Verify a storage slot given a target chain block hash and a proof.

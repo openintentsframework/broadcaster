@@ -101,7 +101,7 @@ function getTargetStateCommitment(bytes calldata input)
     targetStateCommitment = checkpoint.blockHash;
     
     if (targetStateCommitment == bytes32(0)) {
-        revert TargetBlockHashNotFound();
+        revert InvalidTargetStateCommitment();
     }
 }
 ```
@@ -136,7 +136,7 @@ function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input
     );
 
     if (targetStateCommitment == bytes32(0)) {
-        revert TargetBlockHashNotFound();
+        revert InvalidTargetStateCommitment();
     }
 }
 ```
@@ -206,7 +206,7 @@ function getTargetStateCommitment(bytes calldata input)
     targetStateCommitment = checkpoint.blockHash;
     
     if (targetStateCommitment == bytes32(0)) {
-        revert TargetBlockHashNotFound();
+        revert InvalidTargetStateCommitment();
     }
 }
 ```
@@ -239,7 +239,7 @@ function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input
     );
 
     if (targetStateCommitment == bytes32(0)) {
-        revert TargetBlockHashNotFound();
+        revert InvalidTargetStateCommitment();
     }
 }
 ```
