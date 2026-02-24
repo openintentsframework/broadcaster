@@ -28,6 +28,7 @@ contract ChildToParentProver is IStateProver {
     error AccountKeyMismatch();
     error AccountValueMismatch();
     error StorageKeyMismatch();
+    error InvalidTargetStateCommitment();
 
     constructor(address _blockHashBuffer, uint256 _homeChainId) {
         blockHashBuffer = _blockHashBuffer;
@@ -104,6 +105,7 @@ contract ChildToParentProver is IStateProver {
         }
 
         targetStateCommitment = claimedStorageValue;
+        require(targetStateCommitment != bytes32(0), InvalidTargetStateCommitment());
     }
 
     /// @notice Get a parent chain block hash from the buffer at `blockHashBuffer`.
