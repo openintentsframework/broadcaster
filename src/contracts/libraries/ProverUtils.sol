@@ -6,6 +6,7 @@ import {RLP} from "@openzeppelin/contracts/utils/RLP.sol";
 import {Memory} from "@openzeppelin/contracts/utils/Memory.sol";
 
 /// @notice Base contract for IStateProver contracts. Contains helpers for verifying block headers and MPT proofs.
+/// @custom:security-contact security@openzeppelin.com
 library ProverUtils {
     using Memory for bytes;
     using RLP for Memory.Slice;

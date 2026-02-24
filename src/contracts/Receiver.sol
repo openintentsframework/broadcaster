@@ -14,6 +14,7 @@ import {STATE_PROVER_POINTER_SLOT} from "./StateProverPointer.sol";
 ///      3. Following a proof route that can span multiple chain hops
 ///      The verification process ensures that a message was actually broadcast on a remote chain
 ///      at a specific timestamp without requiring trust in intermediaries.
+/// @custom:security-contact security@openzeppelin.com
 contract Receiver is IReceiver {
     mapping(bytes32 stateProverPointerId => IStateProver stateProverCopy) private _stateProverCopies;
 
@@ -111,7 +112,7 @@ contract Receiver is IReceiver {
     }
 
     function _readRemoteSlot(RemoteReadArgs calldata readArgs)
-        internal
+        private
         view
         returns (bytes32 remoteAccountId, uint256 slot, bytes32 slotValue)
     {
@@ -149,7 +150,7 @@ contract Receiver is IReceiver {
         remoteAccountId = accumulator(remoteAccountId, remoteAccount);
     }
 
-    function accumulator(bytes32 acc, address addr) internal pure returns (bytes32) {
+    function accumulator(bytes32 acc, address addr) private pure returns (bytes32) {
         return keccak256(abi.encode(acc, addr));
     }
 }
