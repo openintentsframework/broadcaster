@@ -234,7 +234,7 @@ contract ParentToChildProver is IStateProver {
         bytes32 _leaf,
         bytes32[] memory _proof,
         bytes32 _targetBatchRoot
-    ) internal view returns (bool) {
+    ) private view returns (bool) {
         ProofData memory proofData = MessageHashing._getProofData({
             _chainId: _chainId,
             _batchNumber: _blockOrBatchNumber,
@@ -267,7 +267,7 @@ contract ParentToChildProver is IStateProver {
     ///      The message sender is encoded as the key and the message data hash is used as the value.
     /// @param _message The L2 message to convert.
     /// @return The L2 log structure corresponding to the message.
-    function _l2MessageToLog(L2Message memory _message) internal view returns (L2Log memory) {
+    function _l2MessageToLog(L2Message memory _message) private view returns (L2Log memory) {
         return L2Log({
             l2ShardId: 0,
             isService: true,

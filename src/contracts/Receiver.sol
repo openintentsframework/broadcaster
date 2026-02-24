@@ -112,7 +112,7 @@ contract Receiver is IReceiver {
     }
 
     function _readRemoteSlot(RemoteReadArgs calldata readArgs)
-        internal
+        private
         view
         returns (bytes32 remoteAccountId, uint256 slot, bytes32 slotValue)
     {
@@ -150,7 +150,7 @@ contract Receiver is IReceiver {
         remoteAccountId = accumulator(remoteAccountId, remoteAccount);
     }
 
-    function accumulator(bytes32 acc, address addr) internal pure returns (bytes32) {
+    function accumulator(bytes32 acc, address addr) private pure returns (bytes32) {
         return keccak256(abi.encode(acc, addr));
     }
 }

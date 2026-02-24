@@ -72,21 +72,21 @@ contract ZkSyncBroadcaster is IBroadcaster {
 
     /// @notice Returns the L1 messenger contract address.
     /// @return The IL1Messenger contract instance used to send messages to L1.
-    function l1Messenger() public view returns (IL1Messenger) {
+    function l1Messenger() external view returns (IL1Messenger) {
         return _l1Messenger;
     }
 
     /// @dev Helper function to store a value in a storage slot.
     /// @param slot The storage slot to write to.
     /// @param value The value to store.
-    function _writeStorageSlot(bytes32 slot, uint256 value) internal {
+    function _writeStorageSlot(bytes32 slot, uint256 value) private {
         StorageSlot.getUint256Slot(slot).value = value;
     }
 
     /// @dev Helper function to load a storage slot.
     /// @param slot The storage slot to read from.
     /// @return value The value stored in the slot.
-    function _loadStorageSlot(bytes32 slot) internal view returns (uint256 value) {
+    function _loadStorageSlot(bytes32 slot) private view returns (uint256 value) {
         value = StorageSlot.getUint256Slot(slot).value;
     }
 
@@ -94,7 +94,7 @@ contract ZkSyncBroadcaster is IBroadcaster {
     /// @param message The message to compute the slot for.
     /// @param publisher The address of the publisher.
     /// @return The computed storage slot.
-    function _computeMessageSlot(bytes32 message, address publisher) internal pure returns (bytes32) {
+    function _computeMessageSlot(bytes32 message, address publisher) private pure returns (bytes32) {
         return keccak256(abi.encode(message, publisher));
     }
 }
