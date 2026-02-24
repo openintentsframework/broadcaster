@@ -39,10 +39,10 @@ contract ChildToParentProver is IStateProver {
     /// @notice Get a parent chain block hash from the buffer at `blockHashBuffer` using a Linea SMT proof
     /// @dev Linea uses Sparse Merkle Trees with MiMC hashing.
     ///      Proofs must be generated using linea_getProof RPC method.
-    /// @param  homeBlockHash The state root of the home chain (Linea SMT state root).
+    /// @param  homeState The state root of the home chain (Linea SMT state root).
     /// @param  input ABI encoded (uint256 targetBlockNumber, uint256 accountLeafIndex, bytes[] accountProof,
     ///         bytes accountValue, uint256 storageLeafIndex, bytes[] storageProof, bytes32 claimedStorageValue)
-    function verifyTargetStateCommitment(bytes32 homeBlockHash, bytes calldata input)
+    function verifyTargetStateCommitment(bytes32 homeState, bytes calldata input)
         external
         view
         returns (bytes32 targetStateCommitment)
@@ -73,7 +73,7 @@ contract ChildToParentProver is IStateProver {
         // see: https://github.com/openintentsframework/broadcaster/blob/8d02f8e8e39de27de8f0ded481d3c4e5a129351f/src/contracts/block-hash-pusher/BaseBuffer.sol#L24
         uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(BLOCK_HASH_MAPPING_SLOT), targetBlockNumber));
 
-        bool accountValid = SparseMerkleProof.verifyProof(accountProof, accountLeafIndex, homeBlockHash);
+        bool accountValid = SparseMerkleProof.verifyProof(accountProof, accountLeafIndex, homeState);
         if (!accountValid) {
             revert InvalidAccountProof();
         }
