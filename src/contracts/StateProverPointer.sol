@@ -14,6 +14,7 @@ bytes32 constant STATE_PROVER_POINTER_SLOT = bytes32(uint256(keccak256("eip7888.
 /// @dev This contract stores the address and code hash of the current StateProver implementation.
 ///      It enforces version monotonicity to ensure that updates always move to newer versions.
 ///      The code hash is stored in a dedicated storage slot for efficient cross-chain verification.
+/// @custom:security-contact security@openzeppelin.com
 contract StateProverPointer is IStateProverPointer, Ownable2Step {
     address internal _implementationAddress;
 
@@ -30,7 +31,7 @@ contract StateProverPointer is IStateProverPointer, Ownable2Step {
 
     /// @notice Return the code hash of the latest version of the prover.
     /// @return codeHash The code hash of the current implementation stored in the pointer slot.
-    function implementationCodeHash() public view returns (bytes32 codeHash) {
+    function implementationCodeHash() external view returns (bytes32 codeHash) {
         codeHash = StorageSlot.getBytes32Slot(STATE_PROVER_POINTER_SLOT).value;
     }
 
@@ -69,7 +70,7 @@ contract StateProverPointer is IStateProverPointer, Ownable2Step {
         );
     }
 
-    function _setCodeHash(bytes32 _codeHash) internal {
+    function _setCodeHash(bytes32 _codeHash) private {
         StorageSlot.getBytes32Slot(STATE_PROVER_POINTER_SLOT).value = _codeHash;
     }
 }

@@ -20,6 +20,7 @@ interface ICheckpointStore {
 ///         verifyTargetStateCommitment gets L2 block hashes from L1's SignalService checkpoint storage.
 ///         getTargetStateCommitment reads L2 block hashes directly from L1's SignalService.
 ///         verifyStorageSlot works against any Ethereum-compatible chain with standard block headers.
+/// @custom:security-contact security@openzeppelin.com
 contract ParentToChildProver is IStateProver {
     /// @dev Address of the L1 SignalService contract
     address public immutable signalService;
@@ -34,7 +35,7 @@ contract ParentToChildProver is IStateProver {
 
     error CallNotOnHomeChain();
     error CallOnHomeChain();
-    error TargetBlockHashNotFound();
+    error InvalidTargetStateCommitment();
 
     constructor(address _signalService, uint256 _checkpointsSlot, uint256 _homeChainId) {
         signalService = _signalService;
@@ -70,9 +71,7 @@ contract ParentToChildProver is IStateProver {
             homeBlockHash, rlpBlockHeader, signalService, slot, accountProof, storageProof
         );
 
-        if (targetStateCommitment == bytes32(0)) {
-            revert TargetBlockHashNotFound();
-        }
+        require(targetStateCommitment != bytes32(0), InvalidTargetStateCommitment());
     }
 
     /// @notice Get L2 block hash directly from L1 SignalService
@@ -92,9 +91,7 @@ contract ParentToChildProver is IStateProver {
 
         targetStateCommitment = checkpoint.blockHash;
 
-        if (targetStateCommitment == bytes32(0)) {
-            revert TargetBlockHashNotFound();
-        }
+        require(targetStateCommitment != bytes32(0), InvalidTargetStateCommitment());
     }
 
     /// @notice Verify a storage slot given a target chain block hash and a proof

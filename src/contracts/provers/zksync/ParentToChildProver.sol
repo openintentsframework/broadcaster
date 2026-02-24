@@ -60,6 +60,7 @@ struct ZkSyncProof {
 ///      to work against any ZkSync child chain with a standard Ethereum block header and state trie.
 ///      This implementation is used to verify zkChain L2 log hash inclusion on L1 for messages that
 ///      use the gateway as a middleware between the L2 and the L1.
+/// @custom:security-contact security@openzeppelin.com
 contract ParentToChildProver is IStateProver {
     /// @notice The address of the L1Messenger contract on the ZK chain.
     address public constant L1_MESSENGER = 0x0000000000000000000000000000000000008008;
@@ -96,6 +97,9 @@ contract ParentToChildProver is IStateProver {
 
     /// @notice Error thrown when the slot does not match the expected slot.
     error SlotMismatch();
+
+    /// @notice Error thrown when the target state commitment is invalid.
+    error InvalidTargetStateCommitment();
 
     constructor(
         address _gatewayZkChain,
@@ -138,6 +142,7 @@ contract ParentToChildProver is IStateProver {
         targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
             homeStateCommitment, rlpBlockHeader, address(gatewayZkChain), slot, accountProof, storageProof
         );
+        require(targetStateCommitment != bytes32(0), InvalidTargetStateCommitment());
     }
 
     /// @notice Get a target chain L2 logs root hash given a batch number.
@@ -154,9 +159,7 @@ contract ParentToChildProver is IStateProver {
         uint256 batchNumber = abi.decode(input, (uint256));
         targetStateCommitment = gatewayZkChain.l2LogsRootHash(batchNumber);
 
-        if (targetStateCommitment == bytes32(0)) {
-            revert L2LogsRootHashNotFound();
-        }
+        require(targetStateCommitment != bytes32(0), L2LogsRootHashNotFound());
     }
 
     /// @notice Verify a storage slot given a target chain L2 logs root hash and a proof.
@@ -231,7 +234,7 @@ contract ParentToChildProver is IStateProver {
         bytes32 _leaf,
         bytes32[] memory _proof,
         bytes32 _targetBatchRoot
-    ) internal view returns (bool) {
+    ) private view returns (bool) {
         ProofData memory proofData = MessageHashing._getProofData({
             _chainId: _chainId,
             _batchNumber: _blockOrBatchNumber,
@@ -264,7 +267,7 @@ contract ParentToChildProver is IStateProver {
     ///      The message sender is encoded as the key and the message data hash is used as the value.
     /// @param _message The L2 message to convert.
     /// @return The L2 log structure corresponding to the message.
-    function _l2MessageToLog(L2Message memory _message) internal view returns (L2Log memory) {
+    function _l2MessageToLog(L2Message memory _message) private view returns (L2Log memory) {
         return L2Log({
             l2ShardId: 0,
             isService: true,

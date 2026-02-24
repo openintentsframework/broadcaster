@@ -16,6 +16,7 @@ interface IL1Block {
 ///         Historical messages CAN be verified by generating fresh proofs on-demand.
 ///         Pre-generated proofs become stale when L1Block updates (~5 minutes).
 ///         Operational difference from Arbitrum: proofs must be generated just-in-time rather than pre-cached.
+/// @custom:security-contact security@openzeppelin.com
 contract ChildToParentProver is IStateProver {
     address public constant L1_BLOCK_PREDEPLOY = 0x4200000000000000000000000000000000000015;
     uint256 public constant L1_BLOCK_HASH_SLOT = 2; // hash is at slot 2
@@ -25,6 +26,7 @@ contract ChildToParentProver is IStateProver {
 
     error CallNotOnHomeChain();
     error CallOnHomeChain();
+    error InvalidTargetStateCommitment();
 
     constructor(uint256 _homeChainId) {
         homeChainId = _homeChainId;
@@ -52,6 +54,7 @@ contract ChildToParentProver is IStateProver {
         targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
             homeBlockHash, rlpBlockHeader, L1_BLOCK_PREDEPLOY, L1_BLOCK_HASH_SLOT, accountProof, storageProof
         );
+        require(targetStateCommitment != bytes32(0), InvalidTargetStateCommitment());
     }
 
     /// @notice Get the latest parent chain block hash from the L1Block predeploy. Bytes argument is ignored.

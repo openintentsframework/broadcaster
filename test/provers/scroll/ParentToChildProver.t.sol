@@ -122,7 +122,7 @@ contract ScrollChainMock is IScrollChain {
 
             bytes memory input = abi.encode(batchIndex);
 
-            vm.expectRevert(ParentToChildProver.StateRootNotFound.selector);
+            vm.expectRevert(ParentToChildProver.InvalidTargetStateCommitment.selector);
             parentToChildProver.getTargetStateCommitment(input);
         }
 
