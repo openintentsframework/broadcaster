@@ -2,6 +2,7 @@
 pragma solidity 0.8.30;
 
 import {StorageSlot} from "@openzeppelin/contracts/utils/StorageSlot.sol";
+import {Ownable2Step} from "@openzeppelin/contracts/access/Ownable2Step.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IStateProver} from "./interfaces/IStateProver.sol";
 import {IStateProverPointer} from "./interfaces/IStateProverPointer.sol";
@@ -14,7 +15,7 @@ bytes32 constant STATE_PROVER_POINTER_SLOT = bytes32(uint256(keccak256("eip7888.
 ///      It enforces version monotonicity to ensure that updates always move to newer versions.
 ///      The code hash is stored in a dedicated storage slot for efficient cross-chain verification.
 /// @custom:security-contact security@openzeppelin.com
-contract StateProverPointer is IStateProverPointer, Ownable {
+contract StateProverPointer is IStateProverPointer, Ownable2Step {
     address internal _implementationAddress;
 
     error NonIncreasingVersion(uint256 newVersion, uint256 oldVersion);
