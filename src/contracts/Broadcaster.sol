@@ -10,6 +10,7 @@ import {StorageSlot} from "@openzeppelin/contracts/utils/StorageSlot.sol";
 /// @dev Message timestamps are stored in deterministic storage slots calculated from hash(message, publisher) to prevent duplicate broadcasts.
 ///      Each broadcast is timestamped with the block timestamp and emits an event for off-chain indexing.
 ///      The storage layout is designed to be efficiently provable for cross-chain message verification.
+/// @custom:security-contact security@openzeppelin.com
 contract Broadcaster is IBroadcaster {
     error MessageAlreadyBroadcasted();
 
@@ -46,17 +47,17 @@ contract Broadcaster is IBroadcaster {
     }
 
     /// @dev Helper function to store a value in a storage slot.
-    function _writeStorageSlot(bytes32 slot, uint256 value) internal {
+    function _writeStorageSlot(bytes32 slot, uint256 value) private {
         StorageSlot.getUint256Slot(slot).value = value;
     }
 
     /// @dev Helper function to load a storage slot.
-    function _loadStorageSlot(bytes32 slot) internal view returns (uint256 value) {
+    function _loadStorageSlot(bytes32 slot) private view returns (uint256 value) {
         value = StorageSlot.getUint256Slot(slot).value;
     }
 
     /// @dev Helper function to calculate the storage slot for a message.
-    function _computeMessageSlot(bytes32 message, address publisher) internal pure returns (bytes32) {
+    function _computeMessageSlot(bytes32 message, address publisher) private pure returns (bytes32) {
         return keccak256(abi.encode(message, publisher));
     }
 }

@@ -52,5 +52,29 @@ contract StateProverPointerTest is Test {
         vm.expectRevert(abi.encodeWithSelector(StateProverPointer.InvalidImplementationAddress.selector));
         stateProverPointer.setImplementationAddress(makeAddr("invalid"));
     }
-}
 
+    function test_transferOwnership() public {
+        address newOwner = makeAddr("newOwner");
+        vm.prank(owner);
+        stateProverPointer.transferOwnership(newOwner);
+        assertEq(stateProverPointer.owner(), owner);
+        assertEq(stateProverPointer.pendingOwner(), newOwner);
+
+        vm.prank(newOwner);
+        stateProverPointer.acceptOwnership();
+        assertEq(stateProverPointer.owner(), newOwner);
+        assertEq(stateProverPointer.pendingOwner(), address(0));
+
+        vm.prank(newOwner);
+        // transfer ownership back to initial owner
+        stateProverPointer.transferOwnership(owner);
+        assertEq(stateProverPointer.owner(), newOwner);
+        assertEq(stateProverPointer.pendingOwner(), owner);
+
+        // cancel initiated ownership transfer
+        vm.prank(newOwner);
+        stateProverPointer.transferOwnership(address(0));
+        assertEq(stateProverPointer.owner(), newOwner);
+        assertEq(stateProverPointer.pendingOwner(), address(0));
+    }
+}

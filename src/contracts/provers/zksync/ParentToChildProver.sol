@@ -60,7 +60,11 @@ struct ZkSyncProof {
 ///      to work against any ZkSync child chain with a standard Ethereum block header and state trie.
 ///      This implementation is used to verify zkChain L2 log hash inclusion on L1 for messages that
 ///      use the gateway as a middleware between the L2 and the L1.
+/// @custom:security-contact security@openzeppelin.com
 contract ParentToChildProver is IStateProver {
+    /// @notice The address of the L1Messenger contract on the ZK chain.
+    address public constant L1_MESSENGER = 0x0000000000000000000000000000000000008008;
+
     /// @notice The ZkChain contract address on the gateway chain that stores L2 logs root hashes.
     IZkChain public immutable gatewayZkChain;
 
@@ -94,6 +98,9 @@ contract ParentToChildProver is IStateProver {
     /// @notice Error thrown when the slot does not match the expected slot.
     error SlotMismatch();
 
+    /// @notice Error thrown when the target state commitment is invalid.
+    error InvalidTargetStateCommitment();
+
     constructor(
         address _gatewayZkChain,
         uint256 _l2LogsRootHashSlot,
@@ -112,10 +119,11 @@ contract ParentToChildProver is IStateProver {
     /// @dev Verifies that the L2 logs root hash for a specific batch is stored in the gateway ZkChain contract
     ///      by checking the storage slot using storage proofs against the home chain block header.
     /// @param homeStateCommitment The block hash of the home chain (L1) containing the gateway ZkChain state.
-    /// @param input ABI encoded tuple: (bytes rlpBlockHeader, uint256 batchNumber, bytes storageProof).
+    /// @param input ABI encoded tuple: (bytes rlpBlockHeader, uint256 batchNumber, bytes accountProof, bytes storageProof).
     ///              - rlpBlockHeader: RLP-encoded block header of the home chain.
     ///              - batchNumber: The batch number for which to retrieve the L2 logs root hash.
-    ///              - proof: Storage proof for the storage slot containing the L2 logs root hash.
+    ///              - accountProof: Account proof for the gateway ZkChain contract.
+    ///              - storageProof: Storage proof for the storage slot containing the L2 logs root hash.
     /// @return targetStateCommitment The L2 logs root hash for the specified batch number.
     function verifyTargetStateCommitment(bytes32 homeStateCommitment, bytes calldata input)
         external
@@ -135,6 +143,7 @@ contract ParentToChildProver is IStateProver {
         targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
             homeStateCommitment, rlpBlockHeader, address(gatewayZkChain), slot, accountProof, storageProof
         );
+        require(targetStateCommitment != bytes32(0), InvalidTargetStateCommitment());
     }
 
     /// @notice Get a target chain L2 logs root hash given a batch number.
@@ -151,9 +160,7 @@ contract ParentToChildProver is IStateProver {
         uint256 batchNumber = abi.decode(input, (uint256));
         targetStateCommitment = gatewayZkChain.l2LogsRootHash(batchNumber);
 
-        if (targetStateCommitment == bytes32(0)) {
-            revert L2LogsRootHashNotFound();
-        }
+        require(targetStateCommitment != bytes32(0), L2LogsRootHashNotFound());
     }
 
     /// @notice Verify a storage slot given a target chain L2 logs root hash and a proof.
@@ -178,8 +185,6 @@ contract ParentToChildProver is IStateProver {
         (ZkSyncProof memory proof, address senderAccount, bytes32 message) =
             abi.decode(input, (ZkSyncProof, address, bytes32));
 
-        account = senderAccount;
-
         L2Log memory log = _l2MessageToLog(proof.message);
 
         bytes32 hashedLog = keccak256(
@@ -200,12 +205,13 @@ contract ParentToChildProver is IStateProver {
 
         (bytes32 slotSent, bytes32 timestamp) = abi.decode(proof.message.data, (bytes32, bytes32));
 
-        bytes32 expectedSlot = keccak256(abi.encode(message, account));
+        bytes32 expectedSlot = keccak256(abi.encode(message, senderAccount));
 
         if (slotSent != expectedSlot) {
             revert SlotMismatch();
         }
 
+        account = proof.message.sender;
         slot = uint256(slotSent);
         value = timestamp;
     }
@@ -229,7 +235,7 @@ contract ParentToChildProver is IStateProver {
         bytes32 _leaf,
         bytes32[] memory _proof,
         bytes32 _targetBatchRoot
-    ) internal view returns (bool) {
+    ) private view returns (bool) {
         ProofData memory proofData = MessageHashing._getProofData({
             _chainId: _chainId,
             _batchNumber: _blockOrBatchNumber,
@@ -258,17 +264,16 @@ contract ParentToChildProver is IStateProver {
 
     /// @notice Convert an L2 message to an L2 log structure.
     /// @dev Transforms an L2Message into the L2Log format used for Merkle tree hashing.
-    ///      Uses fixed values for shard ID (0), service flag (true), and sender address
-    ///      (the ZkSync system contract address). The message sender is encoded as the key,
-    ///      and the message data hash is used as the value.
+    ///      Uses fixed values for shard ID (0), service flag (true) and sender address (L1_MESSENGER).
+    ///      The message sender is encoded as the key and the message data hash is used as the value.
     /// @param _message The L2 message to convert.
-    /// @return log The L2 log structure corresponding to the message.
-    function _l2MessageToLog(L2Message memory _message) internal pure returns (L2Log memory) {
+    /// @return The L2 log structure corresponding to the message.
+    function _l2MessageToLog(L2Message memory _message) private view returns (L2Log memory) {
         return L2Log({
             l2ShardId: 0,
             isService: true,
             txNumberInBatch: _message.txNumberInBatch,
-            sender: 0x0000000000000000000000000000000000008008,
+            sender: L1_MESSENGER,
             key: bytes32(uint256(uint160(_message.sender))),
             value: keccak256(_message.data)
         });

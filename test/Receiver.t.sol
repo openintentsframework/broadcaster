@@ -108,6 +108,10 @@ contract ReceiverTest is Test {
         StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
+        vm.expectEmit();
+        emit IStateProverPointer.ImplementationAddressSet(
+            1, address(childToParentProver), address(childToParentProver).codehash, address(0)
+        );
         stateProverPointer.setImplementationAddress(address(childToParentProver));
 
         bytes32 message = 0x0000000000000000000000000000000000000000000000000000000074657374; // "test"
@@ -184,6 +188,10 @@ contract ReceiverTest is Test {
         StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
+        vm.expectEmit();
+        emit IStateProverPointer.ImplementationAddressSet(
+            1, address(parentToChildProver), address(parentToChildProver).codehash, address(0)
+        );
         stateProverPointer.setImplementationAddress(address(parentToChildProver));
 
         bytes32 message = 0x0000000000000000000000000000000000000000000000000000000074657374; // "test"
@@ -251,11 +259,16 @@ contract ReceiverTest is Test {
         vm.selectFork(optimismForkId);
         receiver = new Receiver();
 
-        OPChildToParentProver childToParentProver = new OPChildToParentProver(block.chainid);
+        address blockHashBuffer = address(new BufferMock());
+        OPChildToParentProver childToParentProver = new OPChildToParentProver(blockHashBuffer, block.chainid);
 
         StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
+        vm.expectEmit();
+        emit IStateProverPointer.ImplementationAddressSet(
+            1, address(childToParentProver), address(childToParentProver).codehash, address(0)
+        );
         stateProverPointer.setImplementationAddress(address(childToParentProver));
 
         bytes32 message = 0x0000000000000000000000000000000000000000000000000000000074657374; // "test"
@@ -282,18 +295,17 @@ contract ReceiverTest is Test {
         assertEq(blockHash, expectedBlockHash);
         bytes memory input = abi.encode(rlpBlockHeader, account, slot, rlpAccountProof, rlpStorageProof);
 
-        IL1Block l1Block = IL1Block(childToParentProver.l1BlockPredeploy());
+        IBuffer buffer = IBuffer(blockHashBuffer);
+        bytes32[] memory blockHashes = new bytes32[](1);
+        blockHashes[0] = blockHash;
 
-        vm.prank(l1Block.DEPOSITOR_ACCOUNT());
-        l1Block.setL1BlockValues(
-            uint64(blockNumber), uint64(block.timestamp), block.basefee, blockHash, 0, bytes32(0), 0, 0
-        );
+        buffer.receiveHashes(blockNumber, blockHashes);
 
         address[] memory route = new address[](1);
         route[0] = address(stateProverPointer);
 
         bytes[] memory scpInputs = new bytes[](1);
-        scpInputs[0] = bytes("");
+        scpInputs[0] = abi.encode(blockNumber);
 
         bytes memory storageProofToLastProver = input;
 
@@ -325,11 +337,16 @@ contract ReceiverTest is Test {
 
         receiver = new Receiver();
 
-        OPChildToParentProver childToParentProver = new OPChildToParentProver(block.chainid);
+        address blockHashBuffer = address(new BufferMock());
+        OPChildToParentProver childToParentProver = new OPChildToParentProver(blockHashBuffer, block.chainid);
 
         StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
+        vm.expectEmit();
+        emit IStateProverPointer.ImplementationAddressSet(
+            1, address(childToParentProver), address(childToParentProver).codehash, address(0)
+        );
         stateProverPointer.setImplementationAddress(address(childToParentProver));
 
         uint256 expectedSlot = uint256(keccak256("eip7888.pointer.slot")) - 1;
@@ -353,18 +370,17 @@ contract ReceiverTest is Test {
         assertEq(blockHash, expectedBlockHash);
         bytes memory input = abi.encode(rlpBlockHeader, account, slot, rlpAccountProof, rlpStorageProof);
 
-        IL1Block l1Block = IL1Block(childToParentProver.l1BlockPredeploy());
+        IBuffer buffer = IBuffer(blockHashBuffer);
+        bytes32[] memory blockHashes = new bytes32[](1);
+        blockHashes[0] = blockHash;
 
-        vm.prank(l1Block.DEPOSITOR_ACCOUNT());
-        l1Block.setL1BlockValues(
-            uint64(blockNumber), uint64(block.timestamp), block.basefee, blockHash, 0, bytes32(0), 0, 0
-        );
+        buffer.receiveHashes(blockNumber, blockHashes);
 
         address[] memory route = new address[](1);
         route[0] = address(stateProverPointer);
 
         bytes[] memory scpInputs = new bytes[](1);
-        scpInputs[0] = bytes("");
+        scpInputs[0] = abi.encode(blockNumber);
 
         bytes memory storageProofToLastProver = input;
 
@@ -398,11 +414,16 @@ contract ReceiverTest is Test {
 
         receiver = new Receiver();
 
-        OPChildToParentProver childToParentProver = new OPChildToParentProver(block.chainid);
+        address blockHashBuffer = address(new BufferMock());
+        OPChildToParentProver childToParentProver = new OPChildToParentProver(blockHashBuffer, block.chainid);
 
         StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
+        vm.expectEmit();
+        emit IStateProverPointer.ImplementationAddressSet(
+            1, address(childToParentProver), address(childToParentProver).codehash, address(0)
+        );
         stateProverPointer.setImplementationAddress(address(childToParentProver));
 
         uint256 expectedSlot = uint256(keccak256("eip7888.pointer.slot")) - 1;
@@ -426,18 +447,17 @@ contract ReceiverTest is Test {
         assertEq(blockHash, expectedBlockHash);
         bytes memory input = abi.encode(rlpBlockHeader, account, slot, rlpAccountProof, rlpStorageProof);
 
-        IL1Block l1Block = IL1Block(childToParentProver.l1BlockPredeploy());
+        IBuffer buffer = IBuffer(blockHashBuffer);
+        bytes32[] memory blockHashes = new bytes32[](1);
+        blockHashes[0] = blockHash;
 
-        vm.prank(l1Block.DEPOSITOR_ACCOUNT());
-        l1Block.setL1BlockValues(
-            uint64(blockNumber), uint64(block.timestamp), block.basefee, blockHash, 0, bytes32(0), 0, 0
-        );
+        buffer.receiveHashes(blockNumber, blockHashes);
 
         address[] memory route = new address[](1);
         route[0] = address(stateProverPointer);
 
         bytes[] memory scpInputs = new bytes[](1);
-        scpInputs[0] = bytes("");
+        scpInputs[0] = abi.encode(blockNumber);
 
         bytes memory storageProofToLastProver = input;
 
@@ -455,7 +475,8 @@ contract ReceiverTest is Test {
 
         receiver = new Receiver();
 
-        OPChildToParentProver childToParentProver = new OPChildToParentProver(block.chainid);
+        address blockHashBuffer = address(new BufferMock());
+        OPChildToParentProver childToParentProver = new OPChildToParentProver(blockHashBuffer, block.chainid);
 
         StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
@@ -464,6 +485,10 @@ contract ReceiverTest is Test {
         address arbParentToChildProverPointerAddress;
 
         vm.prank(owner);
+        vm.expectEmit();
+        emit IStateProverPointer.ImplementationAddressSet(
+            1, address(childToParentProver), address(childToParentProver).codehash, address(0)
+        );
         stateProverPointer.setImplementationAddress(address(childToParentProver));
         // Update the Arbitrum Prover (ParentToChildProver) copy on OP chain
         {
@@ -491,18 +516,17 @@ contract ReceiverTest is Test {
             bytes memory inputForOPChildToParentProver =
                 abi.encode(rlpBlockHeader, account, slot, rlpAccountProof, rlpStorageProof);
 
-            IL1Block l1Block = IL1Block(childToParentProver.l1BlockPredeploy());
+            IBuffer buffer = IBuffer(blockHashBuffer);
+            bytes32[] memory blockHashes = new bytes32[](1);
+            blockHashes[0] = blockHash;
 
-            vm.prank(l1Block.DEPOSITOR_ACCOUNT());
-            l1Block.setL1BlockValues(
-                uint64(blockNumber), uint64(block.timestamp), block.basefee, blockHash, 0, bytes32(0), 0, 0
-            );
+            buffer.receiveHashes(blockNumber, blockHashes);
 
             address[] memory route = new address[](1);
             route[0] = address(stateProverPointer);
 
             bytes[] memory scpInputs = new bytes[](1);
-            scpInputs[0] = bytes("");
+            scpInputs[0] = abi.encode(blockNumber);
 
             bytes memory storageProofToLastProver = inputForOPChildToParentProver;
 
@@ -555,18 +579,17 @@ contract ReceiverTest is Test {
         bytes memory rlpAccountProofArbitrum = jsonArbitrum.readBytes(".rlpAccountProof");
         bytes memory rlpStorageProofArbitrum = jsonArbitrum.readBytes(".rlpStorageProof");
 
-        IL1Block l1Block = IL1Block(childToParentProver.l1BlockPredeploy());
+        IBuffer buffer = IBuffer(blockHashBuffer);
+        bytes32[] memory blockHashes = new bytes32[](1);
+        blockHashes[0] = blockHashEthereum;
 
-        vm.prank(l1Block.DEPOSITOR_ACCOUNT());
-        l1Block.setL1BlockValues(
-            uint64(blockNumberEthereum), uint64(block.timestamp), block.basefee, blockHashEthereum, 0, bytes32(0), 0, 0
-        );
+        buffer.receiveHashes(blockNumberEthereum, blockHashes);
 
         address[] memory route = new address[](2);
         route[0] = address(stateProverPointer);
         route[1] = arbParentToChildProverPointerAddress;
 
-        bytes memory input0 = bytes("");
+        bytes memory input0 = abi.encode(blockNumberEthereum);
         bytes memory input1 =
             abi.encode(rlpBlockHeaderEthereum, sendRootArbitrum, rlpAccountProofEthereum, rlpStorageProofEthereum);
 
@@ -619,6 +642,10 @@ contract ReceiverTest is Test {
         StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
+        vm.expectEmit();
+        emit IStateProverPointer.ImplementationAddressSet(
+            1, address(childToParentProver), address(childToParentProver).codehash, address(0)
+        );
         stateProverPointer.setImplementationAddress(address(childToParentProver));
 
         uint256 expectedSlot = uint256(keccak256("eip7888.pointer.slot")) - 1;
@@ -696,6 +723,10 @@ contract ReceiverTest is Test {
         address arbParentToChildProverPointerAddress;
 
         vm.prank(owner);
+        vm.expectEmit();
+        emit IStateProverPointer.ImplementationAddressSet(
+            1, address(childToParentProver), address(childToParentProver).codehash, address(0)
+        );
         stateProverPointer.setImplementationAddress(address(childToParentProver));
         // Update the Arbitrum Prover (ParentToChildProver) copy on ZKSync chain
         {
@@ -847,6 +878,10 @@ contract ReceiverTest is Test {
         StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
+        vm.expectEmit();
+        emit IStateProverPointer.ImplementationAddressSet(
+            1, address(childToParentProver), address(childToParentProver).codehash, address(0)
+        );
         stateProverPointer.setImplementationAddress(address(childToParentProver));
 
         uint256 expectedSlot = uint256(keccak256("eip7888.pointer.slot")) - 1;
@@ -924,6 +959,10 @@ contract ReceiverTest is Test {
         address arbParentToChildProverPointerAddress;
 
         vm.prank(owner);
+        vm.expectEmit();
+        emit IStateProverPointer.ImplementationAddressSet(
+            1, address(childToParentProver), address(childToParentProver).codehash, address(0)
+        );
         stateProverPointer.setImplementationAddress(address(childToParentProver));
         // Update the Arbitrum Prover (ParentToChildProver) copy on Linea chain
         {
@@ -1075,6 +1114,10 @@ contract ReceiverTest is Test {
         StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
+        vm.expectEmit();
+        emit IStateProverPointer.ImplementationAddressSet(
+            1, address(childToParentProver), address(childToParentProver).codehash, address(0)
+        );
         stateProverPointer.setImplementationAddress(address(childToParentProver));
 
         uint256 expectedSlot = uint256(keccak256("eip7888.pointer.slot")) - 1;
@@ -1152,6 +1195,10 @@ contract ReceiverTest is Test {
         address arbParentToChildProverPointerAddress;
 
         vm.prank(owner);
+        vm.expectEmit();
+        emit IStateProverPointer.ImplementationAddressSet(
+            1, address(childToParentProver), address(childToParentProver).codehash, address(0)
+        );
         stateProverPointer.setImplementationAddress(address(childToParentProver));
         // Update the Arbitrum Prover (ParentToChildProver) copy on Scroll chain
         {
@@ -1309,6 +1356,10 @@ contract ReceiverTest is Test {
         StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
+        vm.expectEmit();
+        emit IStateProverPointer.ImplementationAddressSet(
+            1, address(parentToChildProver), address(parentToChildProver).codehash, address(0)
+        );
         stateProverPointer.setImplementationAddress(address(parentToChildProver));
 
         // Load the E2E proof data
@@ -1365,6 +1416,10 @@ contract ReceiverTest is Test {
         StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
+        vm.expectEmit();
+        emit IStateProverPointer.ImplementationAddressSet(
+            1, address(parentToChildProver), address(parentToChildProver).codehash, address(0)
+        );
         stateProverPointer.setImplementationAddress(address(parentToChildProver));
 
         // Load the E2E proof data
@@ -1443,6 +1498,10 @@ contract ReceiverTest is Test {
         StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
+        vm.expectEmit();
+        emit IStateProverPointer.ImplementationAddressSet(
+            1, address(parentToChildProver), address(parentToChildProver).codehash, address(0)
+        );
         stateProverPointer.setImplementationAddress(address(parentToChildProver));
 
         // Read the SMT proof data

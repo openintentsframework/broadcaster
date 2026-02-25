@@ -11,6 +11,7 @@ import {IL1ScrollMessenger} from "@scroll-tech/scroll-contracts/L1/IL1ScrollMess
 /// @dev This contract sends block hashes from Ethereum L1 to a ScrollBuffer contract on Scroll L2
 ///      via the Scroll L1ScrollMessenger's `sendMessage` function. The pusher must be configured
 ///      with the correct L1ScrollMessenger address.
+/// @custom:security-contact security@openzeppelin.com
 contract ScrollPusher is BlockHashArrayBuilder, IPusher {
     /// @dev The address of the Scroll L1ScrollMessenger contract on L1.
     address private immutable _l1ScrollMessenger;
@@ -23,7 +24,12 @@ contract ScrollPusher is BlockHashArrayBuilder, IPusher {
         address refundAddress;
     }
 
+    /// @notice Thrown when attempting to set an invalid L1ScrollMessenger address.
+    error InvalidL1ScrollMessengerAddress();
+
     constructor(address l1ScrollMessenger_) {
+        require(l1ScrollMessenger_ != address(0), InvalidL1ScrollMessengerAddress());
+
         _l1ScrollMessenger = l1ScrollMessenger_;
     }
 
@@ -32,9 +38,7 @@ contract ScrollPusher is BlockHashArrayBuilder, IPusher {
         external
         payable
     {
-        if (buffer == address(0)) {
-            revert InvalidBuffer(buffer);
-        }
+        require(buffer != address(0), InvalidBuffer(buffer));
 
         bytes32[] memory blockHashes = _buildBlockHashArray(firstBlockNumber, batchSize);
         bytes memory l2Calldata = abi.encodeCall(IBuffer.receiveHashes, (firstBlockNumber, blockHashes));

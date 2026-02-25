@@ -9,6 +9,7 @@ import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 /// @notice Arbitrum implementation of a parent to child IStateProver.
 /// @dev    verifyTargetStateCommitment and getTargetStateCommitment get block hashes from the child chain's Outbox contract.
 ///         verifyStorageSlot is implemented to work against any Arbitrum child chain with a standard Ethereum block header and state trie.
+/// @custom:security-contact security@openzeppelin.com
 contract ParentToChildProver is IStateProver {
     /// @dev Address of the child chain's Outbox contract
     address public immutable outbox;
@@ -22,7 +23,7 @@ contract ParentToChildProver is IStateProver {
 
     error CallNotOnHomeChain();
     error CallOnHomeChain();
-    error TargetBlockHashNotFound();
+    error InvalidTargetStateCommitment();
 
     constructor(address _outbox, uint256 _rootsSlot, uint256 _homeChainId) {
         outbox = _outbox;
@@ -54,9 +55,7 @@ contract ParentToChildProver is IStateProver {
         targetStateCommitment =
             ProverUtils.getSlotFromBlockHeader(homeBlockHash, rlpBlockHeader, outbox, slot, accountProof, storageProof);
 
-        if (targetStateCommitment == bytes32(0)) {
-            revert TargetBlockHashNotFound();
-        }
+        require(targetStateCommitment != bytes32(0), InvalidTargetStateCommitment());
     }
 
     /// @notice Get a target chain block hash given a target chain sendRoot
@@ -71,9 +70,7 @@ contract ParentToChildProver is IStateProver {
         // get the target block hash from the outbox
         targetStateCommitment = IOutbox(outbox).roots(sendRoot);
 
-        if (targetStateCommitment == bytes32(0)) {
-            revert TargetBlockHashNotFound();
-        }
+        require(targetStateCommitment != bytes32(0), InvalidTargetStateCommitment());
     }
 
     /// @notice Verify a storage slot given a target chain block hash and a proof.

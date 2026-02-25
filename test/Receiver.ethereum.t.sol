@@ -132,6 +132,10 @@ contract ReceiverTest is Test {
         StateProverPointer stateProverPointer = new StateProverPointer(owner);
 
         vm.prank(owner);
+        vm.expectEmit();
+        emit IStateProverPointer.ImplementationAddressSet(
+            1, address(parentToChildProver), address(parentToChildProver).codehash, address(0)
+        );
         stateProverPointer.setImplementationAddress(address(parentToChildProver));
 
         bytes32 message = 0x0000000000000000000000000000000000000000000000000000000074657374; // "test"
@@ -158,7 +162,7 @@ contract ReceiverTest is Test {
 
         (bytes32 messageSent, bytes32 expectedValue) = abi.decode(proof.message.data, (bytes32, bytes32));
 
-        address expectedAccount = publisher;
+        address expectedAccount = proof.message.sender;
 
         assertEq(
             broadcasterId,

@@ -11,6 +11,7 @@ import {IMessageService} from "@linea-contracts/messaging/interfaces/IMessageSer
 /// @dev This contract sends block hashes from Ethereum L1 to a LineaBuffer contract on Linea L2
 ///      via the Linea MessageService's `sendMessage` function. The pusher must be configured
 ///      with the correct rollup address.
+/// @custom:security-contact security@openzeppelin.com
 contract LineaPusher is BlockHashArrayBuilder, IPusher {
     /// @dev The address of the Linea Rollup contract on L1.
     address private immutable _lineaRollup;
@@ -21,7 +22,12 @@ contract LineaPusher is BlockHashArrayBuilder, IPusher {
         uint256 _fee;
     }
 
+    /// @notice Thrown when attempting to set an invalid Linea Rollup address.
+    error InvalidLineaRollupAddress();
+
     constructor(address rollup_) {
+        require(rollup_ != address(0), InvalidLineaRollupAddress());
+
         _lineaRollup = rollup_;
     }
 
@@ -30,16 +36,16 @@ contract LineaPusher is BlockHashArrayBuilder, IPusher {
         external
         payable
     {
-        if (buffer == address(0)) {
-            revert InvalidBuffer(buffer);
-        }
+        require(buffer != address(0), InvalidBuffer(buffer));
 
         bytes32[] memory blockHashes = _buildBlockHashArray(firstBlockNumber, batchSize);
         bytes memory l2Calldata = abi.encodeCall(IBuffer.receiveHashes, (firstBlockNumber, blockHashes));
 
         LineaL2Transaction memory l2Transaction = abi.decode(l2TransactionData, (LineaL2Transaction));
+        uint256 fee = l2Transaction._fee;
+        require(msg.value == fee, IncorrectMsgValue(fee, msg.value));
 
-        IMessageService(lineaRollup()).sendMessage{value: msg.value}(buffer, l2Transaction._fee, l2Calldata);
+        IMessageService(lineaRollup()).sendMessage{value: msg.value}(buffer, fee, l2Calldata);
 
         emit BlockHashesPushed(firstBlockNumber, firstBlockNumber + batchSize - 1);
     }

@@ -10,18 +10,20 @@ import {SlotDerivation} from "@openzeppelin/contracts/utils/SlotDerivation.sol";
 /// @dev    verifyTargetStateCommitment and getTargetStateCommitment get block hashes from the block hash buffer.
 ///         See https://github.com/openintentsframework/broadcaster/blob/main/src/contracts/block-hash-pusher for more details.
 ///         verifyStorageSlot is implemented to work against any parent chain with a standard Ethereum block header and state trie.
+/// @custom:security-contact security@openzeppelin.com
 contract ChildToParentProver is IStateProver {
     /// @dev Address of the block hash buffer contract.
     address public immutable blockHashBuffer;
     /// @dev Storage slot the buffer contract uses to store block hashes.
     ///      See https://github.com/openintentsframework/broadcaster/blob/main/src/contracts/block-hash-pusher/BaseBuffer.sol
-    uint256 public constant blockHashMappingSlot = 1;
+    uint256 public constant BLOCK_HASH_MAPPING_SLOT = 1;
 
     /// @dev The chain ID of the home chain (child chain).
     uint256 public immutable homeChainId;
 
     error CallNotOnHomeChain();
     error CallOnHomeChain();
+    error InvalidTargetStateCommitment();
 
     constructor(address _blockHashBuffer, uint256 _homeChainId) {
         blockHashBuffer = _blockHashBuffer;
@@ -44,13 +46,14 @@ contract ChildToParentProver is IStateProver {
             abi.decode(input, (bytes, uint256, bytes, bytes));
 
         // calculate the slot based on the provided block number
-        // see: https://github.com/OffchainLabs/block-hash-pusher/blob/a1e26f2e42e6306d1e7f03c5d20fa6aa64ff7a12/contracts/Buffer.sol#L32
-        uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(blockHashMappingSlot), targetBlockNumber));
+        // see: https://github.com/openintentsframework/broadcaster/blob/8d02f8e8e39de27de8f0ded481d3c4e5a129351f/src/contracts/block-hash-pusher/BaseBuffer.sol#L24
+        uint256 slot = uint256(SlotDerivation.deriveMapping(bytes32(BLOCK_HASH_MAPPING_SLOT), targetBlockNumber));
 
         // verify proofs and get the block hash
         targetStateCommitment = ProverUtils.getSlotFromBlockHeader(
             homeBlockHash, rlpBlockHeader, blockHashBuffer, slot, accountProof, storageProof
         );
+        require(targetStateCommitment != bytes32(0), InvalidTargetStateCommitment());
     }
 
     /// @notice Get a parent chain block hash from the buffer at `blockHashBuffer`.
@@ -64,6 +67,7 @@ contract ChildToParentProver is IStateProver {
 
         // get the block hash from the buffer
         targetStateCommitment = IBuffer(blockHashBuffer).parentChainBlockHash(targetBlockNumber);
+        require(targetStateCommitment != bytes32(0), InvalidTargetStateCommitment());
     }
 
     /// @notice Verify a storage slot given a target chain block hash and a proof.

@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.30;
 
-import {Lib_SecureMerkleTrie} from "@eth-optimism/contracts/libraries/trie/Lib_SecureMerkleTrie.sol";
-import {Lib_RLPReader} from "@eth-optimism/contracts/libraries/rlp/Lib_RLPReader.sol";
 import {ProverUtils} from "../../libraries/ProverUtils.sol";
 import {IStateProver} from "../../interfaces/IStateProver.sol";
 import {Bytes} from "@openzeppelin/contracts/utils/Bytes.sol";
 
+/// Source: https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/dispute/AnchorStateRegistry.sol
 interface IAnchorStateRegistry {
     function isGameClaimValid(address _game) external view returns (bool);
 }
 
+/// Source: https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/dispute/FaultDisputeGame.sol
 interface IFaultDisputeGame {
     function rootClaim() external view returns (bytes32);
 }
@@ -18,9 +18,8 @@ interface IFaultDisputeGame {
 /// @notice OP-stack implementation of a parent to child IStateProver.
 /// @dev    verifyTargetStateCommitment and getTargetStateCommitment get block hashes from a valid fault dispute game proxy contract.
 ///         verifyStorageSlot is implemented to work against any OP-stack child chain with a standard Ethereum block header and state trie.
+/// @custom:security-contact security@openzeppelin.com
 contract ParentToChildProver is IStateProver {
-    using Lib_RLPReader for Lib_RLPReader.RLPItem;
-
     struct OutputRootProof {
         bytes32 version;
         bytes32 stateRoot;
@@ -29,8 +28,8 @@ contract ParentToChildProver is IStateProver {
     }
 
     /// @dev The storage slot in the AnchorStateRegistry where the anchor game address is stored.
-    ///      https://github.com/ethereum-optimism/optimism/blob/ef7a933ca7f3d27ac40406f87fea25e0c3ba2016/packages/contracts-bedrock/src/dispute/AnchorStateRegistry.sol#L39
-    uint256 public constant ANCHOR_GAME_SLOT = 3;
+    ///      See https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts-bedrock/src/dispute/AnchorStateRegistry.sol
+    uint256 public immutable anchorGameSlot;
 
     /// @notice The target chain's AnchorStateRegistry address.
     address public immutable anchorStateRegistry;
@@ -40,9 +39,16 @@ contract ParentToChildProver is IStateProver {
 
     error CallNotOnHomeChain();
     error CallOnHomeChain();
+    error InvalidHomeBlockHeader();
+    error AnchorGameAccountDoesNotExist();
+    error InvalidGameProxyCode();
+    error InvalidRootClaimPreimage();
+    error InvalidGameProxy();
+    error InvalidTargetStateCommitment();
 
-    constructor(address _anchorStateRegistry, uint256 _homeChainId) {
+    constructor(address _anchorStateRegistry, uint256 _anchorGameSlot, uint256 _homeChainId) {
         anchorStateRegistry = _anchorStateRegistry;
+        anchorGameSlot = _anchorGameSlot;
         homeChainId = _homeChainId;
     }
 
@@ -79,7 +85,9 @@ contract ParentToChildProver is IStateProver {
         ) = abi.decode(input, (bytes, bytes, bytes, bytes, bytes, OutputRootProof));
 
         // check the block hash
-        require(homeBlockHash == keccak256(rlpBlockHeader), "Invalid home block header");
+        if (homeBlockHash != keccak256(rlpBlockHeader)) {
+            revert InvalidHomeBlockHeader();
+        }
         bytes32 stateRoot = ProverUtils.extractStateRootFromBlockHeader(rlpBlockHeader);
 
         // grab the anchor game address
@@ -87,7 +95,7 @@ contract ParentToChildProver is IStateProver {
             uint160(
                 uint256(
                     ProverUtils.getStorageSlotFromStateRoot(
-                        stateRoot, asrAccountProof, asrStorageProof, anchorStateRegistry, ANCHOR_GAME_SLOT
+                        stateRoot, asrAccountProof, asrStorageProof, anchorStateRegistry, anchorGameSlot
                     )
                 )
             )
@@ -96,20 +104,27 @@ contract ParentToChildProver is IStateProver {
         // get the anchor game's code hash from the account proof
         (bool accountExists, bytes memory accountValue) =
             ProverUtils.getAccountDataFromStateRoot(stateRoot, gameProxyAccountProof, anchorGame);
-        require(accountExists, "Anchor game account does not exist");
+        if (!accountExists) {
+            revert AnchorGameAccountDoesNotExist();
+        }
         bytes32 codeHash = ProverUtils.extractCodeHashFromAccountData(accountValue);
 
         // verify the game proxy code against the code hash
-        require(keccak256(gameProxyCode) == codeHash, "Invalid game proxy code");
+        if (keccak256(gameProxyCode) != codeHash) {
+            revert InvalidGameProxyCode();
+        }
 
         // extract the root claim from the game proxy code
         bytes32 rootClaim = _getRootClaimFromGameProxyCode(gameProxyCode);
 
         // verify the root claim preimage
-        require(rootClaim == keccak256(abi.encode(rootClaimPreimage)), "Invalid root claim preimage");
+        if (rootClaim != keccak256(abi.encode(rootClaimPreimage))) {
+            revert InvalidRootClaimPreimage();
+        }
 
         // return the target block hash from the root claim preimage
-        return rootClaimPreimage.latestBlockhash;
+        targetStateCommitment = rootClaimPreimage.latestBlockhash;
+        require(targetStateCommitment != bytes32(0), InvalidTargetStateCommitment());
     }
 
     /// @notice Return the blockhash from a valid fault dispute game's root claim. The game's claim must be considered valid by the anchor state registry.
@@ -126,10 +141,14 @@ contract ParentToChildProver is IStateProver {
         (address gameProxy, OutputRootProof memory rootClaimPreimage) = abi.decode(input, (address, OutputRootProof));
 
         // check the game proxy address
-        require(IAnchorStateRegistry(anchorStateRegistry).isGameClaimValid(gameProxy), "Invalid game proxy");
+        if (!IAnchorStateRegistry(anchorStateRegistry).isGameClaimValid(gameProxy)) {
+            revert InvalidGameProxy();
+        }
 
         bytes32 rootClaim = IFaultDisputeGame(gameProxy).rootClaim();
-        require(rootClaim == keccak256(abi.encode(rootClaimPreimage)), "Invalid root claim preimage");
+        if (rootClaim != keccak256(abi.encode(rootClaimPreimage))) {
+            revert InvalidRootClaimPreimage();
+        }
 
         return rootClaimPreimage.latestBlockhash;
     }
@@ -166,7 +185,7 @@ contract ParentToChildProver is IStateProver {
     ///         https://github.com/Vectorized/solady/blob/502cc1ea718e6fa73b380635ee0868b0740595f0/src/utils/LibClone.sol#L329
     /// @param  bytecode The game proxy code.
     /// @return rootClaim The root claim extracted from the game proxy code.
-    function _getRootClaimFromGameProxyCode(bytes memory bytecode) internal pure returns (bytes32 rootClaim) {
+    function _getRootClaimFromGameProxyCode(bytes memory bytecode) private pure returns (bytes32 rootClaim) {
         // https://github.com/ethereum-optimism/optimism/blob/ef7a933ca7f3d27ac40406f87fea25e0c3ba2016/packages/contracts-bedrock/src/dispute/DisputeGameFactory.sol#L155-L164
         // CWIA Calldata Layout:
         // ┌──────────────┬────────────────────────────────────┐

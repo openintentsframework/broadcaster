@@ -6,6 +6,7 @@ import {IBuffer} from "../interfaces/IBuffer.sol";
 import {IPusher} from "../interfaces/IPusher.sol";
 
 /// @notice Interface for the ZkSync Mailbox contract used to send L1->L2 messages.
+/// Source: https://github.com/matter-labs/era-contracts/blob/33fbd0d832d15da150dcc7ec8032660980caa692/l1-contracts/contracts/state-transition/chain-interfaces/IMailboxImpl.sol#L88
 interface IMailbox {
     function requestL2Transaction(
         address _contractL2,
@@ -23,12 +24,16 @@ interface IMailbox {
 /// @dev This contract sends block hashes from Ethereum L1 to a ZkSyncBuffer contract on ZkSync Era L2
 ///      via the ZkSync Mailbox's `requestL2Transaction` function. The pusher must be configured
 ///      with the correct ZkSync Diamond proxy address.
+/// @custom:security-contact security@openzeppelin.com
 contract ZkSyncPusher is BlockHashArrayBuilder, IPusher {
     /// @dev The address of the ZkSync Diamond proxy contract on L1.
     address private immutable _zkSyncDiamond;
 
     /// @notice Thrown when the L2 transaction request fails.
     error FailedToPushHashes();
+
+    /// @notice Thrown when attempting to set an invalid ZkSync Diamond address.
+    error InvalidZkSyncDiamondAddress();
 
     /// @notice Parameters for the L2 transaction that will be executed on ZkSync.
     /// @param l2GasLimit The gas limit for the L2 transaction.
@@ -41,6 +46,8 @@ contract ZkSyncPusher is BlockHashArrayBuilder, IPusher {
     }
 
     constructor(address zkSyncDiamond_) {
+        require(zkSyncDiamond_ != address(0), InvalidZkSyncDiamondAddress());
+
         _zkSyncDiamond = zkSyncDiamond_;
     }
 
@@ -49,9 +56,7 @@ contract ZkSyncPusher is BlockHashArrayBuilder, IPusher {
         external
         payable
     {
-        if (buffer == address(0)) {
-            revert InvalidBuffer(buffer);
-        }
+        require(buffer != address(0), InvalidBuffer(buffer));
 
         bytes32[] memory blockHashes = _buildBlockHashArray(firstBlockNumber, batchSize);
         bytes memory l2Calldata = abi.encodeCall(IBuffer.receiveHashes, (firstBlockNumber, blockHashes));
@@ -70,9 +75,7 @@ contract ZkSyncPusher is BlockHashArrayBuilder, IPusher {
             l2Transaction.refundRecipient != address(0) ? l2Transaction.refundRecipient : msg.sender
         );
 
-        if (canonicalTxHash == bytes32(0)) {
-            revert FailedToPushHashes();
-        }
+        require(canonicalTxHash != bytes32(0), FailedToPushHashes());
 
         emit BlockHashesPushed(firstBlockNumber, firstBlockNumber + batchSize - 1);
     }
