@@ -1,0 +1,13 @@
+{
+  "contracts": {
+    "broadcaster": "0x4309FcAA812F729A2c6Fc9b67094296389eC919c",
+    "receiver": "0xDa3b7126De1b003CF3817b00F6Bfa7C852CF4C6c"
+  },
+  "copies": {
+    "ethereum-sepolia": {
+      "linea-sepolia": "0x98C620F2A70B85ce5E6e10744737e91D05072469",
+      "optimism-sepolia": "0xDb881503E4942265b9e5c39Dbb73c37F6b973a24",
+      "scroll-sepolia": "0x12432DeEEEBFF3aBF63549206dE28FA4Dec04638"
+    }
+  }
+}

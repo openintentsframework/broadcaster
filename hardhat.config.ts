@@ -5,7 +5,7 @@ import '@nomicfoundation/hardhat-toolbox-viem'
 
 const config: HardhatUserConfig = {
   solidity: {
-    version: '0.8.28',
+    version: '0.8.30',
     settings: {
       evmVersion: 'cancun',
       optimizer: {
