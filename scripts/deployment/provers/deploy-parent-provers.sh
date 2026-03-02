@@ -31,6 +31,7 @@ forge script scripts/deployment/provers/DeployScrollParentToChild.s.sol \
 
 
 ANCHOR_STATE_REGISTRY=$OPTIMISM_SEPOLIA_ANCHOR_STATE_REGISTRY \
+ANCHOR_GAME_SLOT=$OPTIMISM_SEPOLIA_ANCHOR_GAME_SLOT \
 HOME_CHAIN_ID=$ETHEREUM_SEPOLIA_CHAIN_ID \
 TARGET_CHAIN_ID=$OPTIMISM_SEPOLIA_CHAIN_ID \
 forge script scripts/deployment/provers/DeployOptimismParentToChild.s.sol \

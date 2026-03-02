@@ -3,6 +3,7 @@ src = "src/contracts"
 out = "out"
 libs = ["lib"]
 solc = "0.8.30"
+script = "scripts"
 
 via_ir = true
 

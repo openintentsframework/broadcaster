@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
 
-import { Script } from "forge-std/Script.sol";
-import { console } from "forge-std/console.sol";
-import { stdJson } from "forge-std/StdJson.sol";
-import { Receiver } from "../../src/contracts/Receiver.sol";
-import { IReceiver } from "../../src/contracts/interfaces/IReceiver.sol";
+import {Script} from "forge-std/Script.sol";
+import {console} from "forge-std/console.sol";
+import {stdJson} from "forge-std/StdJson.sol";
+import {Receiver} from "../../src/contracts/Receiver.sol";
+import {IReceiver} from "../../src/contracts/interfaces/IReceiver.sol";
 
 contract VerifyMessage is Script {
     using stdJson for string;
@@ -13,7 +13,7 @@ contract VerifyMessage is Script {
     function run() public view {
         address receiverAddress = vm.envAddress("L1_RECEIVER");
         address proverPointerAddress = vm.envAddress("L1_PROVER_POINTER");
-        
+
         string memory path = "test/payloads/taiko/taikoProofL2.json";
         string memory json = vm.readFile(path);
 
@@ -32,12 +32,9 @@ contract VerifyMessage is Script {
         bytes[] memory scpInputs = new bytes[](1);
         scpInputs[0] = abi.encode(uint48(blockNumber));
 
-        IReceiver.RemoteReadArgs memory remoteReadArgs = IReceiver.RemoteReadArgs({
-            route: route,
-            scpInputs: scpInputs,
-            proof: storageProofInput
-        });
-        
+        IReceiver.RemoteReadArgs memory remoteReadArgs =
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProofInput});
+
         bytes32 message = 0xd9222d7d84eefb8570069f30ab4a850423ba57a374c593b67a224c430f9736df;
         address publisher = 0x1CBd3b2770909D4e10f157cABC84C7264073C9Ec;
 
@@ -50,18 +47,12 @@ contract VerifyMessage is Script {
         console.logBytes32(message);
         console.log("");
 
-        (bytes32 broadcasterId, uint256 timestamp) = Receiver(receiverAddress).verifyBroadcastMessage(
-            remoteReadArgs,
-            message,
-            publisher
-        );
+        (bytes32 broadcasterId, uint256 timestamp) =
+            Receiver(receiverAddress).verifyBroadcastMessage(remoteReadArgs, message, publisher);
 
         console.log("=== Verification Success ===");
         console.log("Broadcaster ID: ", vm.toString(broadcasterId));
         console.log("Timestamp:      ", timestamp);
     }
 }
-
-
-
 

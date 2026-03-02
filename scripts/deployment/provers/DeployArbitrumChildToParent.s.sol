@@ -4,17 +4,14 @@ pragma solidity 0.8.30;
 import {DeployBase} from "../DeployBase.s.sol";
 
 import {console} from "forge-std/console.sol";
-import {ParentToChildProver} from "src/contracts/provers/optimism/ParentToChildProver.sol";
+import {ChildToParentProver} from "src/contracts/provers/arbitrum/ChildToParentProver.sol";
 import {StateProverPointer} from "src/contracts/StateProverPointer.sol";
 
-contract DeployArbitrumParentToChild is DeployBase {
+contract DeployArbitrumChildToParent is DeployBase {
     function run() public {
-        address anchorStateRegistry = vm.envAddress("ANCHOR_STATE_REGISTRY");
-        uint256 anchorGameSlot = vm.envUint("ANCHOR_GAME_SLOT");
-        address owner = vm.envAddress("OWNER");
-
         uint256 homeChainId = vm.envUint("HOME_CHAIN_ID");
         uint256 targetChainId = vm.envUint("TARGET_CHAIN_ID");
+        address owner = vm.envAddress("OWNER");
 
         address prover;
         address pointer;
@@ -32,10 +29,10 @@ contract DeployArbitrumParentToChild is DeployBase {
             return;
         }
 
-        bytes memory proverCreationCode = abi.encodePacked(
-            type(ParentToChildProver).creationCode, abi.encode(anchorStateRegistry, anchorGameSlot, homeChainId)
-        );
+        bytes memory proverCreationCode =
+            abi.encodePacked(type(ChildToParentProver).creationCode, abi.encode(homeChainId));
         prover = _deploy(proverCreationCode, bytes32(0));
+
         if (prover == address(0)) {
             console.log("Failed to deploy prover on chain ", _chainName(block.chainid));
             vm.stopBroadcast();
@@ -48,6 +45,7 @@ contract DeployArbitrumParentToChild is DeployBase {
             bytes memory pointerCreationCode =
                 abi.encodePacked(type(StateProverPointer).creationCode, abi.encode(owner));
             pointer = _deploy(pointerCreationCode, bytes32(targetChainId));
+
             if (pointer != address(0)) {
                 if (StateProverPointer(pointer).implementationAddress() == address(0)) {
                     // This will only work if `msg.sender` is the owner of the pointer.
@@ -59,7 +57,7 @@ contract DeployArbitrumParentToChild is DeployBase {
 
         if (pointer == address(0)) {
             // If the pointer is not deployed, it means that this is a copy of the prover deployed in a different chain.
-            _writeCopy(_chainName(homeChainId), _chainName(targetChainId), address(prover));
+            _writeCopy(_chainName(homeChainId), _chainName(targetChainId), prover);
         }else {
             _writeProver(_chainName(targetChainId), address(pointer), address(prover));
         }

@@ -4,17 +4,14 @@ pragma solidity 0.8.30;
 import {DeployBase} from "../DeployBase.s.sol";
 
 import {console} from "forge-std/console.sol";
-import {ParentToChildProver} from "src/contracts/provers/optimism/ParentToChildProver.sol";
+import {ChildToParentProver} from "src/contracts/provers/linea/ChildToParentProver.sol";
 import {StateProverPointer} from "src/contracts/StateProverPointer.sol";
 
-contract DeployArbitrumParentToChild is DeployBase {
+contract DeployLineaChildToParent is DeployBase {
     function run() public {
-        address anchorStateRegistry = vm.envAddress("ANCHOR_STATE_REGISTRY");
-        uint256 anchorGameSlot = vm.envUint("ANCHOR_GAME_SLOT");
-        address owner = vm.envAddress("OWNER");
-
         uint256 homeChainId = vm.envUint("HOME_CHAIN_ID");
         uint256 targetChainId = vm.envUint("TARGET_CHAIN_ID");
+        address owner = vm.envAddress("OWNER");
 
         address prover;
         address pointer;
@@ -22,7 +19,6 @@ contract DeployArbitrumParentToChild is DeployBase {
             return;
         }
         vm.startBroadcast();
-
         if (
             (block.chainid == homeChainId && _isProverDeployed(_chainName(targetChainId)))
                 || (block.chainid != homeChainId && _isCopyDeployed(_chainName(homeChainId), _chainName(targetChainId)))
@@ -31,10 +27,12 @@ contract DeployArbitrumParentToChild is DeployBase {
             console.log("Prover or copy already deployed on chain ", _chainName(block.chainid));
             return;
         }
-
-        bytes memory proverCreationCode = abi.encodePacked(
-            type(ParentToChildProver).creationCode, abi.encode(anchorStateRegistry, anchorGameSlot, homeChainId)
-        );
+        address buffer = _getBufferAddress(_chainName(homeChainId));
+        if (buffer == address(0)) {
+            revert InvalidBufferAddress();
+        }
+        bytes memory proverCreationCode =
+            abi.encodePacked(type(ChildToParentProver).creationCode, abi.encode(buffer, homeChainId));
         prover = _deploy(proverCreationCode, bytes32(0));
         if (prover == address(0)) {
             console.log("Failed to deploy prover on chain ", _chainName(block.chainid));
@@ -58,10 +56,9 @@ contract DeployArbitrumParentToChild is DeployBase {
         vm.stopBroadcast();
 
         if (pointer == address(0)) {
-            // If the pointer is not deployed, it means that this is a copy of the prover deployed in a different chain.
-            _writeCopy(_chainName(homeChainId), _chainName(targetChainId), address(prover));
+            _writeCopy(_chainName(homeChainId), _chainName(targetChainId), prover);
         }else {
-            _writeProver(_chainName(targetChainId), address(pointer), address(prover));
+            _writeProver(_chainName(targetChainId), address(pointer), prover);
         }
     }
 }
