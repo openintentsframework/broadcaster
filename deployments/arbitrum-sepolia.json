@@ -9,5 +9,11 @@
       "scroll-sepolia": "0x6A039cC5cd26F2303f599DEb3155605E63a72a05",
       "optimism-sepolia": "0x3176E35e6FBaB9775D3A56364BECf17228B9c1f2"
     }
+  },
+  "provers": {
+    "ethereum-sepolia": {
+      "pointer": "0xb01db227b4BAb7a0A053A6a7ff610d8D201E4760",
+      "prover": "0x2a3b34adB9b856679518687399930FA5481F577F"
+    }
   }
 }
