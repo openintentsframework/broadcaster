@@ -57,7 +57,7 @@ contract DeployLineaChildToParent is DeployBase {
 
         if (pointer == address(0)) {
             _writeCopy(_chainName(homeChainId), _chainName(targetChainId), prover);
-        }else {
+        } else {
             _writeProver(_chainName(targetChainId), address(pointer), prover);
         }
     }

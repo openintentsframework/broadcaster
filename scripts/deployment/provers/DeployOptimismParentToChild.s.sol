@@ -60,7 +60,7 @@ contract DeployArbitrumParentToChild is DeployBase {
         if (pointer == address(0)) {
             // If the pointer is not deployed, it means that this is a copy of the prover deployed in a different chain.
             _writeCopy(_chainName(homeChainId), _chainName(targetChainId), address(prover));
-        }else {
+        } else {
             _writeProver(_chainName(targetChainId), address(pointer), address(prover));
         }
     }
