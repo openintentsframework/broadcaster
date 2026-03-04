@@ -4,13 +4,15 @@ pragma solidity 0.8.30;
 import {DeployBase} from "../DeployBase.s.sol";
 
 import {console} from "forge-std/console.sol";
-import {ParentToChildProver} from "src/contracts/provers/optimism/ParentToChildProver.sol";
+import {ParentToChildProver} from "src/contracts/provers/zksync/ParentToChildProver.sol";
 import {StateProverPointer} from "src/contracts/StateProverPointer.sol";
 
-contract DeployOptimismParentToChild is DeployBase {
+contract DeployZkSyncParentToChild is DeployBase {
     function run() public {
-        address anchorStateRegistry = vm.envAddress("ANCHOR_STATE_REGISTRY");
-        uint256 anchorGameSlot = vm.envUint("ANCHOR_GAME_SLOT");
+        address gatewayZkChain = vm.envAddress("GATEWAY_ZK_CHAIN");
+        uint256 l2LogsRootHashSlot = vm.envUint("L2_LOGS_ROOT_HASH_SLOT");
+        uint256 childChainId = vm.envUint("CHILD_CHAIN_ID");
+        uint256 gatewayChainId = vm.envUint("GATEWAY_CHAIN_ID");
         address owner = vm.envAddress("OWNER");
 
         uint256 homeChainId = vm.envUint("HOME_CHAIN_ID");
@@ -22,7 +24,6 @@ contract DeployOptimismParentToChild is DeployBase {
             return;
         }
         vm.startBroadcast();
-
         if (
             (block.chainid == homeChainId && _isProverDeployed(_chainName(targetChainId)))
                 || (block.chainid != homeChainId && _isCopyDeployed(_chainName(homeChainId), _chainName(targetChainId)))
@@ -33,9 +34,11 @@ contract DeployOptimismParentToChild is DeployBase {
         }
 
         bytes memory proverCreationCode = abi.encodePacked(
-            type(ParentToChildProver).creationCode, abi.encode(anchorStateRegistry, anchorGameSlot, homeChainId)
+            type(ParentToChildProver).creationCode,
+            abi.encode(gatewayZkChain, l2LogsRootHashSlot, childChainId, gatewayChainId, homeChainId)
         );
         prover = _deploy(proverCreationCode, bytes32(0));
+
         if (prover == address(0)) {
             console.log("Failed to deploy prover on chain ", _chainName(block.chainid));
             vm.stopBroadcast();

@@ -6,15 +6,16 @@
   },
   "copies": {
     "ethereum-sepolia": {
-      "arbitrum-sepolia": "0xA7CC6C0A839f3ceF7471D666598068E988AC1D7e",
-      "linea-sepolia": "0x0F6977Ae14E8855cE209c73331A009Ba0cF98D1f",
-      "scroll-sepolia": "0x6A039cC5cd26F2303f599DEb3155605E63a72a05"
+      "arbitrum-sepolia": "0x3ed2414D931f28Ef85D2E5e74e509d6FEDB812F6",
+      "linea-sepolia": "0x3E36338736c590753F071D90779b0449bD576834",
+      "scroll-sepolia": "0x2635119429AFE9ed4b5dC38f71D12f1A241231Ec",
+      "zksync-sepolia": "0xf5e56d9d93267631f69dB9388d38e9c487830bD4"
     }
   },
   "provers": {
     "ethereum-sepolia": {
-      "pointer": "0xb01db227b4BAb7a0A053A6a7ff610d8D201E4760",
-      "prover": "0xfB896638254EeB15ac5530c63c98d9575c4194E2"
+      "pointer": "0x2B48c5BeE8A3C63bbD5f5Be10bFCcda2ab372BF0",
+      "prover": "0xBEFC80AD06A03f1e15c71e370D935a25820a7E19"
     }
   }
 }

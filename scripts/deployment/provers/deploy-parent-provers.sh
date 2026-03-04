@@ -39,6 +39,17 @@ forge script scripts/deployment/provers/DeployOptimismParentToChild.s.sol \
     --private-key "$DEPLOYER_PRIVATE_KEY" \
     --broadcast
 
+GATEWAY_ZK_CHAIN=$ZKSYNC_SEPOLIA_GATEWAY_ZK_CHAIN \
+L2_LOGS_ROOT_HASH_SLOT=$ZKSYNC_SEPOLIA_L2_LOGS_ROOT_HASH_SLOT \
+CHILD_CHAIN_ID=$ZKSYNC_SEPOLIA_CHAIN_ID \
+GATEWAY_CHAIN_ID=$ZKSYNC_SEPOLIA_GATEWAY_CHAIN_ID \
+HOME_CHAIN_ID=$ETHEREUM_SEPOLIA_CHAIN_ID \
+TARGET_CHAIN_ID=$ZKSYNC_SEPOLIA_CHAIN_ID \
+forge script scripts/deployment/provers/DeployZkSyncParentToChild.s.sol \
+    --rpc-url "$RPC_URL" \
+    --private-key "$DEPLOYER_PRIVATE_KEY" \
+    --broadcast
+
 
 
 

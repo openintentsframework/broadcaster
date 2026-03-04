@@ -27,3 +27,10 @@ forge script scripts/deployment/provers/DeployOptimismChildToParent.s.sol \
     --rpc-url "$OPTIMISM_SEPOLIA_RPC_URL" \
     --private-key "$DEPLOYER_PRIVATE_KEY" \
     --broadcast
+
+HOME_CHAIN_ID=$ZKSYNC_SEPOLIA_CHAIN_ID \
+TARGET_CHAIN_ID=$ETHEREUM_SEPOLIA_CHAIN_ID \
+forge script scripts/deployment/provers/DeployZkSyncChildToParent.s.sol \
+    --rpc-url "$ZKSYNC_SEPOLIA_RPC_URL" \
+    --private-key "$DEPLOYER_PRIVATE_KEY" \
+    --broadcast
