@@ -153,6 +153,13 @@ contract DeployBase is Script {
         vm.writeJson(_jsonString(vm.toString(addr)), path, string.concat(".contracts.", name));
     }
 
+    function _writeContractAtChain(uint256 chainId, string memory name, address addr) internal {
+        string memory path = string.concat(_deploymentsDir(), "/", _chainName(chainId), ".json");
+        _ensureRootScaffold(path);
+
+        vm.writeJson(_jsonString(vm.toString(addr)), path, string.concat(".contracts.", name));
+    }
+
     /// Adds/updates `.provers["chainKey"].pointer` and `.provers["chainKey"].prover`
     function _writeProver(string memory chainKey, address pointer, address prover) internal {
         string memory path = _path();

@@ -16,22 +16,31 @@ contract DeployPushers is DeployBase {
         address zkSyncDiamond = vm.envAddress("ZKSYNC_DIAMOND");
         address opL1CrossDomainMessengerProxy = vm.envAddress("OP_L1_CROSS_DOMAIN_MESSENGER_PROXY");
 
+        uint256 lineaChainId = vm.envUint("LINEA_CHAIN_ID");
+        uint256 scrollChainId = vm.envUint("SCROLL_CHAIN_ID");
+        uint256 zksyncChainId = vm.envUint("ZKSYNC_CHAIN_ID");
+        uint256 optimismChainId = vm.envUint("OPTIMISM_CHAIN_ID");
+
         vm.startBroadcast();
         if (!_isPusherDeployed("linea-sepolia")) {
             LineaPusher lineaPusher = new LineaPusher(lineaRollup);
             _writePusher("linea-sepolia", address(lineaPusher));
+            _writeContractAtChain(lineaChainId, "pusher", address(lineaPusher));
         }
         if (!_isPusherDeployed("scroll-sepolia")) {
             ScrollPusher scrollPusher = new ScrollPusher(l1ScrollMessenger);
             _writePusher("scroll-sepolia", address(scrollPusher));
+            _writeContractAtChain(scrollChainId, "pusher", address(scrollPusher));
         }
         if (!_isPusherDeployed("zksync-sepolia")) {
             ZkSyncPusher zksyncPusher = new ZkSyncPusher(zkSyncDiamond);
             _writePusher("zksync-sepolia", address(zksyncPusher));
+            _writeContractAtChain(zksyncChainId, "pusher", address(zksyncPusher));
         }
         if (!_isPusherDeployed("optimism-sepolia")) {
             OptimismPusher optimismPusher = new OptimismPusher(opL1CrossDomainMessengerProxy);
             _writePusher("optimism-sepolia", address(optimismPusher));
+            _writeContractAtChain(optimismChainId, "pusher", address(optimismPusher));
         }
         vm.stopBroadcast();
     }
