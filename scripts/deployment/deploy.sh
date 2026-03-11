@@ -100,7 +100,7 @@ echo "Deploying Buffer contract for Scroll..."
 CHAIN_TYPE="scroll" \
 PARENT_CHAIN="ethereum-sepolia" \
 CHILD_CHAIN="scroll-sepolia" \
-MESSENGER="$SCROLL_L2_SCROLL_MESSENGER" \
+MESSENGER="$L2_SCROLL_MESSENGER" \
 RPC_URL="$SCROLL_RPC_URL" ./scripts/deployment/block-hash-pusher/deploy-buffers.sh
 
 # ZkSync

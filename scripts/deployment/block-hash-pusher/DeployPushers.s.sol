@@ -14,7 +14,7 @@ contract DeployPushers is DeployBase {
         address lineaRollup = vm.envAddress("LINEA_ROLLUP");
         address l1ScrollMessenger = vm.envAddress("L1_SCROLL_MESSENGER");
         address zkSyncDiamond = vm.envAddress("ZKSYNC_DIAMOND");
-        address opL1CrossDomainMessengerProxy = vm.envAddress("OP_L1_CROSS_DOMAIN_MESSENGER_PROXY");
+        address opL1CrossDomainMessengerProxy = vm.envAddress("OPTIMISM_L1_CROSS_DOMAIN_MESSENGER_PROXY");
 
         uint256 lineaChainId = vm.envUint("LINEA_CHAIN_ID");
         uint256 scrollChainId = vm.envUint("SCROLL_CHAIN_ID");
