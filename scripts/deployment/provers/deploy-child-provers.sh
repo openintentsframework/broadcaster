@@ -1,36 +1,36 @@
 #!/usr/bin/env bash
 
-HOME_CHAIN_ID=$ARBITRUM_SEPOLIA_CHAIN_ID \
-TARGET_CHAIN_ID=$ETHEREUM_SEPOLIA_CHAIN_ID \
+HOME_CHAIN_ID=$ARBITRUM_CHAIN_ID \
+TARGET_CHAIN_ID=$ETHEREUM_CHAIN_ID \
 forge script scripts/deployment/provers/DeployArbitrumChildToParent.s.sol \
-    --rpc-url "$ARBITRUM_SEPOLIA_RPC_URL" \
+    --rpc-url "$ARBITRUM_RPC_URL" \
     --private-key "$DEPLOYER_PRIVATE_KEY" \
     --broadcast
 
-HOME_CHAIN_ID=$LINEA_SEPOLIA_CHAIN_ID \
-TARGET_CHAIN_ID=$ETHEREUM_SEPOLIA_CHAIN_ID \
+HOME_CHAIN_ID=$LINEA_CHAIN_ID \
+TARGET_CHAIN_ID=$ETHEREUM_CHAIN_ID \
 forge script scripts/deployment/provers/DeployLineaChildToParent.s.sol \
-    --rpc-url "$LINEA_SEPOLIA_RPC_URL" \
+    --rpc-url "$LINEA_RPC_URL" \
     --private-key "$DEPLOYER_PRIVATE_KEY" \
     --broadcast
 
-HOME_CHAIN_ID=$SCROLL_SEPOLIA_CHAIN_ID \
-TARGET_CHAIN_ID=$ETHEREUM_SEPOLIA_CHAIN_ID \
+HOME_CHAIN_ID=$SCROLL_CHAIN_ID \
+TARGET_CHAIN_ID=$ETHEREUM_CHAIN_ID \
 forge script scripts/deployment/provers/DeployScrollChildToParent.s.sol \
-    --rpc-url "$SCROLL_SEPOLIA_RPC_URL" \
+    --rpc-url "$SCROLL_RPC_URL" \
     --private-key "$DEPLOYER_PRIVATE_KEY" \
     --broadcast
 
-HOME_CHAIN_ID=$OPTIMISM_SEPOLIA_CHAIN_ID \
-TARGET_CHAIN_ID=$ETHEREUM_SEPOLIA_CHAIN_ID \
+HOME_CHAIN_ID=$OPTIMISM_CHAIN_ID \
+TARGET_CHAIN_ID=$ETHEREUM_CHAIN_ID \
 forge script scripts/deployment/provers/DeployOptimismChildToParent.s.sol \
-    --rpc-url "$OPTIMISM_SEPOLIA_RPC_URL" \
+    --rpc-url "$OPTIMISM_RPC_URL" \
     --private-key "$DEPLOYER_PRIVATE_KEY" \
     --broadcast
 
-HOME_CHAIN_ID=$ZKSYNC_SEPOLIA_CHAIN_ID \
-TARGET_CHAIN_ID=$ETHEREUM_SEPOLIA_CHAIN_ID \
+HOME_CHAIN_ID=$ZKSYNC_CHAIN_ID \
+TARGET_CHAIN_ID=$ETHEREUM_CHAIN_ID \
 forge script scripts/deployment/provers/DeployZkSyncChildToParent.s.sol \
-    --rpc-url "$ZKSYNC_SEPOLIA_RPC_URL" \
+    --rpc-url "$ZKSYNC_RPC_URL" \
     --private-key "$DEPLOYER_PRIVATE_KEY" \
     --broadcast
