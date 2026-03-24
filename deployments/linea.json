@@ -3,7 +3,10 @@
     "broadcaster": "0x536c398D9bBAf896b128C99bB7c78CfA3243AE27",
     "receiver": "0x16681d01c9169aacaFB6BbCBaF4c7C3002C63059",
     "pusher": "0xe0f5B1750670FBea7f8c9D825DdBfa6A34a7727b",
-    "buffer": "0xe0f5B1750670FBea7f8c9D825DdBfa6A34a7727b"
+    "buffer": "0xe0f5B1750670FBea7f8c9D825DdBfa6A34a7727b",
+    "broadcaster-oracle": "0x0a6edD8A400b6db1bbe0d21Ecef07c4Fce983248",
+    "input-settler-escrow": "0x15eA18EAcD9C35b454CF1456ed1bD05636B46147",
+    "output-settler-simple": "0x1DCE289d62C2068584C5D0CFb5C1fD538e832847"
   },
   "copies": {
     "ethereum": {

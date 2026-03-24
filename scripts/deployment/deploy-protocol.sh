@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
 
-VERIFY_FLAGS=""
-if [ "$CHAIN_TYPE" = "zksync" ]; then
-  unset ETHERSCAN_API_KEY
-  unset VERIFIER
+if [ "$VERIFIER" = "etherscan" ]; then
+  VERIFY_FLAGS="--verify --verifier etherscan --etherscan-api-key $ETHERSCAN_API_KEY"
 else
-  VERIFY_FLAGS="--verify --verifier $VERIFIER --etherscan-api-key $ETHERSCAN_API_KEY"
+  VERIFY_FLAGS="--verify --verifier-url $VERIFIER_URL"
 fi
 
 CHAIN_TYPE=$CHAIN_TYPE forge script scripts/deployment/DeployProtocol.s.sol \
