@@ -12,8 +12,11 @@ import {DeployBase} from "../DeployBase.s.sol";
 contract DeployBuffers is DeployBase {
     function run() public {
         string memory chainType = vm.envString("CHAIN_TYPE");
-        string memory parentChain = vm.envString("PARENT_CHAIN");
-        string memory childChain = vm.envString("CHILD_CHAIN");
+
+        uint256 parentChainId = vm.envUint("PARENT_CHAIN_ID");
+        uint256 childChainId = vm.envUint("CHILD_CHAIN_ID");
+        string memory parentChain = _chainName(parentChainId);
+        string memory childChain = _chainName(childChainId);
 
         address pusherAddress = _getPusherAddress(parentChain, childChain);
         if (pusherAddress == address(0)) {

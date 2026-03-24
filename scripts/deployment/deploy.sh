@@ -90,32 +90,32 @@ chmod +x scripts/deployment/block-hash-pusher/deploy-buffers.sh
 # Linea
 echo "Deploying Buffer contract for Linea..."
 CHAIN_TYPE="linea" \
-PARENT_CHAIN="ethereum-sepolia" \
-CHILD_CHAIN="linea-sepolia" \
+PARENT_CHAIN_ID="$ETHEREUM_CHAIN_ID" \
+CHILD_CHAIN_ID="$LINEA_CHAIN_ID" \
 MESSENGER="$LINEA_L2_MESSAGE_SERVICE" \
 RPC_URL="$LINEA_RPC_URL" ./scripts/deployment/block-hash-pusher/deploy-buffers.sh
 
 # Scroll
 echo "Deploying Buffer contract for Scroll..."
 CHAIN_TYPE="scroll" \
-PARENT_CHAIN="ethereum-sepolia" \
-CHILD_CHAIN="scroll-sepolia" \
+PARENT_CHAIN_ID="$ETHEREUM_CHAIN_ID" \
+CHILD_CHAIN_ID="$SCROLL_CHAIN_ID" \
 MESSENGER="$L2_SCROLL_MESSENGER" \
 RPC_URL="$SCROLL_RPC_URL" ./scripts/deployment/block-hash-pusher/deploy-buffers.sh
 
 # ZkSync
 echo "Deploying Buffer contract for ZkSync..."
 CHAIN_TYPE="zksync" \
-PARENT_CHAIN="ethereum-sepolia" \
-CHILD_CHAIN="zksync-sepolia" \
+PARENT_CHAIN_ID="$ETHEREUM_CHAIN_ID" \
+CHILD_CHAIN_ID="$ZKSYNC_CHAIN_ID" \
 MESSENGER=0x0000000000000000000000000000000000000000 \
 RPC_URL="$ZKSYNC_RPC_URL" ./scripts/deployment/block-hash-pusher/deploy-buffers.sh
 
 # Optimism
 echo "Deploying Buffer contract for Optimism..."
 CHAIN_TYPE="optimism" \
-PARENT_CHAIN="ethereum-sepolia" \
-CHILD_CHAIN="optimism-sepolia" \
+PARENT_CHAIN_ID="$ETHEREUM_CHAIN_ID" \
+CHILD_CHAIN_ID="$OPTIMISM_CHAIN_ID" \
 MESSENGER="$OPTIMISM_L2_CROSS_DOMAIN_MESSENGER" \
 RPC_URL="$OPTIMISM_RPC_URL" ./scripts/deployment/block-hash-pusher/deploy-buffers.sh
 
