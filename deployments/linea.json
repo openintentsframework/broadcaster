@@ -2,7 +2,8 @@
   "contracts": {
     "broadcaster": "0x536c398D9bBAf896b128C99bB7c78CfA3243AE27",
     "receiver": "0x16681d01c9169aacaFB6BbCBaF4c7C3002C63059",
-    "pusher": "0xe0f5B1750670FBea7f8c9D825DdBfa6A34a7727b"
+    "pusher": "0xe0f5B1750670FBea7f8c9D825DdBfa6A34a7727b",
+    "buffer": "0xe0f5B1750670FBea7f8c9D825DdBfa6A34a7727b"
   },
   "copies": {
     "ethereum": {
