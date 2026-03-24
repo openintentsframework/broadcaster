@@ -1,0 +1,38 @@
+{
+  "contracts": {
+    "broadcaster": "0x536c398D9bBAf896b128C99bB7c78CfA3243AE27",
+    "receiver": "0x16681d01c9169aacaFB6BbCBaF4c7C3002C63059",
+    "pusher": "0x5a5C4f3D0F0Efaeed2aEc9B59B67eC62a4666D88",
+    "broadcaster-oracle": "0xBf8d2e6961b5725e3A4499BF1A2A1CcAB219DC51",
+    "input-settler-escrow": "0x15eA18EAcD9C35b454CF1456ed1bD05636B46147",
+    "output-settler-simple": "0x1DCE289d62C2068584C5D0CFb5C1fD538e832847"
+  },
+  "provers": {
+    "arbitrum": {
+      "pointer": "0xC70F25F1C275A1803c511c898c660ee28E08D148",
+      "prover": "0xfdB7609b3fFd817454fDF8409b01399DF4a45adD"
+    },
+    "linea": {
+      "pointer": "0x70eD7E966C589928e3320c30CF1aD86d49E175d3",
+      "prover": "0x347Fdf829FeE4289c520F23b3537e273EA41AE30"
+    },
+    "scroll": {
+      "pointer": "0x749a05534A0D023df7238205F6B8146978b23332",
+      "prover": "0xa50B98CF3fcC4226eA724223DeA1B9F9ECDa3F70"
+    },
+    "optimism": {
+      "pointer": "0xfBB590FAA27E8e51411511f6aC2B868FDF18d607",
+      "prover": "0x6B0e07592261540cF9D141d894b8A17FE1A04a98"
+    },
+    "zksync": {
+      "pointer": "0xd7CB2eC1D83B93E92785116cF73a8e6F29079831",
+      "prover": "0x4148d6E5cF0a095dB68f20A99DBf1232D8BB1cC6"
+    }
+  },
+  "pushers": {
+    "linea": "0xe0f5B1750670FBea7f8c9D825DdBfa6A34a7727b",
+    "scroll": "0x331475638c7B3356c3E1d1Ff0c1477F7D8B8fB04",
+    "zksync": "0x32e6E59958Cb6C7C528573a42456955E1EC3FF12",
+    "optimism": "0xcf118D7a3635F9B18B4aa88bFCDB4fa51c73719D"
+  }
+}

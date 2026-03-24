@@ -21,25 +21,30 @@ contract DeployPushers is DeployBase {
         uint256 zksyncChainId = vm.envUint("ZKSYNC_CHAIN_ID");
         uint256 optimismChainId = vm.envUint("OPTIMISM_CHAIN_ID");
 
+        string memory lineaName = _chainName(lineaChainId);
+        string memory scrollName = _chainName(scrollChainId);
+        string memory zksyncName = _chainName(zksyncChainId);
+        string memory optimismName = _chainName(optimismChainId);
+
         vm.startBroadcast();
-        if (!_isPusherDeployed("linea-sepolia")) {
+        if (!_isPusherDeployed(lineaName)) {
             LineaPusher lineaPusher = new LineaPusher(lineaRollup);
-            _writePusher("linea-sepolia", address(lineaPusher));
+            _writePusher(lineaName, address(lineaPusher));
             _writeContractAtChain(lineaChainId, "pusher", address(lineaPusher));
         }
-        if (!_isPusherDeployed("scroll-sepolia")) {
+        if (!_isPusherDeployed(scrollName)) {
             ScrollPusher scrollPusher = new ScrollPusher(l1ScrollMessenger);
-            _writePusher("scroll-sepolia", address(scrollPusher));
+            _writePusher(scrollName, address(scrollPusher));
             _writeContractAtChain(scrollChainId, "pusher", address(scrollPusher));
         }
-        if (!_isPusherDeployed("zksync-sepolia")) {
+        if (!_isPusherDeployed(zksyncName)) {
             ZkSyncPusher zksyncPusher = new ZkSyncPusher(zkSyncDiamond);
-            _writePusher("zksync-sepolia", address(zksyncPusher));
+            _writePusher(zksyncName, address(zksyncPusher));
             _writeContractAtChain(zksyncChainId, "pusher", address(zksyncPusher));
         }
-        if (!_isPusherDeployed("optimism-sepolia")) {
+        if (!_isPusherDeployed(optimismName)) {
             OptimismPusher optimismPusher = new OptimismPusher(opL1CrossDomainMessengerProxy);
-            _writePusher("optimism-sepolia", address(optimismPusher));
+            _writePusher(optimismName, address(optimismPusher));
             _writeContractAtChain(optimismChainId, "pusher", address(optimismPusher));
         }
         vm.stopBroadcast();

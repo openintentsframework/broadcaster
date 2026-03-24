@@ -1,0 +1,21 @@
+{
+  "contracts": {
+    "broadcaster": "0x536c398D9bBAf896b128C99bB7c78CfA3243AE27",
+    "receiver": "0x16681d01c9169aacaFB6BbCBaF4c7C3002C63059",
+    "pusher": "0xcf118D7a3635F9B18B4aa88bFCDB4fa51c73719D"
+  },
+  "copies": {
+    "ethereum": {
+      "arbitrum": "0xfdB7609b3fFd817454fDF8409b01399DF4a45adD",
+      "linea": "0x347Fdf829FeE4289c520F23b3537e273EA41AE30",
+      "scroll": "0xa50B98CF3fcC4226eA724223DeA1B9F9ECDa3F70",
+      "zksync": "0x4148d6E5cF0a095dB68f20A99DBf1232D8BB1cC6"
+    }
+  },
+  "provers": {
+    "ethereum": {
+      "pointer": "0xB45B3985Ba20b20014FA73a7E7dAb1c171D869E6",
+      "prover": "0xeFBD41f759C7e149BF897Ee1C50d7bf4d02FdADD"
+    }
+  }
+}
