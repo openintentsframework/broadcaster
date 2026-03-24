@@ -15,8 +15,8 @@
   },
   "provers": {
     "ethereum": {
-      "pointer": "0xB45B3985Ba20b20014FA73a7E7dAb1c171D869E6",
-      "prover": "0x9224694981A19E51935859B334Ad6eF905e6356d"
+      "pointer": "0x1c7ca0a4d176A03Fe93C1f5d6555f2ED724B6b04",
+      "prover": "0x0C413Eb0681c91e677BA6D4a8bBC0989a7962bd6"
     }
   }
 }

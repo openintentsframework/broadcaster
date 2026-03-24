@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+VERIFY_FLAGS=""
+if [ "$CHAIN_TYPE" != "zksync" ]; then
+  VERIFY_FLAGS="--verify --verifier $VERIFIER --etherscan-api-key $ETHERSCAN_API_KEY"
+fi
+
 OUTBOX=$ARBITRUM_OUTBOX \
 ROOTS_SLOT=$ARBITRUM_ROOTS_SLOT \
 HOME_CHAIN_ID=$ETHEREUM_CHAIN_ID \
@@ -8,9 +13,7 @@ forge script scripts/deployment/provers/DeployArbitrumParentToChild.s.sol \
     --rpc-url "$RPC_URL" \
     --private-key "$DEPLOYER_PRIVATE_KEY" \
     --broadcast \
-    --verify \
-    --verifier $VERIFIER \
-    --etherscan-api-key $ETHERSCAN_API_KEY
+    $VERIFY_FLAGS
 
 
 ROLLUP=$LINEA_ROLLUP \
@@ -21,9 +24,7 @@ forge script scripts/deployment/provers/DeployLineaParentToChild.s.sol \
     --rpc-url "$RPC_URL" \
     --private-key "$DEPLOYER_PRIVATE_KEY" \
     --broadcast \
-    --verify \
-    --verifier $VERIFIER \
-    --etherscan-api-key $ETHERSCAN_API_KEY
+    $VERIFY_FLAGS
 
 
 SCROLL_CHAIN=$SCROLL_CHAIN \
@@ -34,9 +35,7 @@ forge script scripts/deployment/provers/DeployScrollParentToChild.s.sol \
     --rpc-url "$RPC_URL" \
     --private-key "$DEPLOYER_PRIVATE_KEY" \
     --broadcast \
-    --verify \
-    --verifier $VERIFIER \
-    --etherscan-api-key $ETHERSCAN_API_KEY
+    $VERIFY_FLAGS
 
 
 ANCHOR_STATE_REGISTRY=$OPTIMISM_ANCHOR_STATE_REGISTRY \
@@ -47,9 +46,7 @@ forge script scripts/deployment/provers/DeployOptimismParentToChild.s.sol \
     --rpc-url "$RPC_URL" \
     --private-key "$DEPLOYER_PRIVATE_KEY" \
     --broadcast \
-    --verify \
-    --verifier $VERIFIER \
-    --etherscan-api-key $ETHERSCAN_API_KEY
+    $VERIFY_FLAGS
 
 GATEWAY_ZK_CHAIN=$ZKSYNC_GATEWAY_ZK_CHAIN \
 L2_LOGS_ROOT_HASH_SLOT=$ZKSYNC_L2_LOGS_ROOT_HASH_SLOT \
@@ -61,9 +58,7 @@ forge script scripts/deployment/provers/DeployZkSyncParentToChild.s.sol \
     --rpc-url "$RPC_URL" \
     --private-key "$DEPLOYER_PRIVATE_KEY" \
     --broadcast \
-    --verify \
-    --verifier $VERIFIER \
-    --etherscan-api-key $ETHERSCAN_API_KEY
+    $VERIFY_FLAGS
 
 
 

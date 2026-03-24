@@ -9,14 +9,14 @@
     "ethereum": {
       "arbitrum": "0xfdB7609b3fFd817454fDF8409b01399DF4a45adD",
       "linea": "0x347Fdf829FeE4289c520F23b3537e273EA41AE30",
-      "scroll": "0xa50B98CF3fcC4226eA724223DeA1B9F9ECDa3F70",
-      "zksync": "0x4148d6E5cF0a095dB68f20A99DBf1232D8BB1cC6"
+      "zksync": "0x4148d6E5cF0a095dB68f20A99DBf1232D8BB1cC6",
+      "scroll": "0xa50B98CF3fcC4226eA724223DeA1B9F9ECDa3F70"
     }
   },
   "provers": {
     "ethereum": {
-      "pointer": "0xB45B3985Ba20b20014FA73a7E7dAb1c171D869E6",
-      "prover": "0xeFBD41f759C7e149BF897Ee1C50d7bf4d02FdADD"
+      "pointer": "0x1c7ca0a4d176A03Fe93C1f5d6555f2ED724B6b04",
+      "prover": "0x0Adf8FefA84B09ebD31E7eDA9c381D4ADB44ca1d"
     }
   }
 }
