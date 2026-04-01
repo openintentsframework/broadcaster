@@ -33,6 +33,7 @@ contract DeployBase is Script {
         if (chainId == 534352) return "scroll";
         if (chainId == 10) return "optimism";
         if (chainId == 324) return "zksync";
+        if (chainId == 8453) return "base";
 
         revert InvalidChainId(chainId);
     }

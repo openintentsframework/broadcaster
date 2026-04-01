@@ -41,7 +41,10 @@ contract DeployBuffers is DeployBase {
                 buffer = address(new LineaBuffer(messenger, pusherAddress));
             } else if (keccak256(bytes(chainType)) == keccak256(bytes("scroll"))) {
                 buffer = address(new ScrollBuffer(messenger, pusherAddress));
-            } else if (keccak256(bytes(chainType)) == keccak256(bytes("optimism"))) {
+            } else if (
+                keccak256(bytes(chainType)) == keccak256(bytes("optimism"))
+                    || keccak256(bytes(chainType)) == keccak256(bytes("base"))
+            ) {
                 buffer = address(new OptimismBuffer(messenger, pusherAddress));
             } else {
                 revert("Invalid chain type");

@@ -27,12 +27,17 @@
     "zksync": {
       "pointer": "0xd7CB2eC1D83B93E92785116cF73a8e6F29079831",
       "prover": "0x4148d6E5cF0a095dB68f20A99DBf1232D8BB1cC6"
+    },
+    "base": {
+      "pointer": "0x8645f22Bc5d6b9531a76E20d3eD749A55117F47C",
+      "prover": "0xfBc1Edd87a700DBD7eaa3E038E54E6C7fFba1723"
     }
   },
   "pushers": {
     "linea": "0xe0f5B1750670FBea7f8c9D825DdBfa6A34a7727b",
     "scroll": "0x331475638c7B3356c3E1d1Ff0c1477F7D8B8fB04",
     "zksync": "0x32e6E59958Cb6C7C528573a42456955E1EC3FF12",
-    "optimism": "0xcf118D7a3635F9B18B4aa88bFCDB4fa51c73719D"
+    "optimism": "0xcf118D7a3635F9B18B4aa88bFCDB4fa51c73719D",
+    "base": "0xcBF1db810c116e21fbf957530b73768924Fb2D02"
   }
 }

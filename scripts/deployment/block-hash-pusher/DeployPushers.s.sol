@@ -15,16 +15,19 @@ contract DeployPushers is DeployBase {
         address l1ScrollMessenger = vm.envAddress("L1_SCROLL_MESSENGER");
         address zkSyncDiamond = vm.envAddress("ZKSYNC_DIAMOND");
         address opL1CrossDomainMessengerProxy = vm.envAddress("OPTIMISM_L1_CROSS_DOMAIN_MESSENGER_PROXY");
+        address baseL1CrossDomainMessengerProxy = vm.envAddress("BASE_L1_CROSS_DOMAIN_MESSENGER_PROXY");
 
         uint256 lineaChainId = vm.envUint("LINEA_CHAIN_ID");
         uint256 scrollChainId = vm.envUint("SCROLL_CHAIN_ID");
         uint256 zksyncChainId = vm.envUint("ZKSYNC_CHAIN_ID");
         uint256 optimismChainId = vm.envUint("OPTIMISM_CHAIN_ID");
+        uint256 baseChainId = vm.envUint("BASE_CHAIN_ID");
 
         string memory lineaName = _chainName(lineaChainId);
         string memory scrollName = _chainName(scrollChainId);
         string memory zksyncName = _chainName(zksyncChainId);
         string memory optimismName = _chainName(optimismChainId);
+        string memory baseName = _chainName(baseChainId);
 
         vm.startBroadcast();
         if (!_isPusherDeployed(lineaName)) {
@@ -46,6 +49,11 @@ contract DeployPushers is DeployBase {
             OptimismPusher optimismPusher = new OptimismPusher(opL1CrossDomainMessengerProxy);
             _writePusher(optimismName, address(optimismPusher));
             _writeContractAtChain(optimismChainId, "pusher", address(optimismPusher));
+        }
+        if (!_isPusherDeployed(baseName)) {
+            OptimismPusher basePusher = new OptimismPusher(baseL1CrossDomainMessengerProxy);
+            _writePusher(baseName, address(basePusher));
+            _writeContractAtChain(baseChainId, "pusher", address(basePusher));
         }
         vm.stopBroadcast();
     }
