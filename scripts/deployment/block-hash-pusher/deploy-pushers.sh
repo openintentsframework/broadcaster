@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
 
+if [ "$VERIFIER" = "etherscan" ]; then
+  VERIFY_FLAGS="--verify --verifier etherscan --etherscan-api-key $ETHERSCAN_API_KEY"
+else
+  VERIFY_FLAGS="--verify --verifier-url $VERIFIER_URL"
+fi
+
 forge script scripts/deployment/block-hash-pusher/DeployPushers.s.sol \
   --rpc-url "$RPC_URL" \
   --private-key "$DEPLOYER_PRIVATE_KEY" \
-  --broadcast
+  --broadcast \
+  $VERIFY_FLAGS
   

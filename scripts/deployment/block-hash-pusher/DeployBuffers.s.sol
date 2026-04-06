@@ -12,8 +12,11 @@ import {DeployBase} from "../DeployBase.s.sol";
 contract DeployBuffers is DeployBase {
     function run() public {
         string memory chainType = vm.envString("CHAIN_TYPE");
-        string memory parentChain = vm.envString("PARENT_CHAIN");
-        string memory childChain = vm.envString("CHILD_CHAIN");
+
+        uint256 parentChainId = vm.envUint("PARENT_CHAIN_ID");
+        uint256 childChainId = vm.envUint("CHILD_CHAIN_ID");
+        string memory parentChain = _chainName(parentChainId);
+        string memory childChain = _chainName(childChainId);
 
         address pusherAddress = _getPusherAddress(parentChain, childChain);
         if (pusherAddress == address(0)) {
@@ -38,7 +41,10 @@ contract DeployBuffers is DeployBase {
                 buffer = address(new LineaBuffer(messenger, pusherAddress));
             } else if (keccak256(bytes(chainType)) == keccak256(bytes("scroll"))) {
                 buffer = address(new ScrollBuffer(messenger, pusherAddress));
-            } else if (keccak256(bytes(chainType)) == keccak256(bytes("optimism"))) {
+            } else if (
+                keccak256(bytes(chainType)) == keccak256(bytes("optimism"))
+                    || keccak256(bytes(chainType)) == keccak256(bytes("base"))
+            ) {
                 buffer = address(new OptimismBuffer(messenger, pusherAddress));
             } else {
                 revert("Invalid chain type");

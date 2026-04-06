@@ -47,7 +47,7 @@ contract DeployArbitrumParentToChild is DeployBase {
         if (block.chainid == homeChainId) {
             bytes memory pointerCreationCode =
                 abi.encodePacked(type(StateProverPointer).creationCode, abi.encode(owner));
-            pointer = _deploy(pointerCreationCode, bytes32(targetChainId));
+            pointer = _deploy(pointerCreationCode, keccak256(abi.encode(targetChainId)));
             if (pointer != address(0)) {
                 if (StateProverPointer(pointer).implementationAddress() == address(0)) {
                     // This will only work if `msg.sender` is the owner of the pointer.

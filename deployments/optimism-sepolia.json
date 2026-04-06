@@ -1,9 +1,9 @@
 {
   "contracts": {
-    "broadcaster": "0x2e6f2Cb4bf4E4D2166F83958442a180825B94248",
-    "receiver": "0x712535fE2e24df51917DB5438EB3dA90437F70AF",
     "buffer": "0xaC0a6EB6407b9C13c3B374219B2f91fda4DF47C5",
-    "pusher": "0x2c4ded0d5883646AEAD86a6C748c871afa819125"
+    "pusher": "0x2c4ded0d5883646AEAD86a6C748c871afa819125",
+    "broadcaster": "0x536c398D9bBAf896b128C99bB7c78CfA3243AE27",
+    "receiver": "0x16681d01c9169aacaFB6BbCBaF4c7C3002C63059"
   },
   "copies": {
     "ethereum-sepolia": {

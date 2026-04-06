@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 
-CHAIN_TYPE=$CHAIN_TYPE \
-PARENT_CHAIN=$PARENT_CHAIN \
-CHILD_CHAIN=$CHILD_CHAIN \
-MESSENGER=$MESSENGER \
+if [ "$VERIFIER" = "etherscan" ]; then
+  VERIFY_FLAGS="--verify --verifier etherscan --etherscan-api-key $ETHERSCAN_API_KEY"
+else
+  VERIFY_FLAGS="--verify --verifier-url $VERIFIER_URL"
+fi
+
 forge script scripts/deployment/block-hash-pusher/DeployBuffers.s.sol \
   --rpc-url "$RPC_URL" \
   --private-key "$DEPLOYER_PRIVATE_KEY" \
-  --broadcast
+  --broadcast \
+  $VERIFY_FLAGS
   
