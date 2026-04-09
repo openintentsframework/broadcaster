@@ -10,7 +10,8 @@
       "arbitrum-sepolia": "0x3ed2414D931f28Ef85D2E5e74e509d6FEDB812F6",
       "linea-sepolia": "0x3E36338736c590753F071D90779b0449bD576834",
       "optimism-sepolia": "0x9B22f2bB9a5ECbEd10984f47c1A5FE8C551Fbf6a",
-      "zksync-sepolia": "0xf5e56d9d93267631f69dB9388d38e9c487830bD4"
+      "zksync-sepolia": "0xf5e56d9d93267631f69dB9388d38e9c487830bD4",
+      "base-sepolia": "0x853C0c8873FB6c2c71777373AD71BEa04f3755A6"
     }
   },
   "provers": {
