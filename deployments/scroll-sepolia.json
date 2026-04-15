@@ -1,0 +1,22 @@
+{
+  "contracts": {
+    "buffer": "0x12e91f63cC0F43434141396AC0E9f5b1A0e103D6",
+    "pusher": "0xF99b4E792aCaBa74cb2d1A5D3fDBDFfe630C0a8e",
+    "broadcaster": "0x536c398D9bBAf896b128C99bB7c78CfA3243AE27",
+    "receiver": "0x16681d01c9169aacaFB6BbCBaF4c7C3002C63059"
+  },
+  "copies": {
+    "ethereum-sepolia": {
+      "arbitrum-sepolia": "0x3ed2414D931f28Ef85D2E5e74e509d6FEDB812F6",
+      "linea-sepolia": "0x3E36338736c590753F071D90779b0449bD576834",
+      "optimism-sepolia": "0x9B22f2bB9a5ECbEd10984f47c1A5FE8C551Fbf6a",
+      "zksync-sepolia": "0xf5e56d9d93267631f69dB9388d38e9c487830bD4"
+    }
+  },
+  "provers": {
+    "ethereum-sepolia": {
+      "pointer": "0x2B48c5BeE8A3C63bbD5f5Be10bFCcda2ab372BF0",
+      "prover": "0x852060961640ff9569946000E049c44c13bCEe98"
+    }
+  }
+}

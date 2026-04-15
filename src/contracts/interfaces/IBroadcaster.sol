@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 /// @notice Broadcasts messages to receivers.
 interface IBroadcaster {
@@ -12,6 +12,7 @@ interface IBroadcaster {
     /// @dev    MUST revert if the publisher has already broadcast the message.
     ///         MUST emit MessageBroadcast.
     ///         MUST store block.timestamp in slot keccak(message, msg.sender).
+    ///         MAY use additional transmission mechanisms (e.g., child-to-parent native bridges) to make messages visible.
     /// @param  message The message to broadcast.
     function broadcastMessage(bytes32 message) external;
 }

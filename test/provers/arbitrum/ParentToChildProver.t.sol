@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 import {Test, console} from "forge-std/Test.sol";
 import {stdJson} from "forge-std/StdJson.sol";
@@ -9,7 +9,7 @@ import {RLP} from "@openzeppelin/contracts/utils/RLP.sol";
 import {ArbitrumOutputMock} from "../../mocks/ArbitrumOutputMock.sol";
 import {BlockHeaders} from "../../utils/BlockHeaders.sol";
 
-contract ParentToChildProverTest is Test {
+contract ArbitrumParentToChildProverTest is Test {
     using stdJson for string;
     using RLP for RLP.Encoder;
 
@@ -77,27 +77,28 @@ contract ParentToChildProverTest is Test {
         parentForkId = vm.createFork(vm.envString("ETHEREUM_RPC_URL"));
         vm.selectFork(parentForkId);
 
-        // Mock Outbox holds the expected sendRoot -> targetBlockHash mapping for stability
+        // Mock Outbox holds the expected sendRoot -> targetStateCommitment mapping for stability
         mockOutbox = new ArbitrumOutputMock();
         bytes32 sendRoot = 0x7995a5be000a0212a46f7f128e5ffd6f6a99fa9c72046d9e9b0668bd080712cd;
-        bytes32 targetBlockHashFromProof = 0xa97ce065a04d2abfec36a459db323721847718d3159d51c4256d271ee3b37e42;
-        mockOutbox.updateSendRoot(sendRoot, targetBlockHashFromProof);
+        bytes32 targetStateCommitmentFromProof = 0xa97ce065a04d2abfec36a459db323721847718d3159d51c4256d271ee3b37e42;
+        mockOutbox.updateSendRoot(sendRoot, targetStateCommitmentFromProof);
     }
 
-    function test_getTargetBlockHash() public {
+    function test_getTargetStateCommitment() public {
         vm.selectFork(parentForkId);
 
         // Test with the sendRoot from the proof data
         bytes32 sendRoot = 0x7995a5be000a0212a46f7f128e5ffd6f6a99fa9c72046d9e9b0668bd080712cd;
-        ParentToChildProver mockProver = new ParentToChildProver(address(mockOutbox), rootSlot);
-        bytes32 result = mockProver.getTargetBlockHash(abi.encode(sendRoot));
+        ParentToChildProver mockProver = new ParentToChildProver(address(mockOutbox), rootSlot, block.chainid);
+        bytes32 result = mockProver.getTargetStateCommitment(abi.encode(sendRoot));
         bytes32 expectedTargetBlockHash = 0xa97ce065a04d2abfec36a459db323721847718d3159d51c4256d271ee3b37e42;
-        assertEq(result, expectedTargetBlockHash, "getTargetBlockHash should return correct Arbitrum block hash");
+        assertEq(result, expectedTargetBlockHash, "getTargetStateCommitment should return correct Arbitrum block hash");
     }
 
-    function test_verifyTargetBlockHash() public {
+    function test_verifyTargetStateCommitment() public {
         vm.selectFork(parentForkId);
-        ParentToChildProver prover = new ParentToChildProver(address(outbox), rootSlot);
+        uint256 proverHomeChainId = block.chainid;
+        ParentToChildProver prover = new ParentToChildProver(address(outbox), rootSlot, proverHomeChainId);
 
         // State root derived from the proof's root node in fixture JSON
         bytes32 stateRoot = keccak256(
@@ -114,13 +115,19 @@ contract ParentToChildProverTest is Test {
         bytes memory rlpStorageProof = _getStorageProof();
         bytes memory input = abi.encode(rlpBlockHeader, sendRoot, rlpAccountProof, rlpStorageProof);
         bytes32 expectedTargetBlockHash = 0xcb53c786e7e875d7e3b1d3a770adbe02877ee5daab2ebfa55b935798b3ee9d24;
-        bytes32 result = prover.verifyTargetBlockHash(homeBlockHash, input);
-        assertEq(result, expectedTargetBlockHash, "verifyTargetBlockHash should return correct Arbitrum block hash");
+
+        // verifyTargetStateCommitment MUST be called off the prover's home chain.
+        vm.chainId(proverHomeChainId + 1);
+
+        bytes32 result = prover.verifyTargetStateCommitment(homeBlockHash, input);
+        assertEq(
+            result, expectedTargetBlockHash, "verifyTargetStateCommitment should return correct Arbitrum block hash"
+        );
     }
 
     function test_verifyStorageSlot() public {
         vm.selectFork(parentForkId);
-        ParentToChildProver prover = new ParentToChildProver(address(outbox), rootSlot);
+        ParentToChildProver prover = new ParentToChildProver(address(outbox), rootSlot, block.chainid);
 
         // Using the same proof.json data - verifying Outbox storage via verifyStorageSlot
         bytes32 stateRoot = keccak256(
@@ -130,7 +137,7 @@ contract ParentToChildProverTest is Test {
         RLP.Encoder memory enc = RLP.encoder().push(bytes32(0)).push(bytes32(0)).push(bytes32(0)).push(stateRoot);
 
         bytes memory rlpBlockHeader = enc.encode();
-        bytes32 targetBlockHash = keccak256(rlpBlockHeader);
+        bytes32 targetStateCommitment = keccak256(rlpBlockHeader);
 
         // Outbox contract and storage slot from proof.json
         address outboxAddress = 0x65f07C7D521164a4d5DaC6eB8Fac8DA067A3B78F;
@@ -139,7 +146,7 @@ contract ParentToChildProverTest is Test {
         bytes memory rlpStorageProof = _getStorageProof();
         bytes memory input = abi.encode(rlpBlockHeader, outboxAddress, storageSlot, rlpAccountProof, rlpStorageProof);
 
-        (address account, uint256 slot, bytes32 value) = prover.verifyStorageSlot(targetBlockHash, input);
+        (address account, uint256 slot, bytes32 value) = prover.verifyStorageSlot(targetStateCommitment, input);
 
         assertEq(account, outboxAddress, "Account should match Outbox address");
         assertEq(slot, storageSlot, "Slot should match roots mapping slot");
@@ -178,7 +185,7 @@ contract ParentToChildProverTest is Test {
 
         bytes memory input = abi.encode(rlpBlockHeader, account, expectedSlot, rlpAccountProof, rlpStorageProof);
 
-        ParentToChildProver parentToChildProver = new ParentToChildProver(address(outbox), 3);
+        ParentToChildProver parentToChildProver = new ParentToChildProver(address(outbox), 3, block.chainid);
 
         (address actualAccount, uint256 actualSlot, bytes32 actualValue) =
             parentToChildProver.verifyStorageSlot(blockHash, input);

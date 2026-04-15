@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
 
-import { Script } from "forge-std/Script.sol";
-import { console } from "forge-std/console.sol";
-import { ParentToChildProver as TaikoParentToChildProver } from "../../src/contracts/provers/taiko/ParentToChildProver.sol";
-import { BlockHashProverPointer } from "../../src/contracts/BlockHashProverPointer.sol";
+import {Script} from "forge-std/Script.sol";
+import {console} from "forge-std/console.sol";
+import {
+    ParentToChildProver as TaikoParentToChildProver
+} from "../../src/contracts/provers/taiko/ParentToChildProver.sol";
+import {StateProverPointer} from "../../src/contracts/StateProverPointer.sol";
 
 /// @notice Deploy ParentToChildProver on L1 (Ethereum/Taiko Parent Chain)
 /// @dev This script deploys the prover that allows reading L2 state from L1
@@ -17,19 +19,16 @@ contract DeployL1Prover is Script {
         address owner = vm.envAddress("TAIKO_DEPLOYER_ADDRESS");
 
         vm.startBroadcast();
-        
-        TaikoParentToChildProver parentToChildProver = new TaikoParentToChildProver(
-            signalServiceL1, 
-            checkpointsSlot, 
-            homeChainId
-        );
-        
-        BlockHashProverPointer blockHashProverPointer = new BlockHashProverPointer(owner);
-        blockHashProverPointer.setImplementationAddress(address(parentToChildProver));
-        
+
+        TaikoParentToChildProver parentToChildProver =
+            new TaikoParentToChildProver(signalServiceL1, checkpointsSlot, homeChainId);
+
+        StateProverPointer stateProverPointer = new StateProverPointer(owner);
+        stateProverPointer.setImplementationAddress(address(parentToChildProver));
+
         vm.stopBroadcast();
 
         console.log("ParentToChildProver:", address(parentToChildProver));
-        console.log("L1ProverPointer:", address(blockHashProverPointer));
+        console.log("L1ProverPointer:", address(stateProverPointer));
     }
 }

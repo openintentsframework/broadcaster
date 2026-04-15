@@ -57,21 +57,15 @@ contract VerifyOnChain is Script {
         address[] memory route = new address[](1);
         route[0] = getL2ProverPointer();
 
-        bytes[] memory bhpInputs = new bytes[](1);
-        bhpInputs[0] = abi.encode(uint48(blockNumber));
+        bytes[] memory scpInputs = new bytes[](1);
+        scpInputs[0] = abi.encode(uint48(blockNumber));
 
-        IReceiver.RemoteReadArgs memory remoteReadArgs = IReceiver.RemoteReadArgs({
-            route: route,
-            bhpInputs: bhpInputs,
-            storageProof: storageProofInput
-        });
+        IReceiver.RemoteReadArgs memory remoteReadArgs =
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProofInput});
 
         // Call the deployed Receiver contract
-        (bytes32 broadcasterId, uint256 timestamp) = IReceiver(getL2Receiver()).verifyBroadcastMessage(
-            remoteReadArgs,
-            message,
-            publisher
-        );
+        (bytes32 broadcasterId, uint256 timestamp) =
+            IReceiver(getL2Receiver()).verifyBroadcastMessage(remoteReadArgs, message, publisher);
 
         console.log("");
         console.log("=== VERIFICATION SUCCESSFUL ===");
@@ -109,21 +103,15 @@ contract VerifyOnChain is Script {
         address[] memory route = new address[](1);
         route[0] = getL1ProverPointer();
 
-        bytes[] memory bhpInputs = new bytes[](1);
-        bhpInputs[0] = abi.encode(uint48(blockNumber));
+        bytes[] memory scpInputs = new bytes[](1);
+        scpInputs[0] = abi.encode(uint48(blockNumber));
 
-        IReceiver.RemoteReadArgs memory remoteReadArgs = IReceiver.RemoteReadArgs({
-            route: route,
-            bhpInputs: bhpInputs,
-            storageProof: storageProofInput
-        });
+        IReceiver.RemoteReadArgs memory remoteReadArgs =
+            IReceiver.RemoteReadArgs({route: route, scpInputs: scpInputs, proof: storageProofInput});
 
         // Call the deployed Receiver contract
-        (bytes32 broadcasterId, uint256 timestamp) = IReceiver(getL1Receiver()).verifyBroadcastMessage(
-            remoteReadArgs,
-            message,
-            publisher
-        );
+        (bytes32 broadcasterId, uint256 timestamp) =
+            IReceiver(getL1Receiver()).verifyBroadcastMessage(remoteReadArgs, message, publisher);
 
         console.log("");
         console.log("=== VERIFICATION SUCCESSFUL ===");

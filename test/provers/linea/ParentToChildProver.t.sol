@@ -3,20 +3,34 @@ pragma solidity ^0.8.28;
 
 import {Test} from "forge-std/Test.sol";
 import {console} from "forge-std/console.sol";
-import {ParentToChildProver, ILineaRollup} from
-    "../../../src/contracts/provers/linea/ParentToChildProver.sol";
+import {ParentToChildProver} from "../../../src/contracts/provers/linea/ParentToChildProver.sol";
+import {ZkEvmV2} from "@linea-contracts/rollup/ZkEvmV2.sol";
 import {stdJson} from "forge-std/StdJson.sol";
 
 /// @notice Mock LineaRollup contract for testing
-contract MockLineaRollup {
-    mapping(uint256 => bytes32) public stateRootHashes;
-
+contract MockLineaRollup is ZkEvmV2 {
     function setStateRootHash(uint256 blockNumber, bytes32 stateRootHash) external {
         stateRootHashes[blockNumber] = stateRootHash;
     }
+
+    function sendMessage(address _to, uint256 _fee, bytes calldata _calldata) external payable {
+        if (_fee > msg.value) {
+            revert ValueSentTooLow();
+        }
+
+        bytes32 messageHash = keccak256(abi.encode(msg.sender, _to, _fee, msg.value - _fee, 0, _calldata));
+
+        emit MessageSent(msg.sender, _to, _fee, msg.value - _fee, 0, _calldata, messageHash);
+
+        // no-op
+    }
+
+    function sender() external view returns (address) {
+        return TRANSIENT_MESSAGE_SENDER;
+    }
 }
 
-contract ParentToChildProverTest is Test {
+contract LineaParentToChildProverTest is Test {
     using stdJson for string;
 
     ParentToChildProver public prover;
@@ -46,11 +60,7 @@ contract ParentToChildProverTest is Test {
         mockLineaRollup = new MockLineaRollup();
 
         // Deploy prover with mock LineaRollup, pointing to L1 (home chain)
-        prover = new ParentToChildProver(
-            address(mockLineaRollup),
-            STATE_ROOT_HASHES_SLOT,
-            ETH_MAINNET_CHAIN_ID
-        );
+        prover = new ParentToChildProver(address(mockLineaRollup), STATE_ROOT_HASHES_SLOT, ETH_MAINNET_CHAIN_ID);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -64,94 +74,82 @@ contract ParentToChildProverTest is Test {
     }
 
     function test_constructor_differentParameters() public {
-        ParentToChildProver newProver = new ParentToChildProver(
-            address(0x123),
-            99,
-            12345
-        );
+        ParentToChildProver newProver = new ParentToChildProver(address(0x123), 99, 12345);
         assertEq(newProver.lineaRollup(), address(0x123));
         assertEq(newProver.stateRootHashesSlot(), 99);
         assertEq(newProver.homeChainId(), 12345);
     }
 
-    function testFuzz_constructor_acceptsAnyParameters(
-        address _lineaRollup,
-        uint256 _slot,
-        uint256 _chainId
-    ) public {
-        ParentToChildProver newProver = new ParentToChildProver(
-            _lineaRollup,
-            _slot,
-            _chainId
-        );
+    function testFuzz_constructor_acceptsAnyParameters(address _lineaRollup, uint256 _slot, uint256 _chainId) public {
+        ParentToChildProver newProver = new ParentToChildProver(_lineaRollup, _slot, _chainId);
         assertEq(newProver.lineaRollup(), _lineaRollup);
         assertEq(newProver.stateRootHashesSlot(), _slot);
         assertEq(newProver.homeChainId(), _chainId);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // getTargetBlockHash Tests (Home Chain - L1)
+    // getTargetStateCommitment Tests (Home Chain - L1)
     // ═══════════════════════════════════════════════════════════════════════════
 
-    function test_getTargetBlockHash_success() public {
+    function test_getTargetStateCommitment_success() public {
         // Set up mock to return a state root
         mockLineaRollup.setStateRootHash(L2_BLOCK_NUMBER, L2_STATE_ROOT);
 
         // We're on L1 (home chain) by default in tests
         vm.chainId(ETH_MAINNET_CHAIN_ID);
 
-        bytes32 stateRoot = prover.getTargetBlockHash(abi.encode(L2_BLOCK_NUMBER));
+        bytes32 stateRoot = prover.getTargetStateCommitment(abi.encode(L2_BLOCK_NUMBER));
 
         assertEq(stateRoot, L2_STATE_ROOT);
     }
 
-    function test_getTargetBlockHash_revertsWhenNotFound() public {
+    function test_getTargetStateCommitment_revertsWhenNotFound() public {
         // State root not set (returns bytes32(0))
         vm.chainId(ETH_MAINNET_CHAIN_ID);
 
         vm.expectRevert(ParentToChildProver.TargetStateRootNotFound.selector);
-        prover.getTargetBlockHash(abi.encode(L2_BLOCK_NUMBER));
+        prover.getTargetStateCommitment(abi.encode(L2_BLOCK_NUMBER));
     }
 
-    function test_getTargetBlockHash_revertsOffHomeChain() public {
+    function test_getTargetStateCommitment_revertsOffHomeChain() public {
         // Switch to Linea L2 (not home chain)
         vm.chainId(LINEA_MAINNET_CHAIN_ID);
 
         vm.expectRevert(ParentToChildProver.CallNotOnHomeChain.selector);
-        prover.getTargetBlockHash(abi.encode(L2_BLOCK_NUMBER));
+        prover.getTargetStateCommitment(abi.encode(L2_BLOCK_NUMBER));
     }
 
-    function test_getTargetBlockHash_zeroBlockNumber() public {
+    function test_getTargetStateCommitment_zeroBlockNumber() public {
         mockLineaRollup.setStateRootHash(0, L2_STATE_ROOT);
         vm.chainId(ETH_MAINNET_CHAIN_ID);
 
-        bytes32 stateRoot = prover.getTargetBlockHash(abi.encode(uint256(0)));
+        bytes32 stateRoot = prover.getTargetStateCommitment(abi.encode(uint256(0)));
         assertEq(stateRoot, L2_STATE_ROOT);
     }
 
-    function testFuzz_getTargetBlockHash_revertsOnUnknownBlock(uint48 blockNumber) public {
+    function testFuzz_getTargetStateCommitment_revertsOnUnknownBlock(uint48 blockNumber) public {
         // Don't set any state root
         vm.chainId(ETH_MAINNET_CHAIN_ID);
 
         vm.expectRevert(ParentToChildProver.TargetStateRootNotFound.selector);
-        prover.getTargetBlockHash(abi.encode(uint256(blockNumber)));
+        prover.getTargetStateCommitment(abi.encode(uint256(blockNumber)));
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // verifyTargetBlockHash Tests (Non-Home Chain)
+    // verifyTargetStateCommitment Tests (Non-Home Chain)
     // ═══════════════════════════════════════════════════════════════════════════
 
-    function test_verifyTargetBlockHash_revertsOnHomeChain() public {
-        // On L1 (home chain), verifyTargetBlockHash should revert
+    function test_verifyTargetStateCommitment_revertsOnHomeChain() public {
+        // On L1 (home chain), verifyTargetStateCommitment should revert
         vm.chainId(ETH_MAINNET_CHAIN_ID);
 
         vm.expectRevert(ParentToChildProver.CallOnHomeChain.selector);
-        prover.verifyTargetBlockHash(bytes32(0), bytes(""));
+        prover.verifyTargetStateCommitment(bytes32(0), bytes(""));
     }
 
     /// @dev This test requires a real storage proof from L1 LineaRollup
     ///      For now, we test that the function reverts with invalid proofs
-    function test_verifyTargetBlockHash_revertsWithInvalidProof() public {
+    function test_verifyTargetStateCommitment_revertsWithInvalidProof() public {
         vm.chainId(LINEA_MAINNET_CHAIN_ID);
 
         bytes memory input = abi.encode(
@@ -163,7 +161,7 @@ contract ParentToChildProverTest is Test {
 
         // Should revert due to invalid proof
         vm.expectRevert();
-        prover.verifyTargetBlockHash(bytes32(uint256(1)), input);
+        prover.verifyTargetStateCommitment(bytes32(uint256(1)), input);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -199,8 +197,7 @@ contract ParentToChildProverTest is Test {
     // ═══════════════════════════════════════════════════════════════════════════
 
     function test_version() public view {
-        // Version 2: SMT proof support
-        assertEq(prover.version(), 2);
+        assertEq(prover.version(), 1);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -248,6 +245,196 @@ contract ParentToChildProverTest is Test {
             console.log("Generate proof using: node scripts/linea/encode-smt-proof.js");
         }
     }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Security Tests - Verify that forged proofs are rejected
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// @notice Test that a valid proof with wrong account address is rejected
+    /// @dev This tests the fix for Finding 2: Account address must match proof's hKey
+    function test_security_rejectsWrongAccountAddress() public {
+        string memory proofPath = "test/payloads/linea/encoded-smt-proof.txt";
+        try vm.readFile(proofPath) returns (string memory encodedProofHex) {
+            bytes32 zkStateRoot = 0x0b9797153d1cef2b38f6e87d2c225791b74107ae7ce28e60bf498b9d1c094f14;
+            bytes memory encodedProof = vm.parseBytes(encodedProofHex);
+
+            // Decode the original proof
+            (
+                address originalAccount,
+                uint256 slot,
+                uint256 accountLeafIndex,
+                bytes[] memory accountProof,
+                bytes memory accountValue,
+                uint256 storageLeafIndex,
+                bytes[] memory storageProof,
+                bytes32 claimedStorageValue
+            ) = abi.decode(encodedProof, (address, uint256, uint256, bytes[], bytes, uint256, bytes[], bytes32));
+
+            // Re-encode with a DIFFERENT account address (attacker tries to claim different account)
+            address fakeAccount = address(0xDeaDBeeF);
+            bytes memory forgedInput = abi.encode(
+                fakeAccount, // FORGED: different account
+                slot,
+                accountLeafIndex,
+                accountProof,
+                accountValue,
+                storageLeafIndex,
+                storageProof,
+                claimedStorageValue
+            );
+
+            // Should revert with AccountKeyMismatch because the proof's hKey won't match the fake account
+            vm.expectRevert(ParentToChildProver.AccountKeyMismatch.selector);
+            prover.verifyStorageSlot(zkStateRoot, forgedInput);
+
+            console.log("Security test PASSED: Wrong account address rejected");
+        } catch {
+            console.log("Skipping security test - proof file not found");
+        }
+    }
+
+    /// @notice Test that a valid proof with wrong storage slot is rejected
+    /// @dev This tests the fix for Finding 1: Storage slot must match proof's hKey
+    function test_security_rejectsWrongStorageSlot() public {
+        string memory proofPath = "test/payloads/linea/encoded-smt-proof.txt";
+        try vm.readFile(proofPath) returns (string memory encodedProofHex) {
+            bytes32 zkStateRoot = 0x0b9797153d1cef2b38f6e87d2c225791b74107ae7ce28e60bf498b9d1c094f14;
+            bytes memory encodedProof = vm.parseBytes(encodedProofHex);
+
+            // Decode the original proof
+            (
+                address account,
+                uint256 originalSlot,
+                uint256 accountLeafIndex,
+                bytes[] memory accountProof,
+                bytes memory accountValue,
+                uint256 storageLeafIndex,
+                bytes[] memory storageProof,
+                bytes32 claimedStorageValue
+            ) = abi.decode(encodedProof, (address, uint256, uint256, bytes[], bytes, uint256, bytes[], bytes32));
+
+            // Re-encode with a DIFFERENT storage slot (attacker tries to claim different slot)
+            uint256 fakeSlot = 0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef;
+            bytes memory forgedInput = abi.encode(
+                account,
+                fakeSlot, // FORGED: different slot
+                accountLeafIndex,
+                accountProof,
+                accountValue,
+                storageLeafIndex,
+                storageProof,
+                claimedStorageValue
+            );
+
+            // Should revert with StorageKeyMismatch because the proof's hKey won't match the fake slot
+            vm.expectRevert(ParentToChildProver.StorageKeyMismatch.selector);
+            prover.verifyStorageSlot(zkStateRoot, forgedInput);
+
+            console.log("Security test PASSED: Wrong storage slot rejected");
+        } catch {
+            console.log("Skipping security test - proof file not found");
+        }
+    }
+
+    /// @notice Test that a valid proof with forged accountValue (fake storageRoot) is rejected
+    /// @dev This tests the fix for Finding 3: Account value must match proof's hValue
+    function test_security_rejectsFakeStorageRoot() public {
+        string memory proofPath = "test/payloads/linea/encoded-smt-proof.txt";
+        try vm.readFile(proofPath) returns (string memory encodedProofHex) {
+            bytes32 zkStateRoot = 0x0b9797153d1cef2b38f6e87d2c225791b74107ae7ce28e60bf498b9d1c094f14;
+            bytes memory encodedProof = vm.parseBytes(encodedProofHex);
+
+            // Decode the original proof
+            (
+                address account,
+                uint256 slot,
+                uint256 accountLeafIndex,
+                bytes[] memory accountProof,
+                bytes memory originalAccountValue,
+                uint256 storageLeafIndex,
+                bytes[] memory storageProof,
+                bytes32 claimedStorageValue
+            ) = abi.decode(encodedProof, (address, uint256, uint256, bytes[], bytes, uint256, bytes[], bytes32));
+
+            // Create a FORGED accountValue with a fake storageRoot
+            // Account struct: nonce, balance, storageRoot, mimcCodeHash, keccakCodeHash, codeSize
+            bytes memory forgedAccountValue = abi.encode(
+                uint64(1), // nonce
+                uint256(0), // balance
+                bytes32(uint256(0xBAD)), // FORGED: fake storageRoot!
+                bytes32(0), // mimcCodeHash
+                bytes32(0), // keccakCodeHash
+                uint64(0) // codeSize
+            );
+
+            bytes memory forgedInput = abi.encode(
+                account,
+                slot,
+                accountLeafIndex,
+                accountProof,
+                forgedAccountValue, // FORGED: fake account value with attacker-controlled storageRoot
+                storageLeafIndex,
+                storageProof,
+                claimedStorageValue
+            );
+
+            // Should revert with AccountValueMismatch because the forged accountValue
+            // won't hash to the same hValue as in the proven leaf
+            vm.expectRevert(ParentToChildProver.AccountValueMismatch.selector);
+            prover.verifyStorageSlot(zkStateRoot, forgedInput);
+
+            console.log("Security test PASSED: Fake storage root rejected");
+        } catch {
+            console.log("Skipping security test - proof file not found");
+        }
+    }
+
+    /// @notice Test that a valid proof with wrong claimed storage value is rejected
+    /// @dev This verifies existing protection: storage value must match proof's hValue
+    function test_security_rejectsWrongStorageValue() public {
+        string memory proofPath = "test/payloads/linea/encoded-smt-proof.txt";
+        try vm.readFile(proofPath) returns (string memory encodedProofHex) {
+            bytes32 zkStateRoot = 0x0b9797153d1cef2b38f6e87d2c225791b74107ae7ce28e60bf498b9d1c094f14;
+            bytes memory encodedProof = vm.parseBytes(encodedProofHex);
+
+            // Decode the original proof
+            (
+                address account,
+                uint256 slot,
+                uint256 accountLeafIndex,
+                bytes[] memory accountProof,
+                bytes memory accountValue,
+                uint256 storageLeafIndex,
+                bytes[] memory storageProof,
+                bytes32 originalStorageValue
+            ) = abi.decode(encodedProof, (address, uint256, uint256, bytes[], bytes, uint256, bytes[], bytes32));
+
+            // Re-encode with a DIFFERENT storage value
+            bytes32 fakeStorageValue = bytes32(uint256(0x999999));
+            bytes memory forgedInput = abi.encode(
+                account,
+                slot,
+                accountLeafIndex,
+                accountProof,
+                accountValue,
+                storageLeafIndex,
+                storageProof,
+                fakeStorageValue // FORGED: different value
+            );
+
+            // Should revert with StorageValueMismatch
+            vm.expectRevert(ParentToChildProver.StorageValueMismatch.selector);
+            prover.verifyStorageSlot(zkStateRoot, forgedInput);
+
+            console.log("Security test PASSED: Wrong storage value rejected");
+        } catch {
+            console.log("Skipping security test - proof file not found");
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Legacy Tests
+    // ═══════════════════════════════════════════════════════════════════════════
 
     /// @notice Legacy test that documents the old MPT format is no longer supported
     /// @dev Linea uses SMT (Sparse Merkle Tree), not MPT (Merkle-Patricia Trie)

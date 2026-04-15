@@ -10,7 +10,7 @@
   "finalization": {
     "batchBlockNumber": 21834331,
     "zkStateRoot": "0x0b9797153d1cef2b38f6e87d2c225791b74107ae7ce28e60bf498b9d1c094f14",
-    "note": "Linea only stores state roots at batch boundaries. Use batchBlockNumber (not txBlockNumber) for getTargetBlockHash. Uses Sparse Merkle Tree proofs (linea_getProof)."
+    "note": "Linea only stores state roots at batch boundaries. Use batchBlockNumber (not txBlockNumber) for getTargetStateCommitment. Uses Sparse Merkle Tree proofs (linea_getProof)."
   },
   "storageSlot": {
     "slot": "0xc7f3206d60205e1634924ee1e67de7607b9a5991744aaf3526fde997abcc5170",

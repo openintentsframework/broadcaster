@@ -1,0 +1,26 @@
+{
+  "contracts": {
+    "broadcaster": "0x536c398D9bBAf896b128C99bB7c78CfA3243AE27",
+    "receiver": "0x16681d01c9169aacaFB6BbCBaF4c7C3002C63059",
+    "pusher": "0xe0f5B1750670FBea7f8c9D825DdBfa6A34a7727b",
+    "buffer": "0xe0f5B1750670FBea7f8c9D825DdBfa6A34a7727b",
+    "broadcaster-oracle": "0x0a6edD8A400b6db1bbe0d21Ecef07c4Fce983248",
+    "input-settler-escrow": "0x15eA18EAcD9C35b454CF1456ed1bD05636B46147",
+    "output-settler-simple": "0x1DCE289d62C2068584C5D0CFb5C1fD538e832847"
+  },
+  "copies": {
+    "ethereum": {
+      "arbitrum": "0xfdB7609b3fFd817454fDF8409b01399DF4a45adD",
+      "scroll": "0xa50B98CF3fcC4226eA724223DeA1B9F9ECDa3F70",
+      "optimism": "0x6B0e07592261540cF9D141d894b8A17FE1A04a98",
+      "zksync": "0x4148d6E5cF0a095dB68f20A99DBf1232D8BB1cC6",
+      "base": "0xfBc1Edd87a700DBD7eaa3E038E54E6C7fFba1723"
+    }
+  },
+  "provers": {
+    "ethereum": {
+      "pointer": "0x1c7ca0a4d176A03Fe93C1f5d6555f2ED724B6b04",
+      "prover": "0xc96707EF3F543aE9f81aAa81f92b11F3A6F825Dc"
+    }
+  }
+}

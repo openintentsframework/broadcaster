@@ -55,7 +55,7 @@ DEPLOYMENT
 ./scripts/taiko/deploy.sh --force  # Force re-deployment
 
 Deploys and verifies all contracts on L1 and L2:
-- Broadcaster, Receiver, BlockHashProverPointer
+- Broadcaster, Receiver, StateProverPointer
 - ParentToChildProver (L1) - reads L2 state from L1
 - ChildToParentProver (L2) - reads L1 state from L2
 
@@ -258,7 +258,7 @@ ARCHITECTURE
 L1 (Ethereum/Taiko Parent - Chain ID: 32382)
 ├── Broadcaster (stores messages)
 ├── Receiver (verifies remote messages)
-├── BlockHashProverPointer
+├── StateProverPointer
 ├── ParentToChildProver (reads L2 blocks via SignalService)
 └── SignalService (0x53789e39E3310737E8C8cED483032AAc25B39ded)
     └── Stores L2 block checkpoints
@@ -266,7 +266,7 @@ L1 (Ethereum/Taiko Parent - Chain ID: 32382)
 L2 (Taiko Child Chain - Chain ID: 167001)
 ├── Broadcaster (stores messages)
 ├── Receiver (verifies remote messages)
-├── BlockHashProverPointer
+├── StateProverPointer
 ├── ChildToParentProver (reads L1 blocks via SignalService)
 └── SignalService (0x1670010000000000000000000000000000000005)
     └── Stores L1 block checkpoints
@@ -306,14 +306,14 @@ DEPLOYED CONTRACTS
 L1 (Taiko Parent Chain - 32382):
 - Broadcaster: $L1_BROADCASTER
 - Receiver: $L1_RECEIVER
-- BlockHashProverPointer: $L1_POINTER
+- StateProverPointer: $L1_POINTER
 - ParentToChildProver: $L1_PARENT_TO_CHILD_PROVER
 - ProverPointer: $L1_PROVER_POINTER
 
 L2 (Taiko Child Chain - 167001):
 - Broadcaster: $L2_BROADCASTER
 - Receiver: $L2_RECEIVER
-- BlockHashProverPointer: $L2_POINTER
+- StateProverPointer: $L2_POINTER
 - ChildToParentProver: $L2_CHILD_TO_PARENT_PROVER
 - ProverPointer: $L2_PROVER_POINTER
 
@@ -359,6 +359,6 @@ IMPORTANT NOTES
 - storage-proof-generator uses debug_getRawHeader for Taiko
 - ParentToChildProver deployed on L1, reads L2
 - ChildToParentProver deployed on L2, reads L1
-- Both use getTargetBlockHash in tests (direct SignalService read)
-- Production would use verifyTargetBlockHash (with proofs)
+- Both use getTargetStateCommitment in tests (direct SignalService read)
+- Production would use verifyTargetStateCommitment (with proofs)
 
