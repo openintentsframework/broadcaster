@@ -4,6 +4,7 @@
     "pusher": "0x2c4ded0d5883646AEAD86a6C748c871afa819125",
     "broadcaster": "0x536c398D9bBAf896b128C99bB7c78CfA3243AE27",
     "receiver": "0x16681d01c9169aacaFB6BbCBaF4c7C3002C63059",
+    "broadcaster-oracle": "0x0a6edD8A400b6db1bbe0d21Ecef07c4Fce983248",
     "input-settler-escrow": "0x1CC9260E285C2C8AC8D2E7102F3978056Ec1d0a8",
     "output-settler-simple": "0x52602D7cc3D833F5d28ee6D01C7F82C9b2322e10"
   },
@@ -12,7 +13,8 @@
       "arbitrum-sepolia": "0x3ed2414D931f28Ef85D2E5e74e509d6FEDB812F6",
       "linea-sepolia": "0x3E36338736c590753F071D90779b0449bD576834",
       "scroll-sepolia": "0x2635119429AFE9ed4b5dC38f71D12f1A241231Ec",
-      "zksync-sepolia": "0xf5e56d9d93267631f69dB9388d38e9c487830bD4"
+      "zksync-sepolia": "0xf5e56d9d93267631f69dB9388d38e9c487830bD4",
+      "base-sepolia": "0x853C0c8873FB6c2c71777373AD71BEa04f3755A6"
     }
   },
   "provers": {
