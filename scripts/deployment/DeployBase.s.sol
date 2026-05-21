@@ -26,6 +26,7 @@ contract DeployBase is Script {
         if (chainId == 534351) return "scroll-sepolia";
         if (chainId == 11155420) return "optimism-sepolia";
         if (chainId == 300) return "zksync-sepolia";
+        if (chainId == 84532) return "base-sepolia";
 
         if (chainId == 1) return "ethereum";
         if (chainId == 42161) return "arbitrum";

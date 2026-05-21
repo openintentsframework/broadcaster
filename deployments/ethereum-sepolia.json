@@ -30,6 +30,10 @@
     "zksync-sepolia": {
       "pointer": "0x7cac647e088b7361953f37C0C3BaA092748b8E7F",
       "prover": "0xf5e56d9d93267631f69dB9388d38e9c487830bD4"
+    },
+    "base-sepolia": {
+      "pointer": "0x391691A1a0a491A65adc1d0af97DF810e64EE2F8",
+      "prover": "0x853C0c8873FB6c2c71777373AD71BEa04f3755A6"
     }
   }
 }
