@@ -3,7 +3,9 @@
     "buffer": "0x4309FcAA812F729A2c6Fc9b67094296389eC919c",
     "pusher": "0xc69281Edb758A5dDD7A13e12b4F3d81b14Bd983B",
     "broadcaster": "0xE07Fe9bE1615fE5b3eCdbE07aDe090eDFEf65e80",
-    "receiver": "0x16681d01c9169aacaFB6BbCBaF4c7C3002C63059"
+    "receiver": "0x16681d01c9169aacaFB6BbCBaF4c7C3002C63059",
+    "input-settler-escrow": "0x1CC9260E285C2C8AC8D2E7102F3978056Ec1d0a8",
+    "output-settler-simple": "0x52602D7cc3D833F5d28ee6D01C7F82C9b2322e10"
   },
   "copies": {
     "ethereum-sepolia": {
