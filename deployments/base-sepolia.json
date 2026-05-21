@@ -2,9 +2,9 @@
   "contracts": {
     "broadcaster": "0x536c398D9bBAf896b128C99bB7c78CfA3243AE27",
     "receiver": "0x16681d01c9169aacaFB6BbCBaF4c7C3002C63059",
-    "input-settler-escrow": "0x15eA18EAcD9C35b454CF1456ed1bD05636B46147",
-    "output-settler-simple": "0x1DCE289d62C2068584C5D0CFb5C1fD538e832847",
-    "broadcaster-oracle": "0x0a6edD8A400b6db1bbe0d21Ecef07c4Fce983248"
+    "broadcaster-oracle": "0x0a6edD8A400b6db1bbe0d21Ecef07c4Fce983248",
+    "input-settler-escrow": "0x1CC9260E285C2C8AC8D2E7102F3978056Ec1d0a8",
+    "output-settler-simple": "0x52602D7cc3D833F5d28ee6D01C7F82C9b2322e10"
   },
   "copies": {
     "ethereum-sepolia": {
