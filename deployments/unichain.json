@@ -10,7 +10,10 @@
       "arbitrum": "0xfdB7609b3fFd817454fDF8409b01399DF4a45adD",
       "linea": "0x347Fdf829FeE4289c520F23b3537e273EA41AE30",
       "scroll": "0xa50B98CF3fcC4226eA724223DeA1B9F9ECDa3F70",
-      "worldchain": "0x7785fD313Ad4fDbFB14A4cAbc52bd779f1B29db2"
+      "worldchain": "0x7785fD313Ad4fDbFB14A4cAbc52bd779f1B29db2",
+      "optimism": "0x6B0e07592261540cF9D141d894b8A17FE1A04a98",
+      "base": "0xfBc1Edd87a700DBD7eaa3E038E54E6C7fFba1723",
+      "zksync": "0x4148d6E5cF0a095dB68f20A99DBf1232D8BB1cC6"
     }
   },
   "provers": {
