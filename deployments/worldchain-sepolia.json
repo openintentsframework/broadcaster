@@ -1,11 +1,9 @@
 {
   "contracts": {
-    "buffer": "0x4309FcAA812F729A2c6Fc9b67094296389eC919c",
-    "pusher": "0xc69281Edb758A5dDD7A13e12b4F3d81b14Bd983B",
-    "broadcaster": "0xE07Fe9bE1615fE5b3eCdbE07aDe090eDFEf65e80",
+    "broadcaster": "0x536c398D9bBAf896b128C99bB7c78CfA3243AE27",
     "receiver": "0x16681d01c9169aacaFB6BbCBaF4c7C3002C63059",
-    "input-settler-escrow": "0x1CC9260E285C2C8AC8D2E7102F3978056Ec1d0a8",
-    "output-settler-simple": "0x52602D7cc3D833F5d28ee6D01C7F82C9b2322e10"
+    "pusher": "0x9D8F530FCCfaCA291980E102FE258D90edf8B97B",
+    "buffer": "0x02C24F850871F3757dCadB97110E56B39245Ed01"
   },
   "copies": {
     "ethereum-sepolia": {
@@ -15,13 +13,13 @@
       "optimism-sepolia": "0x9B22f2bB9a5ECbEd10984f47c1A5FE8C551Fbf6a",
       "base-sepolia": "0x853C0c8873FB6c2c71777373AD71BEa04f3755A6",
       "unichain-sepolia": "0x2FA80623487a1dd8Ff800b1F221E90F5F36307c5",
-      "worldchain-sepolia": "0x1e4e51a19ac80b2eA820E2857F1Cf28a0219CFde"
+      "zksync-sepolia": "0xf5e56d9d93267631f69dB9388d38e9c487830bD4"
     }
   },
   "provers": {
     "ethereum-sepolia": {
-      "pointer": "0x2B48c5BeE8A3C63bbD5f5Be10bFCcda2ab372BF0",
-      "prover": "0xAD72b787ECCEA11C97770207862BF0a3c35C138e"
+      "pointer": "0x2801362E0E0aA838e3edE528c183c548Bc8F91C1",
+      "prover": "0x8EA3069b07dDbCC9556356329783C47cd11AdB01"
     }
   }
 }

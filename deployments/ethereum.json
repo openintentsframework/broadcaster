@@ -31,6 +31,14 @@
     "base": {
       "pointer": "0x8645f22Bc5d6b9531a76E20d3eD749A55117F47C",
       "prover": "0xfBc1Edd87a700DBD7eaa3E038E54E6C7fFba1723"
+    },
+    "unichain": {
+      "pointer": "0xfCBBd10A0B1891D11A897E9DC76a0e7EA9700e96",
+      "prover": "0x0321E65bECf81141aBf4CE6CAF25937E3839cAa1"
+    },
+    "worldchain": {
+      "pointer": "0x55a199009A4e82Bc1D3a2f87761E919fd0f976Ae",
+      "prover": "0x7785fD313Ad4fDbFB14A4cAbc52bd779f1B29db2"
     }
   },
   "pushers": {
@@ -38,6 +46,8 @@
     "scroll": "0x331475638c7B3356c3E1d1Ff0c1477F7D8B8fB04",
     "zksync": "0x32e6E59958Cb6C7C528573a42456955E1EC3FF12",
     "optimism": "0xcf118D7a3635F9B18B4aa88bFCDB4fa51c73719D",
-    "base": "0xcBF1db810c116e21fbf957530b73768924Fb2D02"
+    "base": "0xcBF1db810c116e21fbf957530b73768924Fb2D02",
+    "unichain": "0x9dA2E2A3B08D968C43977244D2933d6Db7Aa20d0",
+    "worldchain": "0xC4a018A5A0c0DFAfbf149CBF01292d076759019F"
   }
 }

@@ -16,18 +16,24 @@ contract DeployPushers is DeployBase {
         address zkSyncDiamond = vm.envAddress("ZKSYNC_DIAMOND");
         address opL1CrossDomainMessengerProxy = vm.envAddress("OPTIMISM_L1_CROSS_DOMAIN_MESSENGER_PROXY");
         address baseL1CrossDomainMessengerProxy = vm.envAddress("BASE_L1_CROSS_DOMAIN_MESSENGER_PROXY");
+        address unichainL1CrossDomainMessengerProxy = vm.envAddress("UNICHAIN_L1_CROSS_DOMAIN_MESSENGER_PROXY");
+        address worldL1CrossDomainMessengerProxy = vm.envAddress("WORLD_L1_CROSS_DOMAIN_MESSENGER_PROXY");
 
         uint256 lineaChainId = vm.envUint("LINEA_CHAIN_ID");
         uint256 scrollChainId = vm.envUint("SCROLL_CHAIN_ID");
         uint256 zksyncChainId = vm.envUint("ZKSYNC_CHAIN_ID");
         uint256 optimismChainId = vm.envUint("OPTIMISM_CHAIN_ID");
         uint256 baseChainId = vm.envUint("BASE_CHAIN_ID");
+        uint256 unichainChainId = vm.envUint("UNICHAIN_CHAIN_ID");
+        uint256 worldChainId = vm.envUint("WORLD_CHAIN_ID");
 
         string memory lineaName = _chainName(lineaChainId);
         string memory scrollName = _chainName(scrollChainId);
         string memory zksyncName = _chainName(zksyncChainId);
         string memory optimismName = _chainName(optimismChainId);
         string memory baseName = _chainName(baseChainId);
+        string memory unichainName = _chainName(unichainChainId);
+        string memory worldName = _chainName(worldChainId);
 
         vm.startBroadcast();
         if (!_isPusherDeployed(lineaName)) {
@@ -54,6 +60,16 @@ contract DeployPushers is DeployBase {
             OptimismPusher basePusher = new OptimismPusher(baseL1CrossDomainMessengerProxy);
             _writePusher(baseName, address(basePusher));
             _writeContractAtChain(baseChainId, "pusher", address(basePusher));
+        }
+        if (!_isPusherDeployed(unichainName)) {
+            OptimismPusher unichainPusher = new OptimismPusher(unichainL1CrossDomainMessengerProxy);
+            _writePusher(unichainName, address(unichainPusher));
+            _writeContractAtChain(unichainChainId, "pusher", address(unichainPusher));
+        }
+        if (!_isPusherDeployed(worldName)) {
+            OptimismPusher worldPusher = new OptimismPusher(worldL1CrossDomainMessengerProxy);
+            _writePusher(worldName, address(worldPusher));
+            _writeContractAtChain(worldChainId, "pusher", address(worldPusher));
         }
         vm.stopBroadcast();
     }

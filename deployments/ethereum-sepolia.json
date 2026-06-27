@@ -10,7 +10,10 @@
     "linea-sepolia": "0x2aC21Fcfd6905eF13FA9bc0F874f3524029cB443",
     "scroll-sepolia": "0xF99b4E792aCaBa74cb2d1A5D3fDBDFfe630C0a8e",
     "zksync-sepolia": "0xc69281Edb758A5dDD7A13e12b4F3d81b14Bd983B",
-    "optimism-sepolia": "0x2c4ded0d5883646AEAD86a6C748c871afa819125"
+    "optimism-sepolia": "0x2c4ded0d5883646AEAD86a6C748c871afa819125",
+    "base-sepolia": "0x83F6E54fCA233CC3A7D117b26CF035109d5bC166",
+    "unichain-sepolia": "0xcBF1db810c116e21fbf957530b73768924Fb2D02",
+    "worldchain-sepolia": "0x9D8F530FCCfaCA291980E102FE258D90edf8B97B"
   },
   "provers": {
     "arbitrum-sepolia": {
@@ -36,6 +39,14 @@
     "base-sepolia": {
       "pointer": "0x391691A1a0a491A65adc1d0af97DF810e64EE2F8",
       "prover": "0x853C0c8873FB6c2c71777373AD71BEa04f3755A6"
+    },
+    "unichain-sepolia": {
+      "pointer": "0xD455FF97E70a1157e026666A3927e190bBaD80C6",
+      "prover": "0x2FA80623487a1dd8Ff800b1F221E90F5F36307c5"
+    },
+    "worldchain-sepolia": {
+      "pointer": "0xA9D21baf6af39a575F286b60632Db1cf68C0d586",
+      "prover": "0x1e4e51a19ac80b2eA820E2857F1Cf28a0219CFde"
     }
   }
 }

@@ -45,6 +45,22 @@ forge script scripts/deployment/provers/DeployOptimismChildToParent.s.sol \
     --broadcast \
     $VERIFY_FLAGS
 
+HOME_CHAIN_ID=$UNICHAIN_CHAIN_ID \
+TARGET_CHAIN_ID=$ETHEREUM_CHAIN_ID \
+forge script scripts/deployment/provers/DeployOptimismChildToParent.s.sol \
+    --rpc-url "$UNICHAIN_RPC_URL" \
+    --private-key "$DEPLOYER_PRIVATE_KEY" \
+    --broadcast \
+    $VERIFY_FLAGS
+
+HOME_CHAIN_ID=$WORLD_CHAIN_ID \
+TARGET_CHAIN_ID=$ETHEREUM_CHAIN_ID \
+forge script scripts/deployment/provers/DeployOptimismChildToParent.s.sol \
+    --rpc-url "$WORLD_RPC_URL" \
+    --private-key "$DEPLOYER_PRIVATE_KEY" \
+    --broadcast \
+    $VERIFY_FLAGS
+
 HOME_CHAIN_ID=$ZKSYNC_CHAIN_ID \
 TARGET_CHAIN_ID=$ETHEREUM_CHAIN_ID \
 forge script scripts/deployment/provers/DeployZkSyncChildToParent.s.sol \
