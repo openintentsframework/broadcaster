@@ -27,6 +27,8 @@ contract DeployBase is Script {
         if (chainId == 11155420) return "optimism-sepolia";
         if (chainId == 300) return "zksync-sepolia";
         if (chainId == 84532) return "base-sepolia";
+        if (chainId == 1301) return "unichain-sepolia";
+        if (chainId == 4801) return "worldchain-sepolia";
 
         if (chainId == 1) return "ethereum";
         if (chainId == 42161) return "arbitrum";
@@ -35,6 +37,8 @@ contract DeployBase is Script {
         if (chainId == 10) return "optimism";
         if (chainId == 324) return "zksync";
         if (chainId == 8453) return "base";
+        if (chainId == 130) return "unichain";
+        if (chainId == 480) return "worldchain";
 
         revert InvalidChainId(chainId);
     }

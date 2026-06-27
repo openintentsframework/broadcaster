@@ -14,7 +14,9 @@
       "linea-sepolia": "0x3E36338736c590753F071D90779b0449bD576834",
       "scroll-sepolia": "0x2635119429AFE9ed4b5dC38f71D12f1A241231Ec",
       "zksync-sepolia": "0xf5e56d9d93267631f69dB9388d38e9c487830bD4",
-      "base-sepolia": "0x853C0c8873FB6c2c71777373AD71BEa04f3755A6"
+      "base-sepolia": "0x853C0c8873FB6c2c71777373AD71BEa04f3755A6",
+      "unichain-sepolia": "0x2FA80623487a1dd8Ff800b1F221E90F5F36307c5",
+      "worldchain-sepolia": "0x1e4e51a19ac80b2eA820E2857F1Cf28a0219CFde"
     }
   },
   "provers": {

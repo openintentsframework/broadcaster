@@ -39,6 +39,16 @@ CHAIN_TYPE="base" \
 RPC_URL="$BASE_RPC_URL" \
 bash scripts/deployment/deploy-protocol.sh
 
+echo "Deploying Broadcaster and Receiver contracts on Unichain..."
+CHAIN_TYPE="unichain" \
+RPC_URL="$UNICHAIN_RPC_URL" \
+bash scripts/deployment/deploy-protocol.sh
+
+echo "Deploying Broadcaster and Receiver contracts on World Chain..."
+CHAIN_TYPE="worldchain" \
+RPC_URL="$WORLD_RPC_URL" \
+bash scripts/deployment/deploy-protocol.sh
+
 echo "Deploying Broadcaster and Receiver contracts on ZkSync..."
 CHAIN_TYPE="zksync" \
 RPC_URL="$ZKSYNC_RPC_URL" \
@@ -78,6 +88,16 @@ RPC_URL="$OPTIMISM_RPC_URL" bash scripts/deployment/provers/deploy-parent-prover
 echo "Deploying ParentToChildProver contracts on Base..."
 CHAIN_TYPE="base" \
 RPC_URL="$BASE_RPC_URL" bash scripts/deployment/provers/deploy-parent-provers.sh
+
+# Unichain
+echo "Deploying ParentToChildProver contracts on Unichain..."
+CHAIN_TYPE="unichain" \
+RPC_URL="$UNICHAIN_RPC_URL" bash scripts/deployment/provers/deploy-parent-provers.sh
+
+# World Chain
+echo "Deploying ParentToChildProver contracts on World Chain..."
+CHAIN_TYPE="worldchain" \
+RPC_URL="$WORLD_RPC_URL" bash scripts/deployment/provers/deploy-parent-provers.sh
 
 # ZkSync
 echo "Deploying ParentToChildProver contracts on ZkSync..."
@@ -139,6 +159,22 @@ PARENT_CHAIN_ID="$ETHEREUM_CHAIN_ID" \
 CHILD_CHAIN_ID="$BASE_CHAIN_ID" \
 MESSENGER="$BASE_L2_CROSS_DOMAIN_MESSENGER" \
 RPC_URL="$BASE_RPC_URL" bash scripts/deployment/block-hash-pusher/deploy-buffers.sh
+
+# Unichain
+echo "Deploying Buffer contract for Unichain..."
+CHAIN_TYPE="unichain" \
+PARENT_CHAIN_ID="$ETHEREUM_CHAIN_ID" \
+CHILD_CHAIN_ID="$UNICHAIN_CHAIN_ID" \
+MESSENGER="$UNICHAIN_L2_CROSS_DOMAIN_MESSENGER" \
+RPC_URL="$UNICHAIN_RPC_URL" bash scripts/deployment/block-hash-pusher/deploy-buffers.sh
+
+# World Chain
+echo "Deploying Buffer contract for World Chain..."
+CHAIN_TYPE="worldchain" \
+PARENT_CHAIN_ID="$ETHEREUM_CHAIN_ID" \
+CHILD_CHAIN_ID="$WORLD_CHAIN_ID" \
+MESSENGER="$WORLD_L2_CROSS_DOMAIN_MESSENGER" \
+RPC_URL="$WORLD_RPC_URL" bash scripts/deployment/block-hash-pusher/deploy-buffers.sh
 
 # ========================================================================================
 # Deploy ChildToParentProver contracts

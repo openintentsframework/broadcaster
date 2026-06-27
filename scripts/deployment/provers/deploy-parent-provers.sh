@@ -59,6 +59,26 @@ forge script scripts/deployment/provers/DeployOptimismParentToChild.s.sol \
     --broadcast \
     $VERIFY_FLAGS
 
+ANCHOR_STATE_REGISTRY=$UNICHAIN_ANCHOR_STATE_REGISTRY \
+ANCHOR_GAME_SLOT=$UNICHAIN_ANCHOR_GAME_SLOT \
+HOME_CHAIN_ID=$ETHEREUM_CHAIN_ID \
+TARGET_CHAIN_ID=$UNICHAIN_CHAIN_ID \
+forge script scripts/deployment/provers/DeployOptimismParentToChild.s.sol \
+    --rpc-url "$RPC_URL" \
+    --private-key "$DEPLOYER_PRIVATE_KEY" \
+    --broadcast \
+    $VERIFY_FLAGS
+
+ANCHOR_STATE_REGISTRY=$WORLD_ANCHOR_STATE_REGISTRY \
+ANCHOR_GAME_SLOT=$WORLD_ANCHOR_GAME_SLOT \
+HOME_CHAIN_ID=$ETHEREUM_CHAIN_ID \
+TARGET_CHAIN_ID=$WORLD_CHAIN_ID \
+forge script scripts/deployment/provers/DeployOptimismParentToChild.s.sol \
+    --rpc-url "$RPC_URL" \
+    --private-key "$DEPLOYER_PRIVATE_KEY" \
+    --broadcast \
+    $VERIFY_FLAGS
+
 GATEWAY_ZK_CHAIN=$ZKSYNC_GATEWAY_ZK_CHAIN \
 L2_LOGS_ROOT_HASH_SLOT=$ZKSYNC_L2_LOGS_ROOT_HASH_SLOT \
 CHILD_CHAIN_ID=$ZKSYNC_CHAIN_ID \

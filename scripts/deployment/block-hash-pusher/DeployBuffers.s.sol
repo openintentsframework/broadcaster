@@ -44,6 +44,8 @@ contract DeployBuffers is DeployBase {
             } else if (
                 keccak256(bytes(chainType)) == keccak256(bytes("optimism"))
                     || keccak256(bytes(chainType)) == keccak256(bytes("base"))
+                    || keccak256(bytes(chainType)) == keccak256(bytes("unichain"))
+                    || keccak256(bytes(chainType)) == keccak256(bytes("worldchain"))
             ) {
                 buffer = address(new OptimismBuffer(messenger, pusherAddress));
             } else {
